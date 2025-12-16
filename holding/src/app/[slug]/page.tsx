@@ -52,13 +52,16 @@ export default async function DynamicPage({ params }: PageProps) {
     <>
       <Header />
       <main style={{ minHeight: '60vh', padding: '0' }}>
-        {featuredImage && (
+        {featuredImage ? (
           <div style={{
             width: '100%',
-            height: '400px',
+            height: '500px',
             overflow: 'hidden',
             position: 'relative',
-            background: '#f3f4f6'
+            background: '#1f2937',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             <img
               src={featuredImage}
@@ -66,22 +69,90 @@ export default async function DynamicPage({ params }: PageProps) {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover'
+                objectFit: 'cover',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                filter: 'brightness(0.4)'
               }}
             />
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              textAlign: 'center',
+              padding: '0 2rem',
+              maxWidth: '1200px',
+              width: '100%'
+            }}>
+              <h1 style={{
+                fontSize: '3.5rem',
+                color: '#ffffff',
+                fontWeight: '700',
+                margin: 0,
+                lineHeight: '1.2',
+                letterSpacing: '-0.02em',
+                textShadow: '0 2px 20px rgba(0, 0, 0, 0.3)',
+                marginBottom: content.description ? '1rem' : '0'
+              }}>
+                {content.title}
+              </h1>
+              {content.description && (
+                <p style={{
+                  fontSize: '1.5rem',
+                  color: '#f3f4f6',
+                  margin: 0,
+                  lineHeight: '1.5',
+                  fontWeight: '400',
+                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+                  maxWidth: '800px',
+                  marginLeft: 'auto',
+                  marginRight: 'auto'
+                }}>
+                  {content.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div style={{ 
+            background: '#1f2937', 
+            padding: '4rem 0',
+            marginBottom: '2rem'
+          }}>
+            <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+              <h1 style={{
+                fontSize: '3.5rem',
+                color: '#ffffff',
+                fontWeight: '700',
+                margin: 0,
+                lineHeight: '1.2',
+                letterSpacing: '-0.02em',
+                textAlign: 'center',
+                marginBottom: content.description ? '1rem' : '0'
+              }}>
+                {content.title}
+              </h1>
+              {content.description && (
+                <p style={{
+                  fontSize: '1.5rem',
+                  color: '#f3f4f6',
+                  margin: 0,
+                  lineHeight: '1.5',
+                  fontWeight: '400',
+                  textAlign: 'center',
+                  maxWidth: '800px',
+                  marginLeft: 'auto',
+                  marginRight: 'auto'
+                }}>
+                  {content.description}
+                </p>
+              )}
+            </div>
           </div>
         )}
         <div style={{ minHeight: '60vh', padding: '2rem 0' }}>
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
             <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>
-              <h1 style={{
-                fontSize: '2.5rem',
-                marginBottom: '1rem',
-                color: '#313131',
-                fontWeight: '700'
-              }}>
-                {content.title}
-              </h1>
               {content.description && (
                 <p style={{
                   fontSize: '1.2rem',
