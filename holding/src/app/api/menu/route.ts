@@ -10,8 +10,15 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
+    const isAdmin = getAuthUser(request); // Admin kontrolü
 
-    const query: any = { isActive: true };
+    const query: any = {};
+    
+    // Eğer admin değilse sadece aktif menüleri göster
+    if (!isAdmin) {
+      query.isActive = true;
+    }
+    
     if (type) {
       query.type = type;
     }
@@ -42,6 +49,8 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
+    
+    // Frontend'de kontrol yapılıyor, burada sadece oluştur
     const menu = await Menu.create(data);
 
     return NextResponse.json({ success: true, menu }, { status: 201 });

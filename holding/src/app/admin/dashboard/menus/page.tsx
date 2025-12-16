@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import Modal from '@/components/Modal';
 import LoadingScreen from '@/components/LoadingScreen';
+import Swal from 'sweetalert2';
 
 interface MenuItem {
   _id?: string;
@@ -29,12 +30,21 @@ export default function MenuManagement() {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'main' | 'footer'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [formData, setFormData] = useState({
     name: '',
     type: 'main' as 'main' | 'footer',
     items: [] as MenuItem[],
     isActive: true,
   });
+  const [errors, setErrors] = useState<{
+    name?: boolean;
+    items?: boolean;
+    itemLabels?: { [key: number]: boolean };
+    itemHrefs?: { [key: number]: boolean };
+    childLabels?: { [key: string]: boolean };
+    childHrefs?: { [key: string]: boolean };
+  }>({});
 
   useEffect(() => {
     loadMenus();
@@ -52,8 +62,71 @@ export default function MenuManagement() {
     }
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+    let isValid = true;
+
+    // Menü adı kontrolü
+    if (!formData.name || formData.name.trim() === '') {
+      newErrors.name = true;
+      isValid = false;
+    }
+
+    // Menü öğeleri kontrolü
+    if (formData.items.length === 0) {
+      newErrors.items = true;
+      isValid = false;
+    }
+
+    // Her menü öğesi için kontrol
+    formData.items.forEach((item, index) => {
+      if (!item.label || item.label.trim() === '') {
+        if (!newErrors.itemLabels) newErrors.itemLabels = {};
+        newErrors.itemLabels[index] = true;
+        isValid = false;
+      }
+      if (!item.href || item.href.trim() === '') {
+        if (!newErrors.itemHrefs) newErrors.itemHrefs = {};
+        newErrors.itemHrefs[index] = true;
+        isValid = false;
+      }
+
+      // Alt menü öğeleri için kontrol
+      if (item.children && item.children.length > 0) {
+        item.children.forEach((child, childIndex) => {
+          const childKey = `${index}-${childIndex}`;
+          if (!child.label || child.label.trim() === '') {
+            if (!newErrors.childLabels) newErrors.childLabels = {};
+            newErrors.childLabels[childKey] = true;
+            isValid = false;
+          }
+          if (!child.href || child.href.trim() === '') {
+            if (!newErrors.childHrefs) newErrors.childHrefs = {};
+            newErrors.childHrefs[childKey] = true;
+            isValid = false;
+          }
+        });
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Form validasyonu
+    if (!validateForm()) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Eksik Bilgi!',
+        html: 'Lütfen tüm zorunlu alanları doldurun. Kırmızı ile işaretli alanlar zorunludur.',
+        confirmButtonColor: '#313131'
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Alt menülerin href'lerini slug formatına çevir
@@ -91,17 +164,102 @@ export default function MenuManagement() {
       const processedFormData = { ...formData, items: processedItems };
 
       if (editingMenu) {
+        // Menü güncellenirken, eğer aktif yapılıyorsa ve aynı tipte başka aktif menü varsa kontrol et
+        if (processedFormData.isActive) {
+          const activeMenuOfSameType = menus.find(
+            menu => menu.type === processedFormData.type && 
+            menu.isActive && 
+            menu._id !== editingMenu._id
+          );
+
+          if (activeMenuOfSameType) {
+            const menuTypeText = processedFormData.type === 'main' ? 'Ana Menü' : 'Footer';
+            const result = await Swal.fire({
+              title: 'Aktif Menü Mevcut!',
+              html: `Aktif bir <strong>${menuTypeText}</strong> zaten var. Bu menüyü aktif yapmak için mevcut aktif menü pasif yapılacak. Devam etmek istiyor musunuz?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#313131',
+              cancelButtonColor: '#6b7280',
+              confirmButtonText: 'Evet, Devam Et',
+              cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) {
+              setSubmitting(false);
+              return; // İşlemi iptal et
+            }
+
+            // Mevcut aktif menüyü pasif yap
+            await apiClient.updateMenu(activeMenuOfSameType._id, {
+              ...activeMenuOfSameType,
+              isActive: false
+            });
+          }
+        }
+
         await apiClient.updateMenu(editingMenu._id, processedFormData);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Başarılı!',
+          text: 'Menü başarıyla güncellendi.',
+          timer: 2000,
+          showConfirmButton: false
+        });
       } else {
+        // Yeni menü eklerken, eğer aktif yapılıyorsa aynı tipte aktif menü var mı kontrol et
+        if (processedFormData.isActive) {
+          const activeMenuOfSameType = menus.find(
+            menu => menu.type === processedFormData.type && menu.isActive
+          );
+
+          if (activeMenuOfSameType) {
+            const menuTypeText = processedFormData.type === 'main' ? 'Ana Menü' : 'Footer';
+            const result = await Swal.fire({
+              title: 'Aktif Menü Mevcut!',
+              html: `Aktif bir <strong>${menuTypeText}</strong> zaten var. Yeni menüyü aktif yapmak için mevcut aktif menü pasif yapılacak. Devam etmek istiyor musunuz?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#313131',
+              cancelButtonColor: '#6b7280',
+              confirmButtonText: 'Evet, Devam Et',
+              cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) {
+              setSubmitting(false);
+              return; // İşlemi iptal et
+            }
+
+            // Mevcut aktif menüyü pasif yap
+            await apiClient.updateMenu(activeMenuOfSameType._id, {
+              ...activeMenuOfSameType,
+              isActive: false
+            });
+          }
+        }
+
         await apiClient.createMenu(processedFormData);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Başarılı!',
+          text: 'Menü başarıyla oluşturuldu.',
+          timer: 2000,
+          showConfirmButton: false
+        });
       }
       // Başarılı olduğunda modal'ı kapat ve sayfayı yenile
       setShowModal(false);
       setEditingMenu(null);
       setFormData({ name: '', type: 'main', items: [], isActive: true });
+      setErrors({});
       await loadMenus();
     } catch (error: any) {
-      alert(error.message || 'Bir hata oluştu');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: error.message || 'Bir hata oluştu'
+      });
     } finally {
       setSubmitting(false);
     }
@@ -115,22 +273,47 @@ export default function MenuManagement() {
       items: menu.items,
       isActive: menu.isActive,
     });
+    setErrors({});
     setShowModal(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bu menüyü silmek istediğinize emin misiniz?')) return;
-    try {
-      await apiClient.deleteMenu(id);
-      await loadMenus();
-    } catch (error: any) {
-      alert(error.message || 'Bir hata oluştu');
+    const result = await Swal.fire({
+      title: 'Emin misiniz?',
+      text: 'Bu menüyü silmek istediğinize emin misiniz? Bu işlem geri alınamaz!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Evet, Sil!',
+      cancelButtonText: 'İptal'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await apiClient.deleteMenu(id);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Silindi!',
+          text: 'Menü başarıyla silindi.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        await loadMenus();
+      } catch (error: any) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Hata!',
+          text: error.message || 'Menü silinirken bir hata oluştu'
+        });
+      }
     }
   };
 
   const openNewMenuModal = () => {
     setEditingMenu(null);
     setFormData({ name: '', type: 'main', items: [], isActive: true });
+    setErrors({});
     setShowModal(true);
   };
 
@@ -138,6 +321,7 @@ export default function MenuManagement() {
     setShowModal(false);
     setEditingMenu(null);
     setFormData({ name: '', type: 'main', items: [], isActive: true });
+    setErrors({});
   };
 
   const addMenuItem = () => {
@@ -196,7 +380,10 @@ export default function MenuManagement() {
         ))
       );
     const matchesType = filterType === 'all' || menu.type === filterType;
-    return matchesSearch && matchesType;
+    const matchesStatus = filterStatus === 'all' || 
+      (filterStatus === 'active' && menu.isActive) ||
+      (filterStatus === 'inactive' && !menu.isActive);
+    return matchesSearch && matchesType && matchesStatus;
   });
 
   if (loading) {
@@ -249,22 +436,33 @@ export default function MenuManagement() {
       >
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>Menü Adı</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
+              Menü Adı <span style={{ color: '#dc2626' }}>*</span>
+            </label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                if (errors.name) {
+                  setErrors({ ...errors, name: false });
+                }
+              }}
               required
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: '2px solid #e2e8f0',
+                border: `2px solid ${errors.name ? '#dc2626' : '#e2e8f0'}`,
                 borderRadius: '8px',
                 fontSize: '1rem',
                 transition: 'border-color 0.2s'
               }}
               onFocus={(e) => e.currentTarget.style.borderColor = '#313131'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+              onBlur={(e) => {
+                if (!errors.name) {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                }
+              }}
             />
           </div>
 
@@ -302,7 +500,10 @@ export default function MenuManagement() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <label style={{ fontWeight: '600', color: '#313131', fontSize: '1.1rem' }}>Menü Öğeleri</label>
+              <label style={{ fontWeight: '600', color: '#313131', fontSize: '1.1rem' }}>
+                Menü Öğeleri <span style={{ color: '#dc2626' }}>*</span>
+                {errors.items && <span style={{ color: '#dc2626', fontSize: '0.9rem', marginLeft: '0.5rem' }}>(En az bir öğe gerekli)</span>}
+              </label>
               <button
                 type="button"
                 onClick={addMenuItem}
@@ -331,23 +532,53 @@ export default function MenuManagement() {
                   padding: '1rem',
                   borderRadius: '8px',
                   marginBottom: '0.75rem',
-                  border: '1px solid #e2e8f0'
+                  border: `1px solid ${errors.items ? '#dc2626' : '#e2e8f0'}`
                 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <input
-                      type="text"
-                      placeholder="Label"
-                      value={item.label}
-                      onChange={(e) => updateMenuItem(index, 'label', e.target.value)}
-                      style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Href (#link)"
-                      value={item.href}
-                      onChange={(e) => updateMenuItem(index, 'href', e.target.value)}
-                      style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Label *"
+                        value={item.label}
+                        onChange={(e) => {
+                          updateMenuItem(index, 'label', e.target.value);
+                          if (errors.itemLabels && errors.itemLabels[index]) {
+                            const newItemLabels = { ...errors.itemLabels };
+                            delete newItemLabels[index];
+                            setErrors({ ...errors, itemLabels: newItemLabels });
+                          }
+                        }}
+                        style={{ 
+                          width: '100%',
+                          padding: '0.625rem', 
+                          border: `2px solid ${errors.itemLabels && errors.itemLabels[index] ? '#dc2626' : '#e2e8f0'}`, 
+                          borderRadius: '6px', 
+                          fontSize: '0.9rem' 
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Href *"
+                        value={item.href}
+                        onChange={(e) => {
+                          updateMenuItem(index, 'href', e.target.value);
+                          if (errors.itemHrefs && errors.itemHrefs[index]) {
+                            const newItemHrefs = { ...errors.itemHrefs };
+                            delete newItemHrefs[index];
+                            setErrors({ ...errors, itemHrefs: newItemHrefs });
+                          }
+                        }}
+                        style={{ 
+                          width: '100%',
+                          padding: '0.625rem', 
+                          border: `2px solid ${errors.itemHrefs && errors.itemHrefs[index] ? '#dc2626' : '#e2e8f0'}`, 
+                          borderRadius: '6px', 
+                          fontSize: '0.9rem' 
+                        }}
+                      />
+                    </div>
                     <input
                       type="number"
                       placeholder="Sıra"
@@ -401,11 +632,13 @@ export default function MenuManagement() {
                     </button>
                     {item.children && item.children.length > 0 && (
                       <div style={{ marginTop: '0.75rem', paddingLeft: '1rem', borderLeft: '3px solid #313131' }}>
-                        {item.children.map((child, childIndex) => (
+                        {item.children.map((child, childIndex) => {
+                          const childKey = `${index}-${childIndex}`;
+                          return (
                           <div key={childIndex} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.5rem' }}>
                             <input
                               type="text"
-                              placeholder="Alt Menü Label"
+                              placeholder="Alt Menü Label *"
                               value={child.label}
                               onChange={(e) => {
                                 const newItems = [...formData.items];
@@ -437,12 +670,24 @@ export default function MenuManagement() {
                                   href: newHref
                                 };
                                 setFormData({ ...formData, items: newItems });
+                                
+                                // Hata durumunu temizle
+                                if (errors.childLabels && errors.childLabels[childKey]) {
+                                  const newChildLabels = { ...errors.childLabels };
+                                  delete newChildLabels[childKey];
+                                  setErrors({ ...errors, childLabels: newChildLabels });
+                                }
                               }}
-                              style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
+                              style={{ 
+                                padding: '0.625rem', 
+                                border: `2px solid ${errors.childLabels && errors.childLabels[childKey] ? '#dc2626' : '#e2e8f0'}`, 
+                                borderRadius: '6px', 
+                                fontSize: '0.9rem' 
+                              }}
                             />
                             <input
                               type="text"
-                              placeholder="Alt Menü Href"
+                              placeholder="Alt Menü Href *"
                               value={child.href}
                               onChange={(e) => {
                                 const newItems = [...formData.items];
@@ -460,8 +705,20 @@ export default function MenuManagement() {
                                 }
                                 newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: hrefValue };
                                 setFormData({ ...formData, items: newItems });
+                                
+                                // Hata durumunu temizle
+                                if (errors.childHrefs && errors.childHrefs[childKey]) {
+                                  const newChildHrefs = { ...errors.childHrefs };
+                                  delete newChildHrefs[childKey];
+                                  setErrors({ ...errors, childHrefs: newChildHrefs });
+                                }
                               }}
-                              style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
+                              style={{ 
+                                padding: '0.625rem', 
+                                border: `2px solid ${errors.childHrefs && errors.childHrefs[childKey] ? '#dc2626' : '#e2e8f0'}`, 
+                                borderRadius: '6px', 
+                                fontSize: '0.9rem' 
+                              }}
                             />
                             <input
                               type="number"
@@ -498,15 +755,16 @@ export default function MenuManagement() {
                               Sil
                             </button>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 </div>
               ))}
               {formData.items.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-                  Henüz menü öğesi eklenmedi. Yukarıdaki butona tıklayarak ekleyebilirsiniz.
+                <div style={{ textAlign: 'center', padding: '2rem', color: errors.items ? '#dc2626' : '#666' }}>
+                  {errors.items ? 'En az bir menü öğesi eklemelisiniz!' : 'Henüz menü öğesi eklenmedi. Yukarıdaki butona tıklayarak ekleyebilirsiniz.'}
                 </div>
               )}
             </div>
@@ -559,7 +817,7 @@ export default function MenuManagement() {
           marginBottom: '1.5rem',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
                 Arama
@@ -599,8 +857,29 @@ export default function MenuManagement() {
                 <option value="footer">Footer</option>
               </select>
             </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
+                Durum
+              </label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">Tümü</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
+              </select>
+            </div>
           </div>
-          {searchTerm && (
+          {(searchTerm || filterType !== 'all' || filterStatus !== 'all') && (
             <div style={{ marginTop: '1rem', color: '#666', fontSize: '0.9rem' }}>
               {filteredMenus.length} menü bulundu
             </div>
@@ -642,15 +921,16 @@ export default function MenuManagement() {
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
           <p style={{ color: '#666', fontSize: '1.1rem' }}>
-            {searchTerm || filterType !== 'all'
+            {searchTerm || filterType !== 'all' || filterStatus !== 'all'
               ? 'Arama kriterlerinize uygun menü bulunamadı.'
               : 'Henüz menü eklenmemiş.'}
           </p>
-          {searchTerm && (
+          {(searchTerm || filterType !== 'all' || filterStatus !== 'all') && (
             <button
               onClick={() => {
                 setSearchTerm('');
                 setFilterType('all');
+                setFilterStatus('all');
               }}
               style={{
                 marginTop: '1rem',

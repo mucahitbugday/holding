@@ -49,6 +49,8 @@ export async function PUT(
     const { id } = await params;
 
     const data = await request.json();
+    
+    // Frontend'de kontrol yapılıyor, burada sadece güncelle
     const menu = await Menu.findByIdAndUpdate(
       id,
       data,

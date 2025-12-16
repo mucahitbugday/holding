@@ -1310,3 +1310,12 @@ section .container {
     bottom: 1rem;
   }
 }
+
+/* SweetAlert2 z-index ayarı - Modal'ın üstünde görünmesi için */
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-popup {
+  z-index: 99999 !important;
+}
