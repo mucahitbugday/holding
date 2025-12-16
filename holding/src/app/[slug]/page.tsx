@@ -152,17 +152,7 @@ export default async function DynamicPage({ params }: PageProps) {
         )}
         <div style={{ minHeight: '60vh', padding: '2rem 0' }}>
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>
-              {content.description && (
-                <p style={{
-                  fontSize: '1.2rem',
-                  color: '#666',
-                  marginBottom: '2rem',
-                  lineHeight: '1.6'
-                }}>
-                  {content.description}
-                </p>
-              )}
+            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>        
               <div
                 className="content-body"
                 style={{
