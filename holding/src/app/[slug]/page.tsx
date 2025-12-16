@@ -11,9 +11,9 @@ interface PageProps {
 async function getContentBySlug(slug: string) {
   try {
     await connectDB();
-    const content = await Content.findOne({ 
+    const content = await Content.findOne({
       slug: slug,
-      isActive: true 
+      isActive: true
     });
     return content;
   } catch (error) {
@@ -53,9 +53,9 @@ export default async function DynamicPage({ params }: PageProps) {
       <Header />
       <main style={{ minHeight: '60vh', padding: '0' }}>
         {featuredImage && (
-          <div style={{ 
-            width: '100%', 
-            height: '400px', 
+          <div style={{
+            width: '100%',
+            height: '400px',
             overflow: 'hidden',
             position: 'relative',
             background: '#f3f4f6'
@@ -73,36 +73,37 @@ export default async function DynamicPage({ params }: PageProps) {
         )}
         <div style={{ minHeight: '60vh', padding: '2rem 0' }}>
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-              <h1 style={{ 
-                fontSize: '2.5rem', 
-                marginBottom: '1rem', 
+            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>
+              <h1 style={{
+                fontSize: '2.5rem',
+                marginBottom: '1rem',
                 color: '#313131',
                 fontWeight: '700'
               }}>
                 {content.title}
               </h1>
               {content.description && (
-                <p style={{ 
-                  fontSize: '1.2rem', 
-                  color: '#666', 
+                <p style={{
+                  fontSize: '1.2rem',
+                  color: '#666',
                   marginBottom: '2rem',
                   lineHeight: '1.6'
                 }}>
                   {content.description}
                 </p>
               )}
-              <div 
+              <div
                 className="content-body"
-                style={{ 
-                  fontSize: '1rem', 
-                  lineHeight: '1.8', 
+                style={{
+                  fontSize: '1rem',
+                  lineHeight: '1.8',
                   color: '#333',
                   marginTop: '2rem'
                 }}
                 dangerouslySetInnerHTML={{ __html: content.content }}
               />
-              <style dangerouslySetInnerHTML={{ __html: `
+              <style dangerouslySetInnerHTML={{
+                __html: `
                 .content-body h1, .content-body h2, .content-body h3, 
                 .content-body h4, .content-body h5, .content-body h6 {
                   margin: 24px 0 12px 0;
