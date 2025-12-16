@@ -660,7 +660,7 @@ export default function ContentManagement() {
                 <input
                   type="text"
                   value={formData.slug}
-                  readOnly
+                   
                   required
                   placeholder="Menüden link seçin"
                   style={{ 
