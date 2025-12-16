@@ -2,36 +2,55 @@
 
 import { useState, useEffect } from 'react';
 
-const slides = [
-  {
-    id: 1,
-    title: 'Dünya Standartlarında Hizmet',
-    description: 'Sektörümüzle ilgili dünyadaki gelişmeleri takip ediyor ve işimizi sürekli olarak geliştiriyoruz.',
-    link: '#hizmetler',
-    linkText: 'Hizmetlerimiz',
-    image: '/images/slide1.jpg',
-  },
-  {
-    id: 2,
-    title: 'İyi Bir Tesis Yönetim Şirketini Nasıl Seçersiniz?',
-    description: 'Deneyimli ekibimiz ve modern çözümlerimizle yanınızdayız.',
-    link: '#hizmetler',
-    linkText: 'Keşfet',
-    image: '/images/slide2.jpg',
-  },
-  {
-    id: 3,
-    title: 'Güvenlik Önlemleri',
-    description: 'En yüksek güvenlik standartlarıyla hizmet veriyoruz.',
-    link: '#guvenlik',
-    linkText: 'Detaylar',
-    image: '/images/slide3.jpg',
-  },
-];
+interface HeroSlide {
+  title: string;
+  description: string;
+  link: string;
+  linkText: string;
+  image: string;
+  order: number;
+}
 
-export default function Hero() {
+export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
+  const [slides, setSlides] = useState<HeroSlide[]>(propSlides || []);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    // Eğer prop'tan slides gelmediyse API'den çek
+    if (!propSlides || propSlides.length === 0) {
+      loadHeroData();
+    } else {
+      setSlides(propSlides);
+    }
+  }, [propSlides]);
+
+  const loadHeroData = async () => {
+    try {
+      const response = await fetch('/api/homepage');
+      const data = await response.json();
+      if (data.success && data.settings) {
+        const heroSection = data.settings.sections.find((s: any) => s.type === 'hero' && s.isActive);
+        if (heroSection && heroSection.data.slides) {
+          const sortedSlides = [...heroSection.data.slides].sort((a: HeroSlide, b: HeroSlide) => a.order - b.order);
+          setSlides(sortedSlides);
+        }
+      }
+    } catch (error) {
+      console.error('Hero verileri yüklenemedi:', error);
+      // Varsayılan slides
+      setSlides([
+        {
+          title: 'Dünya Standartlarında Hizmet',
+          description: 'Sektörümüzle ilgili dünyadaki gelişmeleri takip ediyor ve işimizi sürekli olarak geliştiriyoruz.',
+          link: '#hizmetler',
+          linkText: 'Hizmetlerimiz',
+          image: '/images/slide1.jpg',
+          order: 0,
+        },
+      ]);
+    }
+  };
 
   useEffect(() => {
     // Preload images
@@ -75,12 +94,16 @@ export default function Hero() {
     setCurrentSlide(index);
   };
 
+  if (slides.length === 0) {
+    return null;
+  }
+
   return (
     <section className="hero">
       <div className="hero-slider">
         {slides.map((slide, index) => (
           <div
-            key={slide.id}
+            key={index}
             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
             style={
               imagesLoaded[index]

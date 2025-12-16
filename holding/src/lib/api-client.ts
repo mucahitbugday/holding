@@ -149,6 +149,18 @@ export class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // HomePage Settings
+  async getHomePageSettings() {
+    return this.request('/homepage');
+  }
+
+  async updateHomePageSettings(data: any) {
+    return this.request('/homepage', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

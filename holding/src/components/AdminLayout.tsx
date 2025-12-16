@@ -209,6 +209,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span>📝</span> İçerik Yönetimi
             </Link>
             <Link
+              href="/admin/dashboard/homepage"
+              style={{
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: pathname === '/admin/dashboard/homepage' ? 'white' : '#313131',
+                background: pathname === '/admin/dashboard/homepage' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/homepage' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/homepage') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/homepage') {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <span>🏠</span> Anasayfa Ayarları
+            </Link>
+            <Link
               href="/admin/dashboard/users"
               style={{
                 padding: '0.875rem 1.25rem',

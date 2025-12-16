@@ -12,16 +12,46 @@ interface Content {
   type: string;
 }
 
-export default function About() {
+interface AboutData {
+  title?: string;
+  description?: string;
+  items?: Array<{
+    title: string;
+    description: string;
+    icon?: string;
+    order: number;
+  }>;
+}
+
+export default function About({ data: propData }: { data?: AboutData }) {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aboutData, setAboutData] = useState<AboutData | null>(propData || null);
 
   useEffect(() => {
-    loadContent();
-  }, []);
+    if (propData) {
+      setAboutData(propData);
+      setLoading(false);
+    } else {
+      loadContent();
+    }
+  }, [propData]);
 
   const loadContent = async () => {
     try {
+      // Önce homepage settings'den about data'yı çek
+      const homepageResponse = await fetch('/api/homepage');
+      const homepageData = await homepageResponse.json();
+      if (homepageData.success && homepageData.settings) {
+        const aboutSection = homepageData.settings.sections.find((s: any) => s.type === 'about' && s.isActive);
+        if (aboutSection && aboutSection.data) {
+          setAboutData(aboutSection.data);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Eğer homepage'de yoksa content API'den çek
       const response = await fetch('/api/content?type=about');
       const data = await response.json();
       if (data.success && data.contents) {
@@ -53,22 +83,33 @@ export default function About() {
     },
   ];
 
-  const displayContents = contents.length > 0
-    ? contents.map((c) => ({
-        title: c.title,
-        description: c.description || c.content.substring(0, 100),
-        icon: 'fas fa-globe',
-      }))
-    : defaultContents;
+  // About data'dan items varsa onları kullan, yoksa contents'ten veya default'tan
+  let displayContents;
+  if (aboutData && aboutData.items && aboutData.items.length > 0) {
+    displayContents = [...aboutData.items].sort((a, b) => a.order - b.order).map(item => ({
+      title: item.title,
+      description: item.description,
+      icon: item.icon || 'fas fa-globe',
+    }));
+  } else if (contents.length > 0) {
+    displayContents = contents.map((c) => ({
+      title: c.title,
+      description: c.description || c.content.substring(0, 100),
+      icon: 'fas fa-globe',
+    }));
+  } else {
+    displayContents = defaultContents;
+  }
+
+  const sectionTitle = aboutData?.title || 'Hakkımızda';
+  const sectionDescription = aboutData?.description || 'İş geliştirme hiç durmayacak bir süreçtir. İş süreçlerini bütünsel açıdan değerlendirip müşterilerimize entegre çözümler üretiyoruz.';
 
   return (
     <section className="about" id="kurumsal">
       <div className="container">
         <div className="section-header">
-          <h2>Hakkımızda</h2>
-          <p>
-            İş geliştirme hiç durmayacak bir süreçtir. İş süreçlerini bütünsel açıdan değerlendirip müşterilerimize entegre çözümler üretiyoruz.
-          </p>
+          <h2>{sectionTitle}</h2>
+          <p>{sectionDescription}</p>
         </div>
         <div className="about-grid">
           {displayContents.map((item, index) => (
