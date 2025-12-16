@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, children, footer, size = 'medium' }: ModalProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -32,6 +33,12 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
     xlarge: 'max-w-6xl',
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setIsFullscreen(false);
+    }
+  }, [isOpen]);
+
   return (
     <div
       style={{
@@ -40,25 +47,26 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: isFullscreen ? 'white' : 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isFullscreen ? 'stretch' : 'center',
         justifyContent: 'center',
         zIndex: 10000,
-        padding: '1rem',
+        padding: isFullscreen ? '0' : '1rem',
       }}
       onClick={onClose}
     >
       <div
-        className={sizeClasses[size]}
+        className={isFullscreen ? '' : sizeClasses[size]}
         style={{
           backgroundColor: 'white',
-          borderRadius: '8px',
-          width: '100%',
-          maxHeight: '90vh',
+          borderRadius: isFullscreen ? '0' : '8px',
+          width: isFullscreen ? '100%' : '100%',
+          height: isFullscreen ? '100%' : 'auto',
+          maxHeight: isFullscreen ? '100%' : '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          boxShadow: isFullscreen ? 'none' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -83,41 +91,73 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
           }}>
             {title}
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '20px',
-              color: '#6b7280',
-              cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              transition: 'all 0.15s',
-              lineHeight: '1',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f3f4f6';
-              e.currentTarget.style.color = '#1f2937';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = '#6b7280';
-            }}
-          >
-            ×
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '16px',
+                color: '#6b7280',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                transition: 'all 0.15s',
+                lineHeight: '1',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                e.currentTarget.style.color = '#1f2937';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#6b7280';
+              }}
+              title={isFullscreen ? 'Küçült' : 'Tam Ekran'}
+            >
+              {isFullscreen ? '⤓' : '⤢'}
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '20px',
+                color: '#6b7280',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                transition: 'all 0.15s',
+                lineHeight: '1',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                e.currentTarget.style.color = '#1f2937';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#6b7280';
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
         
         {/* Scroll İçerik Alanı */}
         <div 
           style={{ 
-            padding: '20px',
+            padding: isFullscreen ? '24px' : '20px',
             overflowY: 'auto',
             flex: 1,
             minHeight: 0,

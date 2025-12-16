@@ -5,7 +5,7 @@ export interface IContent extends Document {
   title: string;
   description?: string;
   content: string;
-  type: 'page' | 'section' | 'hero' | 'about' | 'service' | 'news' | 'footer';
+  type: 'page';
   metadata?: {
     image?: string;
     keywords?: string[];
@@ -35,7 +35,8 @@ const ContentSchema: Schema = new Schema(
     },
     type: {
       type: String,
-      enum: ['page', 'section', 'hero', 'about', 'service', 'news', 'footer'],
+      enum: ['page'],
+      default: 'page',
       required: true,
     },
     metadata: {

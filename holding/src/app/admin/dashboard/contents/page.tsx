@@ -16,7 +16,7 @@ interface Content {
   title: string;
   description?: string;
   content: string;
-  type: 'page' | 'section' | 'hero' | 'about' | 'service' | 'news' | 'footer';
+  type: 'page';
   isActive: boolean;
   order?: number;
   featuredImage?: string;
@@ -39,7 +39,7 @@ export default function ContentManagement() {
     title: '',
     description: '',
     content: '',
-    type: 'section' as Content['type'],
+    type: 'page' as Content['type'],
     isActive: true,
     order: 0,
     featuredImage: '',
@@ -111,7 +111,7 @@ export default function ContentManagement() {
         title: '',
         description: '',
         content: '',
-        type: 'section',
+        type: 'page',
         isActive: true,
         order: 0,
         featuredImage: '',
@@ -156,7 +156,7 @@ export default function ContentManagement() {
       title: '',
       description: '',
       content: '',
-      type: 'section',
+      type: 'page',
       isActive: true,
       order: 0,
       featuredImage: '',
@@ -173,7 +173,7 @@ export default function ContentManagement() {
       title: '',
       description: '',
       content: '',
-      type: 'section',
+      type: 'page',
       isActive: true,
       order: 0,
       featuredImage: '',
@@ -377,7 +377,7 @@ export default function ContentManagement() {
         }
       >
         <form id="content-form" onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Slug</label>
               <input
@@ -400,10 +400,10 @@ export default function ContentManagement() {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Tip</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Durum</label>
               <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                value={formData.isActive ? 'active' : 'inactive'}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
                 style={{ 
                   width: '100%', 
                   padding: '8px 12px', 
@@ -414,13 +414,8 @@ export default function ContentManagement() {
                   background: '#ffffff'
                 }}
               >
-                <option value="page">Sayfa</option>
-                <option value="section">Bölüm</option>
-                <option value="hero">Hero</option>
-                <option value="about">Hakkımızda</option>
-                <option value="service">Hizmet</option>
-                <option value="news">Haber</option>
-                <option value="footer">Footer</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
               </select>
             </div>
           </div>
@@ -522,8 +517,8 @@ export default function ContentManagement() {
                   src={formData.featuredImage}
                   alt="Öne çıkan görsel"
                   style={{
-                    maxWidth: '100%',
-                    maxHeight: '300px',
+                    maxWidth: '200px',
+                    maxHeight: '150px',
                     borderRadius: '6px',
                     border: '1px solid #e5e7eb',
                     objectFit: 'contain'
@@ -635,36 +630,6 @@ export default function ContentManagement() {
                 modules={modules}
                 formats={formats}
                 placeholder="İçeriğinizi buraya yazın..."
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Aktif</span>
-              </label>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Sıra</label>
-              <input
-                type="number"
-                value={formData.order}
-                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                style={{ 
-                  width: '100%', 
-                  padding: '8px 12px', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  background: '#ffffff'
-                }}
               />
             </div>
           </div>
@@ -799,9 +764,7 @@ export default function ContentManagement() {
                   <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>{content.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px' }}>
                     <span>Slug: <strong>{content.slug}</strong></span>
-                    <span>Tip: <strong>{content.type}</strong></span>
                     <span>Durum: <strong style={{ color: content.isActive ? '#10b981' : '#ef4444' }}>{content.isActive ? 'Aktif' : 'Pasif'}</strong></span>
-                    <span>Sıra: <strong>{content.order || 0}</strong></span>
                   </div>
                   {content.description && (
                     <p style={{ marginTop: '8px', color: '#9ca3af', fontSize: '13px' }}>{content.description}</p>
