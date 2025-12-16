@@ -27,6 +27,8 @@ export default function MenuManagement() {
   const [showModal, setShowModal] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'main' | 'footer' | 'sidebar'>('all');
   const [formData, setFormData] = useState({
     name: '',
     type: 'main' as 'main' | 'footer' | 'sidebar',
@@ -184,6 +186,19 @@ export default function MenuManagement() {
       .replace(/^-|-$/g, '');  // Başta ve sonda "-" varsa kaldır
   };
 
+  // Filtrelenmiş menüleri getir
+  const filteredMenus = menus.filter(menu => {
+    const matchesSearch = menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      menu.items.some(item => 
+        item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.children && item.children.some(child => 
+          child.label.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
+      );
+    const matchesType = filterType === 'all' || menu.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -310,7 +325,7 @@ export default function MenuManagement() {
               </button>
             </div>
 
-            <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+            <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '0.5rem' }}>
               {formData.items.map((item, index) => (
                 <div key={index} style={{ 
                   background: '#f8fafc', 
@@ -403,12 +418,12 @@ export default function MenuManagement() {
                                 let newHref = currentHref;
                                 
                                 if (newLabel && newLabel.trim() !== '') {
-                                  if (hasId) {
-                                    // ID varsa (kayıtlı menü): label değiştiğinde href'i otomatik slug ile güncelle
+                                  if (!hasId) {
+                                    // ID yoksa (yeni menü): label değiştiğinde otomatik slug ile href oluştur
                                     const slug = createSlug(newLabel);
                                     newHref = slug ? `/${slug}` : '';
                                   } else {
-                                    // ID yoksa (yeni menü): href boşsa otomatik slug ile doldur, doluysa değiştirme
+                                    // ID varsa (kayıtlı menü): href boşsa otomatik slug ile doldur, doluysa değiştirme
                                     if (!currentHref || currentHref === '') {
                                       const slug = createSlug(newLabel);
                                       newHref = slug ? `/${slug}` : '';
@@ -433,8 +448,18 @@ export default function MenuManagement() {
                               onChange={(e) => {
                                 const newItems = [...formData.items];
                                 if (!newItems[index].children) newItems[index].children = [];
-                                // Href alanına manuel yazı yazarken olduğu gibi tut, slug dönüşümünü kaydederken yap
-                                newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: e.target.value };
+                                // Boşlukları "-" ile değiştir (yazmayı engelleme, sadece replace)
+                                let hrefValue = e.target.value;
+                                // Eğer / ile başlamıyorsa ve boşluk varsa, boşlukları "-" ile değiştir
+                                if (hrefValue && !hrefValue.startsWith('/')) {
+                                  hrefValue = hrefValue.replace(/\s+/g, '-');
+                                } else if (hrefValue && hrefValue.startsWith('/')) {
+                                  // / işaretinden sonrasındaki boşlukları "-" ile değiştir
+                                  const afterSlash = hrefValue.substring(1);
+                                  const replaced = afterSlash.replace(/\s+/g, '-');
+                                  hrefValue = `/${replaced}`;
+                                }
+                                newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: hrefValue };
                                 setFormData({ ...formData, items: newItems });
                               }}
                               style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
@@ -526,6 +551,65 @@ export default function MenuManagement() {
         </form>
       </Modal>
 
+      {/* Arama ve Filtre */}
+      {menus.length > 0 && (
+        <div style={{ 
+          background: 'white', 
+          padding: '1.5rem', 
+          borderRadius: '12px', 
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
+                Arama
+              </label>
+              <input
+                type="text"
+                placeholder="Menü adı veya öğe adı ile ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem', 
+                  border: '2px solid #e2e8f0', 
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
+                Menü Tipi
+              </label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as any)}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem', 
+                  border: '2px solid #e2e8f0', 
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">Tümü</option>
+                <option value="main">Ana Menü</option>
+                <option value="footer">Footer</option>
+                <option value="sidebar">Sidebar</option>
+              </select>
+            </div>
+          </div>
+          {searchTerm && (
+            <div style={{ marginTop: '1rem', color: '#666', fontSize: '0.9rem' }}>
+              {filteredMenus.length} menü bulundu
+            </div>
+          )}
+        </div>
+      )}
+
       {menus.length === 0 ? (
         <div style={{ 
           background: 'white', 
@@ -551,9 +635,49 @@ export default function MenuManagement() {
             İlk Menüyü Ekle
           </button>
         </div>
+      ) : filteredMenus.length === 0 ? (
+        <div style={{ 
+          background: 'white', 
+          padding: '3rem', 
+          borderRadius: '12px', 
+          textAlign: 'center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ color: '#666', fontSize: '1.1rem' }}>
+            {searchTerm || filterType !== 'all' 
+              ? 'Arama kriterlerinize uygun menü bulunamadı.' 
+              : 'Henüz menü eklenmemiş.'}
+          </p>
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setFilterType('all');
+              }}
+              style={{
+                marginTop: '1rem',
+                background: '#313131',
+                color: 'white',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+              }}
+            >
+              Filtreleri Temizle
+            </button>
+          )}
+        </div>
       ) : (
-        <div style={{ display: 'grid', gap: '1.5rem' }}>
-          {menus.map((menu) => (
+        <div style={{ 
+          display: 'grid', 
+          gap: '1.5rem',
+          maxHeight: 'calc(100vh - 300px)',
+          overflowY: 'auto',
+          paddingRight: '0.5rem'
+        }}>
+          {filteredMenus.map((menu) => (
             <div key={menu._id} style={{ 
               background: 'white', 
               padding: '1.5rem', 
@@ -618,31 +742,39 @@ export default function MenuManagement() {
                 </div>
               </div>
               <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                <strong style={{ color: '#313131', fontSize: '0.95rem' }}>Öğeler:</strong>
-                <ul style={{ marginTop: '0.75rem', paddingLeft: '1.5rem', listStyle: 'none' }}>
-                  {menu.items
-                    .sort((a, b) => a.order - b.order)
-                    .map((item, idx) => (
-                      <li key={idx} style={{ marginBottom: '0.75rem', color: '#313131' }}>
-                        <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
-                          {item.label} <span style={{ color: '#666', fontWeight: '400', fontSize: '0.9rem' }}>({item.href})</span>
-                          <span style={{ color: '#999', fontSize: '0.85rem', marginLeft: '0.5rem' }}>• Sıra: {item.order}</span>
-                        </div>
-                        {item.children && item.children.length > 0 && (
-                          <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem', color: '#666' }}>
-                            {item.children
-                              .sort((a, b) => a.order - b.order)
-                              .map((child, childIdx) => (
-                                <li key={childIdx} style={{ marginBottom: '0.25rem', fontSize: '0.9rem' }}>
-                                  {child.label} <span style={{ color: '#999' }}>({child.href})</span>
-                                  <span style={{ color: '#999', fontSize: '0.85rem', marginLeft: '0.5rem' }}>• Sıra: {child.order}</span>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                </ul>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <strong style={{ color: '#313131', fontSize: '0.95rem' }}>
+                    Öğeler: {menu.items.length} ana öğe, {menu.items.reduce((acc, item) => acc + (item.children?.length || 0), 0)} alt öğe
+                  </strong>
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                  <ul style={{ paddingLeft: '1.5rem', listStyle: 'none' }}>
+                    {menu.items
+                      .sort((a, b) => a.order - b.order)
+                      .map((item, idx) => (
+                        <li key={idx} style={{ marginBottom: '1rem', color: '#313131', padding: '0.75rem', background: '#f8fafc', borderRadius: '6px' }}>
+                          <div style={{ fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>{item.label}</span>
+                            <span style={{ color: '#666', fontWeight: '400', fontSize: '0.85rem' }}>({item.href})</span>
+                            <span style={{ color: '#999', fontSize: '0.8rem' }}>• Sıra: {item.order}</span>
+                          </div>
+                          {item.children && item.children.length > 0 && (
+                            <ul style={{ marginTop: '0.5rem', paddingLeft: '1rem', color: '#666', borderLeft: '2px solid #e2e8f0' }}>
+                              {item.children
+                                .sort((a, b) => a.order - b.order)
+                                .map((child, childIdx) => (
+                                  <li key={childIdx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', padding: '0.25rem 0' }}>
+                                    <span style={{ fontWeight: '500' }}>{child.label}</span>
+                                    <span style={{ color: '#999', fontSize: '0.85rem', marginLeft: '0.5rem' }}>({child.href})</span>
+                                    <span style={{ color: '#999', fontSize: '0.8rem', marginLeft: '0.5rem' }}>• Sıra: {child.order}</span>
+                                  </li>
+                                ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
               </div>
             </div>
           ))}
