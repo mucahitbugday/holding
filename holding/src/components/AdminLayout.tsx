@@ -38,24 +38,67 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <nav style={{ background: '#313131', color: 'white', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <nav style={{ 
+        background: 'linear-gradient(135deg, #313131 0%, #414141 100%)', 
+        color: 'white', 
+        padding: '1rem 2rem', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}>
         <div>
-          <Link href="/admin/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          <Link href="/admin/dashboard" style={{ 
+            color: 'white', 
+            textDecoration: 'none', 
+            fontSize: '1.5rem', 
+            fontWeight: '700',
+            letterSpacing: '0.5px'
+          }}>
             Admin Panel
           </Link>
         </div>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>Ana Sayfa</Link>
-          <span>{user.email}</span>
+          <Link 
+            href="/" 
+            style={{ 
+              color: 'white', 
+              textDecoration: 'none',
+              fontWeight: '500',
+              transition: 'opacity 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            Ana Sayfa
+          </Link>
+          <span style={{ 
+            background: 'rgba(255, 255, 255, 0.2)', 
+            padding: '0.5rem 1rem', 
+            borderRadius: '6px',
+            fontSize: '0.9rem'
+          }}>
+            {user.email}
+          </span>
           <button
             onClick={handleLogout}
             style={{
-              background: 'transparent',
-              border: '1px solid white',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
               color: 'white',
               padding: '0.5rem 1rem',
-              borderRadius: '5px',
+              borderRadius: '6px',
               cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
             }}
           >
             Çıkış
@@ -64,48 +107,100 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </nav>
 
       <div style={{ display: 'flex' }}>
-        <aside style={{ width: '250px', background: 'white', minHeight: 'calc(100vh - 70px)', padding: '1rem', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <aside style={{ 
+          width: '250px', 
+          background: 'white', 
+          minHeight: 'calc(100vh - 70px)', 
+          padding: '1.5rem 0',
+          boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
+          borderRight: '1px solid #e2e8f0'
+        }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0 1rem' }}>
             <Link
               href="/admin/dashboard"
               style={{
-                padding: '0.75rem 1rem',
-                borderRadius: '5px',
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
                 textDecoration: 'none',
                 color: pathname === '/admin/dashboard' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard' ? '#313131' : 'transparent',
+                background: pathname === '/admin/dashboard' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard') {
+                  e.currentTarget.style.background = 'transparent';
+                }
               }}
             >
-              Dashboard
+              <span>📊</span> Dashboard
             </Link>
             <Link
               href="/admin/dashboard/menus"
               style={{
-                padding: '0.75rem 1rem',
-                borderRadius: '5px',
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
                 textDecoration: 'none',
                 color: pathname === '/admin/dashboard/menus' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/menus' ? '#313131' : 'transparent',
+                background: pathname === '/admin/dashboard/menus' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/menus' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/menus') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/menus') {
+                  e.currentTarget.style.background = 'transparent';
+                }
               }}
             >
-              Menü Yönetimi
+              <span>📋</span> Menü Yönetimi
             </Link>
             <Link
               href="/admin/dashboard/contents"
               style={{
-                padding: '0.75rem 1rem',
-                borderRadius: '5px',
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
                 textDecoration: 'none',
                 color: pathname === '/admin/dashboard/contents' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/contents' ? '#313131' : 'transparent',
+                background: pathname === '/admin/dashboard/contents' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/contents' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/contents') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/contents') {
+                  e.currentTarget.style.background = 'transparent';
+                }
               }}
             >
-              İçerik Yönetimi
+              <span>📝</span> İçerik Yönetimi
             </Link>
           </nav>
         </aside>
 
-        <main style={{ flex: 1, padding: '2rem' }}>
+        <main style={{ flex: 1, padding: '2rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
           {children}
         </main>
       </div>
