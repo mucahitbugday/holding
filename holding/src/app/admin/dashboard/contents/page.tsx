@@ -51,11 +51,112 @@ export default function ContentManagement() {
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [expandedContents, setExpandedContents] = useState<Set<string>>(new Set());
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [menus, setMenus] = useState<any[]>([]);
+  const [linkSearchTerm, setLinkSearchTerm] = useState('');
 
   useEffect(() => {
     loadContents();
     loadMedia();
+    loadMenus();
   }, []);
+
+  const loadMenus = async () => {
+    try {
+      const response = await apiClient.getMenus();
+      setMenus(response.menus || []);
+    } catch (error) {
+      console.error('Menüler yüklenemedi:', error);
+    }
+  };
+
+  // Media dosyası kontrolü
+  const isMediaFile = (href: string): boolean => {
+    if (!href) return false;
+    // Media klasörü kontrolü
+    if (href.includes('/uploads/') || href.includes('/media/')) return true;
+    // Dosya uzantıları kontrolü
+    const mediaExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.mp4', '.mp3', '.doc', '.docx', '.xls', '.xlsx'];
+    const lowerHref = href.toLowerCase();
+    return mediaExtensions.some(ext => lowerHref.endsWith(ext));
+  };
+
+  // Tüm menü linklerini topla (ana menü ve alt menüler)
+  const getAllMenuLinks = (): Array<{ label: string; href: string; menuName: string; isChild?: boolean }> => {
+    const links: Array<{ label: string; href: string; menuName: string; isChild?: boolean }> = [];
+    
+    menus.forEach((menu) => {
+      if (!menu.isActive) return;
+      
+      menu.items?.forEach((item: any) => {
+        // Ana menü öğesi - sadece href varsa, boş değilse ve media dosyası değilse
+        if (item.href && item.href.trim() && !item.href.startsWith('#') && item.href !== '/' && !isMediaFile(item.href)) {
+          links.push({
+            label: item.label,
+            href: item.href,
+            menuName: menu.name,
+            isChild: false
+          });
+        }
+        
+        // Alt menü öğeleri
+        if (item.children && Array.isArray(item.children)) {
+          item.children.forEach((child: any) => {
+            if (child.href && child.href.trim() && !child.href.startsWith('#') && child.href !== '/' && !isMediaFile(child.href)) {
+              links.push({
+                label: `${item.label} > ${child.label}`,
+                href: child.href,
+                menuName: menu.name,
+                isChild: true
+              });
+            }
+          });
+        }
+      });
+    });
+    
+    return links;
+  };
+
+  // Kullanılmış slug'ları topla (düzenleme modundaysak mevcut içeriğin slug'ını hariç tut)
+  const getUsedSlugs = (): Set<string> => {
+    const usedSlugs = new Set<string>();
+    contents.forEach(content => {
+      if (content.slug) {
+        // Düzenleme modundaysak, mevcut içeriğin slug'ını hariç tut
+        if (editingContent && editingContent._id === content._id) {
+          return; // Bu slug'ı atla
+        }
+        usedSlugs.add(content.slug.toLowerCase());
+      }
+    });
+    return usedSlugs;
+  };
+
+  // Link'ten slug'a dönüştür
+  const hrefToSlug = (href: string): string => {
+    let slug = href;
+    if (slug.startsWith('/')) {
+      slug = slug.substring(1);
+    }
+    // Sadece slug kısmını al (query string veya hash varsa kaldır)
+    slug = slug.split('?')[0].split('#')[0];
+    return slug.toLowerCase();
+  };
+
+  const usedSlugs = getUsedSlugs();
+  const allLinks = getAllMenuLinks();
+  
+  // Kullanılmamış linkleri filtrele
+  const availableLinks = allLinks.filter(link => {
+    const slug = hrefToSlug(link.href);
+    return !usedSlugs.has(slug);
+  });
+
+  const filteredLinks = availableLinks.filter(link => 
+    link.label.toLowerCase().includes(linkSearchTerm.toLowerCase()) ||
+    link.href.toLowerCase().includes(linkSearchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     if (showModal && typeof window !== 'undefined') {
@@ -444,25 +545,56 @@ export default function ContentManagement() {
         <form id="content-form" onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Slug</label>
-              <input
-                type="text"
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                required
-                placeholder="ornek-slug"
-                style={{ 
-                  width: '100%', 
-                  padding: '8px 12px', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
-              />
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                Slug <span style={{ color: '#dc2626' }}>*</span>
+              </label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  readOnly
+                  required
+                  placeholder="Menüden link seçin"
+                  style={{ 
+                    flex: 1,
+                    padding: '8px 12px', 
+                    border: formData.slug ? '1px solid #e5e7eb' : '1px solid #dc2626', 
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    transition: 'border-color 0.15s',
+                    background: '#f9fafb',
+                    cursor: 'not-allowed',
+                    color: formData.slug ? '#1f2937' : '#9ca3af'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLinkSearchTerm('');
+                    setShowLinkModal(true);
+                  }}
+                  style={{
+                    background: '#1f2937',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#374151';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#1f2937';
+                  }}
+                >
+                  🔗 Link Seç
+                </button>
+              </div>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Durum</label>
@@ -704,6 +836,90 @@ export default function ContentManagement() {
             </div>
           </div>
         </form>
+      </Modal>
+
+      {/* Link Seçim Modal */}
+      <Modal
+        isOpen={showLinkModal}
+        onClose={() => {
+          setShowLinkModal(false);
+          setLinkSearchTerm('');
+        }}
+        title="Menü Linki Seç"
+        size="large"
+      >
+        <div>
+          <div style={{ marginBottom: '20px' }}>
+            <input
+              type="text"
+              value={linkSearchTerm}
+              onChange={(e) => setLinkSearchTerm(e.target.value)}
+              placeholder="Link veya menü adı ile ara..."
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '14px',
+                background: '#ffffff'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+            />
+          </div>
+          <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {filteredLinks.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280', fontSize: '14px' }}>
+                {linkSearchTerm ? 'Arama sonucu bulunamadı.' : 'Henüz menü linki eklenmemiş.'}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {filteredLinks.map((link, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      // href'den slug çıkar
+                      const slug = hrefToSlug(link.href);
+                      setFormData({ ...formData, slug: slug });
+                      setShowLinkModal(false);
+                      setLinkSearchTerm('');
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      background: '#ffffff'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#9ca3af';
+                      e.currentTarget.style.background = '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.background = '#ffffff';
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px', marginBottom: '4px' }}>
+                          {link.label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {link.href}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '12px' }}>
+                        {link.menuName}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </Modal>
 
       {/* Medya Seçim Modal */}
