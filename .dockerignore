@@ -3,6 +3,13 @@
 README.md
 node_modules
 *.md
+!images/*.md
 .DS_Store
 Thumbs.db
+Dockerfile
+docker-compose.yml
+.dockerignore
+Jenkinsfile
+jenkins-build.sh
+JENKINS.md
 
