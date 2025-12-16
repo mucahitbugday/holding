@@ -6,7 +6,18 @@ import { generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    try {
+      await connectDB();
+    } catch (dbError: any) {
+      console.error('Database connection error:', dbError);
+      return NextResponse.json(
+        { 
+          error: 'Veritabanı bağlantı hatası. Lütfen MongoDB sunucusunun çalıştığından ve .env.local dosyasındaki MONGODB_URI değerinin doğru olduğundan emin olun.',
+          details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        },
+        { status: 500 }
+      );
+    }
 
     const { email, password } = await request.json();
 
