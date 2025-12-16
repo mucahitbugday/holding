@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ScrollReveal from './ScrollReveal';
 
 interface Content {
   _id: string;
@@ -71,13 +72,15 @@ export default function About() {
         </div>
         <div className="about-grid">
           {displayContents.map((item, index) => (
-            <div key={index} className="about-card">
-              <div className="icon">
-                <i className={item.icon}></i>
+            <ScrollReveal key={index} delay={index * 100} direction="up">
+              <div className="about-card hover-lift">
+                <div className="icon">
+                  <i className={item.icon}></i>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
               </div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

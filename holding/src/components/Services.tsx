@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ScrollReveal from './ScrollReveal';
 
 interface Service {
   _id: string;
@@ -99,13 +100,15 @@ export default function Services() {
         </div>
         <div className="services-grid">
           {displayServices.map((service, index) => (
-            <div key={index} className="service-card">
-              <div className="service-icon">
-                <i className={service.icon}></i>
+            <ScrollReveal key={index} delay={index * 100} direction="up">
+              <div className="service-card hover-lift">
+                <div className="service-icon">
+                  <i className={service.icon}></i>
+                </div>
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
               </div>
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

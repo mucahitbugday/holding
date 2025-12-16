@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AdminPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const token = apiClient.getToken();
     
     if (token) {
@@ -20,6 +22,10 @@ export default function AdminPage() {
     }
   }, [router]);
 
-  // Yönlendirme yapılırken loading göster
+  // Hydration tamamlanana kadar veya yönlendirme yapılırken loading göster
+  if (!mounted) {
+    return null;
+  }
+
   return <LoadingScreen />;
 }

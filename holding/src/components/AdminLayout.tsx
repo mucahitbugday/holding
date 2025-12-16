@@ -27,6 +27,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [router]);
 
+  useEffect(() => {
+    // Admin panelinde body'ye class ekle (sadece client-side)
+    if (typeof window !== 'undefined' && user) {
+      document.body.classList.add('admin-panel');
+      return () => {
+        // Component unmount olduğunda class'ı kaldır
+        document.body.classList.remove('admin-panel');
+      };
+    }
+  }, [user]);
+
   const handleLogout = () => {
     apiClient.clearToken();
     router.push('/admin/login');
@@ -196,6 +207,87 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }}
             >
               <span>📝</span> İçerik Yönetimi
+            </Link>
+            <Link
+              href="/admin/dashboard/users"
+              style={{
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: pathname === '/admin/dashboard/users' ? 'white' : '#313131',
+                background: pathname === '/admin/dashboard/users' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/users' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/users') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/users') {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <span>👥</span> Kullanıcı Yönetimi
+            </Link>
+            <Link
+              href="/admin/dashboard/media"
+              style={{
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: pathname === '/admin/dashboard/media' ? 'white' : '#313131',
+                background: pathname === '/admin/dashboard/media' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/media' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/media') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/media') {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <span>🖼️</span> Medya Yönetimi
+            </Link>
+            <Link
+              href="/admin/dashboard/settings"
+              style={{
+                padding: '0.875rem 1.25rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: pathname === '/admin/dashboard/settings' ? 'white' : '#313131',
+                background: pathname === '/admin/dashboard/settings' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
+                fontWeight: pathname === '/admin/dashboard/settings' ? '600' : '500',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/dashboard/settings') {
+                  e.currentTarget.style.background = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/dashboard/settings') {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <span>⚙️</span> Ayarlar
             </Link>
           </nav>
         </aside>

@@ -1,3 +1,7 @@
+'use client';
+
+import ScrollReveal from './ScrollReveal';
+
 export default function News() {
   const news = [
     {
@@ -29,25 +33,29 @@ export default function News() {
         </div>
         <div className="news-grid">
           {news.map((item, index) => (
-            <article key={index} className="news-card">
-              <div className="news-date">
-                <span className="day">{item.day}</span>
-                <span className="month">{item.month}</span>
-              </div>
-              <div className="news-content">
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <a href="#" className="news-link">
-                  Devamını Oku →
-                </a>
-              </div>
-            </article>
+            <ScrollReveal key={index} delay={index * 100} direction="up">
+              <article className="news-card hover-lift">
+                <div className="news-date">
+                  <span className="day">{item.day}</span>
+                  <span className="month">{item.month}</span>
+                </div>
+                <div className="news-content">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <a href="#" className="news-link">
+                    Devamını Oku →
+                  </a>
+                </div>
+              </article>
+            </ScrollReveal>
           ))}
         </div>
         <div className="text-center">
-          <a href="#haberler" className="btn btn-outline">
-            Daha Fazla Gör
-          </a>
+          <ScrollReveal delay={300} direction="up">
+            <a href="#haberler" className="btn btn-outline hover-lift">
+              Daha Fazla Gör
+            </a>
+          </ScrollReveal>
         </div>
       </div>
     </section>

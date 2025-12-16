@@ -89,10 +89,15 @@ export default function Hero() {
             }
             data-no-image={!imagesLoaded[index] ? 'true' : undefined}
           >
-            <div className="hero-content">
-              <h2>{slide.title}</h2>
+            <div className="hero-content fade-in">
+              <h2 className="gradient-text" style={{ 
+                background: 'linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.9) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>{slide.title}</h2>
               <p>{slide.description}</p>
-              <a href={slide.link} className="btn btn-primary">
+              <a href={slide.link} className="btn btn-primary hover-lift">
                 {slide.linkText}
               </a>
             </div>
