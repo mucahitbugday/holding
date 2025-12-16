@@ -6,6 +6,7 @@ import Modal from '@/components/Modal';
 import LoadingScreen from '@/components/LoadingScreen';
 
 interface MenuItem {
+  _id?: string;
   label: string;
   href: string;
   order: number;
@@ -53,10 +54,44 @@ export default function MenuManagement() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      // Alt menülerin href'lerini slug formatına çevir
+      const processedItems = formData.items.map(item => {
+        if (item.children && item.children.length > 0) {
+          const processedChildren = item.children.map(child => {
+            let href = child.href;
+            if (href) {
+              // Eğer / ile başlamıyorsa, slug formatına çevir
+              if (!href.startsWith('/')) {
+                // # ile başlıyorsa #'i kaldır
+                if (href.startsWith('#')) {
+                  href = href.substring(1);
+                }
+                const slug = createSlug(href);
+                href = slug ? `/${slug}` : href;
+              } else {
+                // / işaretinden sonrasını slug formatına çevir
+                const slugPart = href.substring(1);
+                const slug = createSlug(slugPart);
+                href = slug ? `/${slug}` : '/';
+              }
+            } else if (child.label) {
+              // Eğer href boşsa ama label varsa, label'dan slug oluştur
+              const slug = createSlug(child.label);
+              href = slug ? `/${slug}` : '';
+            }
+            return { ...child, href };
+          });
+          return { ...item, children: processedChildren };
+        }
+        return item;
+      });
+
+      const processedFormData = { ...formData, items: processedItems };
+
       if (editingMenu) {
-        await apiClient.updateMenu(editingMenu._id, formData);
+        await apiClient.updateMenu(editingMenu._id, processedFormData);
       } else {
-        await apiClient.createMenu(formData);
+        await apiClient.createMenu(processedFormData);
       }
       // Başarılı olduğunda modal'ı kapat ve sayfayı yenile
       setShowModal(false);
@@ -124,6 +159,29 @@ export default function MenuManagement() {
       ...formData,
       items: formData.items.filter((_, i) => i !== index),
     });
+  };
+
+  // Türkçe karakterleri İngilizce karakterlere çevir ve slug oluştur
+  const createSlug = (text: string): string => {
+    const turkishToEnglish: { [key: string]: string } = {
+      'ç': 'c', 'Ç': 'C',
+      'ğ': 'g', 'Ğ': 'G',
+      'ı': 'i', 'İ': 'I',
+      'ö': 'o', 'Ö': 'O',
+      'ş': 's', 'Ş': 'S',
+      'ü': 'u', 'Ü': 'U'
+    };
+
+    return text
+      .split('')
+      .map(char => turkishToEnglish[char] || char)
+      .join('')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')  // Boşlukları "-" ile değiştir
+      .replace(/[^a-z0-9-]/g, '')  // Sadece harf, rakam ve "-" bırak
+      .replace(/-+/g, '-')  // Birden fazla "-" varsa tek "-" yap
+      .replace(/^-|-$/g, '');  // Başta ve sonda "-" varsa kaldır
   };
 
   if (loading) {
@@ -338,7 +396,32 @@ export default function MenuManagement() {
                               onChange={(e) => {
                                 const newItems = [...formData.items];
                                 if (!newItems[index].children) newItems[index].children = [];
-                                newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], label: e.target.value };
+                                const newLabel = e.target.value;
+                                const currentHref = child.href;
+                                const hasId = child._id; // ID var mı kontrol et
+                                
+                                let newHref = currentHref;
+                                
+                                if (newLabel && newLabel.trim() !== '') {
+                                  if (hasId) {
+                                    // ID varsa (kayıtlı menü): label değiştiğinde href'i otomatik slug ile güncelle
+                                    const slug = createSlug(newLabel);
+                                    newHref = slug ? `/${slug}` : '';
+                                  } else {
+                                    // ID yoksa (yeni menü): href boşsa otomatik slug ile doldur, doluysa değiştirme
+                                    if (!currentHref || currentHref === '') {
+                                      const slug = createSlug(newLabel);
+                                      newHref = slug ? `/${slug}` : '';
+                                    }
+                                    // href doluysa değiştirme (zaten newHref = currentHref)
+                                  }
+                                }
+                                
+                                newItems[index].children![childIndex] = { 
+                                  ...newItems[index].children![childIndex], 
+                                  label: newLabel,
+                                  href: newHref
+                                };
                                 setFormData({ ...formData, items: newItems });
                               }}
                               style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
@@ -350,6 +433,7 @@ export default function MenuManagement() {
                               onChange={(e) => {
                                 const newItems = [...formData.items];
                                 if (!newItems[index].children) newItems[index].children = [];
+                                // Href alanına manuel yazı yazarken olduğu gibi tut, slug dönüşümünü kaydederken yap
                                 newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: e.target.value };
                                 setFormData({ ...formData, items: newItems });
                               }}
