@@ -13,11 +13,13 @@ interface ModalProps {
 
 export default function Modal({ isOpen, onClose, title, children, footer, size = 'medium' }: ModalProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
+      setIsFullscreen(false);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -32,12 +34,6 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
     large: 'max-w-4xl',
     xlarge: 'max-w-6xl',
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsFullscreen(false);
-    }
-  }, [isOpen]);
 
   return (
     <div
