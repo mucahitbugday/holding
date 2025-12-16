@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import Modal from '@/components/Modal';
 import LoadingScreen from '@/components/LoadingScreen';
+import Swal from 'sweetalert2';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -20,6 +21,8 @@ interface Content {
   isActive: boolean;
   order?: number;
   featuredImage?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   metadata?: {
     image?: string;
     keywords?: string[];
@@ -118,8 +121,22 @@ export default function ContentManagement() {
         featuredImage: '',
       });
       await loadContents();
+      await Swal.fire({
+        icon: 'success',
+        title: 'Başarılı!',
+        text: editingContent ? 'İçerik başarıyla güncellendi.' : 'İçerik başarıyla oluşturuldu.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
     } catch (error: any) {
-      alert(error.message || 'Bir hata oluştu');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: error.message || 'Bir hata oluştu',
+        confirmButtonColor: '#1f2937',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -141,12 +158,49 @@ export default function ContentManagement() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bu içeriği silmek istediğinize emin misiniz?')) return;
     try {
+      console.log('handleDelete called with id:', id);
+      console.log('Swal available:', typeof Swal !== 'undefined');
+      
+      const result = await Swal.fire({
+        title: 'Emin misiniz?',
+        text: 'Bu içeriği silmek istediğinize emin misiniz?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Evet, Sil!',
+        cancelButtonText: 'İptal',
+      });
+
+      console.log('Swal result:', result);
+
+      if (!result.isConfirmed) {
+        console.log('User cancelled deletion');
+        return;
+      }
+
+      console.log('Deleting content...');
       await apiClient.deleteContent(id);
       await loadContents();
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Silindi!',
+        text: 'İçerik başarıyla silindi.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
     } catch (error: any) {
-      alert(error.message || 'Bir hata oluştu');
+      console.error('Delete error:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: error.message || 'Bir hata oluştu',
+        confirmButtonColor: '#1f2937',
+      });
     }
   };
 
@@ -557,7 +611,12 @@ export default function ContentManagement() {
                       if (rows > 0 && rows <= 20 && cols > 0 && cols <= 20) {
                         insertTable(rows, cols);
                       } else {
-                        alert('Satır ve sütun sayısı 1-20 arasında olmalıdır.');
+                        Swal.fire({
+                          icon: 'warning',
+                          title: 'Geçersiz Değer',
+                          text: 'Satır ve sütun sayısı 1-20 arasında olmalıdır.',
+                          confirmButtonColor: '#1f2937',
+                        });
                       }
                     }
                   }}
@@ -776,6 +835,28 @@ export default function ContentManagement() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px' }}>
                     <span>Slug: <strong>{content.slug}</strong></span>
                     <span>Durum: <strong style={{ color: content.isActive ? '#10b981' : '#ef4444' }}>{content.isActive ? 'Aktif' : 'Pasif'}</strong></span>
+                    {content.createdAt && (
+                      <span>
+                        Oluşturulma: <strong>{new Date(content.createdAt).toLocaleDateString('tr-TR', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</strong>
+                      </span>
+                    )}
+                    {content.updatedAt && (
+                      <span>
+                        Güncelleme: <strong>{new Date(content.updatedAt).toLocaleDateString('tr-TR', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</strong>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginLeft: '16px', alignItems: 'center' }}>
