@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface MenuItem {
   label: string;
@@ -80,36 +81,62 @@ export default function Header() {
   const renderMenuItem = (item: MenuItem, index: number) => {
     const hasChildren = item.children && item.children.length > 0;
     const itemId = `item-${index}`;
+    const isExternalLink = item.href.startsWith('/');
 
     return (
       <li
         key={index}
         className={hasChildren ? `has-submenu ${activeSubmenu === itemId ? 'active' : ''}` : ''}
       >
-        <a
-          href={item.href}
-          onClick={(e) => {
-            if (hasChildren && window.innerWidth <= 968) {
-              e.preventDefault();
-              toggleSubmenu(itemId);
-            } else {
-              handleLinkClick();
-            }
-          }}
-        >
-          {item.label}
-        </a>
+        {isExternalLink ? (
+          <Link
+            href={item.href}
+            onClick={(e) => {
+              if (hasChildren && window.innerWidth <= 968) {
+                e.preventDefault();
+                toggleSubmenu(itemId);
+              } else {
+                handleLinkClick();
+              }
+            }}
+          >
+            {item.label}
+          </Link>
+        ) : (
+          <a
+            href={item.href}
+            onClick={(e) => {
+              if (hasChildren && window.innerWidth <= 968) {
+                e.preventDefault();
+                toggleSubmenu(itemId);
+              } else {
+                handleLinkClick();
+              }
+            }}
+          >
+            {item.label}
+          </a>
+        )}
         {hasChildren && (
           <ul className="submenu">
             {item.children
               ?.sort((a, b) => a.order - b.order)
-              .map((child, childIndex) => (
-                <li key={childIndex}>
-                  <a href={child.href} onClick={handleLinkClick}>
-                    {child.label}
-                  </a>
-                </li>
-              ))}
+              .map((child, childIndex) => {
+                const isChildExternalLink = child.href.startsWith('/');
+                return (
+                  <li key={childIndex}>
+                    {isChildExternalLink ? (
+                      <Link href={child.href} onClick={handleLinkClick}>
+                        {child.label}
+                      </Link>
+                    ) : (
+                      <a href={child.href} onClick={handleLinkClick}>
+                        {child.label}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
           </ul>
         )}
       </li>
