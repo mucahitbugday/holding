@@ -62,35 +62,36 @@ export default function UserManagement() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '2rem',
-        paddingBottom: '1rem',
-        borderBottom: '2px solid #e2e8f0'
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '2rem', color: '#313131', fontWeight: '700', margin: 0 }}>Kullanıcı Yönetimi</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Kullanıcı Yönetimi</h1>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder="Kullanıcı ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              padding: '0.75rem 1rem',
-              border: '2px solid #e2e8f0',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              width: '300px',
-              transition: 'border-color 0.2s'
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              width: '280px',
+              transition: 'border-color 0.15s',
+              background: '#ffffff'
             }}
-            onFocus={(e) => e.currentTarget.style.borderColor = '#313131'}
-            onBlur={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
           />
           <button
             style={{
-              background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
+              background: '#1f2937',
               color: 'white',
               border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
+              padding: '8px 16px',
+              borderRadius: '6px',
               cursor: 'pointer',
               fontWeight: '600',
               fontSize: '1rem',

@@ -112,25 +112,34 @@ export default function SettingsPage() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '2rem',
-        paddingBottom: '1rem',
-        borderBottom: '2px solid #e2e8f0'
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '2rem', color: '#313131', fontWeight: '700', margin: 0 }}>Ayarlar</h1>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Ayarlar</h1>
         <button
           onClick={handleSave}
           disabled={saving}
           style={{
-            background: saving ? '#ccc' : 'linear-gradient(135deg, #313131 0%, #414141 100%)',
+            background: saving ? '#9ca3af' : '#1f2937',
             color: 'white',
             border: 'none',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '8px',
+            padding: '8px 16px',
+            borderRadius: '6px',
             cursor: saving ? 'not-allowed' : 'pointer',
-            fontWeight: '600',
-            fontSize: '1rem',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            transition: 'all 0.3s',
+            fontWeight: '500',
+            fontSize: '14px',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            if (!saving) {
+              e.currentTarget.style.background = '#374151';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!saving) {
+              e.currentTarget.style.background = '#1f2937';
+            }
           }}
           onMouseEnter={(e) => {
             if (!saving) {

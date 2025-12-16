@@ -135,24 +135,34 @@ export default function HomePageSettings() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '2rem',
-        paddingBottom: '1rem',
-        borderBottom: '2px solid #e2e8f0'
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '2rem', color: '#313131', fontWeight: '700', margin: 0 }}>Anasayfa Ayarları</h1>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Anasayfa Ayarları</h1>
         <button
           onClick={handleSave}
           disabled={submitting}
           style={{
-            background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
+            background: submitting ? '#9ca3af' : '#1f2937',
             color: 'white',
             border: 'none',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '8px',
+            padding: '8px 16px',
+            borderRadius: '6px',
             cursor: submitting ? 'not-allowed' : 'pointer',
-            fontWeight: '600',
-            fontSize: '1rem',
-            opacity: submitting ? 0.6 : 1
+            fontWeight: '500',
+            fontSize: '14px',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            if (!submitting) {
+              e.currentTarget.style.background = '#374151';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!submitting) {
+              e.currentTarget.style.background = '#1f2937';
+            }
           }}
         >
           {submitting ? 'Kaydediliyor...' : 'Kaydet'}

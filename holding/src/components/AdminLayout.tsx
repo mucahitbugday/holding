@@ -31,9 +31,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // Admin panelinde body'ye class ekle (sadece client-side)
     if (typeof window !== 'undefined' && user) {
       document.body.classList.add('admin-panel');
+      document.body.style.overflow = 'hidden'; // Body scroll'u engelle
       return () => {
         // Component unmount olduğunda class'ı kaldır
         document.body.classList.remove('admin-panel');
+        document.body.style.overflow = '';
       };
     }
   }, [user]);
@@ -47,280 +49,249 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <LoadingScreen />;
   }
 
+  const menuItems = [
+    { href: '/admin/dashboard', label: 'Dashboard', icon: '◼' },
+    { href: '/admin/dashboard/menus', label: 'Menü Yönetimi', icon: '☰' },
+    { href: '/admin/dashboard/contents', label: 'İçerik Yönetimi', icon: '📄' },
+    { href: '/admin/dashboard/homepage', label: 'Anasayfa Ayarları', icon: '⌂' },
+    { href: '/admin/dashboard/users', label: 'Kullanıcı Yönetimi', icon: '👤' },
+    { href: '/admin/dashboard/media', label: 'Medya Yönetimi', icon: '🖼' },
+    { href: '/admin/dashboard/settings', label: 'Ayarlar', icon: '⚙' },
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <nav style={{ 
-        background: 'linear-gradient(135deg, #313131 0%, #414141 100%)', 
-        color: 'white', 
-        padding: '1rem 2rem', 
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      background: '#f5f7fa',
+      overflow: 'hidden'
+    }}>
+      {/* Fixed Header */}
+      <header style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '64px',
+        background: '#ffffff', 
+        borderBottom: '1px solid #e5e7eb',
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        padding: '0 24px',
+        zIndex: 1000,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
       }}>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            A
+          </div>
           <Link href="/admin/dashboard" style={{ 
-            color: 'white', 
+            color: '#1f2937', 
             textDecoration: 'none', 
-            fontSize: '1.5rem', 
-            fontWeight: '700',
-            letterSpacing: '0.5px'
+            fontSize: '18px', 
+            fontWeight: '600',
+            letterSpacing: '-0.5px'
           }}>
             Admin Panel
           </Link>
         </div>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <Link 
             href="/" 
             style={{ 
-              color: 'white', 
+              color: '#6b7280', 
               textDecoration: 'none',
+              fontSize: '14px',
               fontWeight: '500',
-              transition: 'opacity 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-          >
-            Ana Sayfa
-          </Link>
-          <span style={{ 
-            background: 'rgba(255, 255, 255, 0.2)', 
-            padding: '0.5rem 1rem', 
-            borderRadius: '6px',
-            fontSize: '0.9rem'
-          }}>
-            {user.email}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              color: 'white',
-              padding: '0.5rem 1rem',
+              padding: '6px 12px',
               borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500',
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+              e.currentTarget.style.background = '#f3f4f6';
+              e.currentTarget.style.color = '#1f2937';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#6b7280';
+            }}
+          >
+            Ana Sayfa
+          </Link>
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            background: '#f3f4f6',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#374151'
+          }}>
+            <span style={{ fontSize: '16px' }}>👤</span>
+            <span>{user.email}</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: '#f3f4f6',
+              border: 'none',
+              color: '#374151',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#e5e7eb';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#f3f4f6';
             }}
           >
             Çıkış
           </button>
         </div>
-      </nav>
+      </header>
 
-      <div style={{ display: 'flex' }}>
+      <div style={{ 
+        display: 'flex', 
+        flex: 1,
+        marginTop: '64px',
+        overflow: 'hidden'
+      }}>
+        {/* Fixed Sidebar */}
         <aside style={{ 
-          width: '250px', 
-          background: 'white', 
-          minHeight: 'calc(100vh - 70px)', 
-          padding: '1.5rem 0',
-          boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
-          borderRight: '1px solid #e2e8f0'
+          width: '240px', 
+          background: '#ffffff', 
+          borderRight: '1px solid #e5e7eb',
+          position: 'fixed',
+          left: 0,
+          top: '64px',
+          bottom: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          zIndex: 999,
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#d1d5db transparent'
         }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0 1rem' }}>
-            <Link
-              href="/admin/dashboard"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>📊</span> Dashboard
-            </Link>
-            <Link
-              href="/admin/dashboard/menus"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/menus' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/menus' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/menus' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/menus') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/menus') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>📋</span> Menü Yönetimi
-            </Link>
-            <Link
-              href="/admin/dashboard/contents"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/contents' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/contents' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/contents' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/contents') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/contents') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>📝</span> İçerik Yönetimi
-            </Link>
-            <Link
-              href="/admin/dashboard/homepage"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/homepage' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/homepage' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/homepage' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/homepage') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/homepage') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>🏠</span> Anasayfa Ayarları
-            </Link>
-            <Link
-              href="/admin/dashboard/users"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/users' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/users' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/users' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/users') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/users') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>👥</span> Kullanıcı Yönetimi
-            </Link>
-            <Link
-              href="/admin/dashboard/media"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/media' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/media' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/media' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/media') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/media') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>🖼️</span> Medya Yönetimi
-            </Link>
-            <Link
-              href="/admin/dashboard/settings"
-              style={{
-                padding: '0.875rem 1.25rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: pathname === '/admin/dashboard/settings' ? 'white' : '#313131',
-                background: pathname === '/admin/dashboard/settings' ? 'linear-gradient(135deg, #313131 0%, #414141 100%)' : 'transparent',
-                fontWeight: pathname === '/admin/dashboard/settings' ? '600' : '500',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                if (pathname !== '/admin/dashboard/settings') {
-                  e.currentTarget.style.background = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (pathname !== '/admin/dashboard/settings') {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
-            >
-              <span>⚙️</span> Ayarlar
-            </Link>
+          <style>{`
+            aside::-webkit-scrollbar {
+              width: 6px;
+            }
+            aside::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            aside::-webkit-scrollbar-thumb {
+              background: #d1d5db;
+              border-radius: 3px;
+            }
+            aside::-webkit-scrollbar-thumb:hover {
+              background: #9ca3af;
+            }
+            main::-webkit-scrollbar {
+              width: 8px;
+            }
+            main::-webkit-scrollbar-track {
+              background: #f5f7fa;
+            }
+            main::-webkit-scrollbar-thumb {
+              background: #d1d5db;
+              border-radius: 4px;
+            }
+            main::-webkit-scrollbar-thumb:hover {
+              background: #9ca3af;
+            }
+          `}</style>
+          <nav style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '4px', 
+            padding: '12px'
+          }}>
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href || 
+                (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    color: isActive ? '#1f2937' : '#6b7280',
+                    background: isActive ? '#f3f4f6' : 'transparent',
+                    fontWeight: isActive ? '600' : '500',
+                    fontSize: '14px',
+                    transition: 'all 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    borderLeft: isActive ? '3px solid #1f2937' : '3px solid transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = '#f9fafb';
+                      e.currentTarget.style.color = '#1f2937';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#6b7280';
+                    }
+                  }}
+                >
+                  <span style={{ 
+                    fontSize: '18px',
+                    width: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
         </aside>
 
-        <main style={{ flex: 1, padding: '2rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-          {children}
+        {/* Scrollable Main Content */}
+        <main style={{ 
+          flex: 1, 
+          marginLeft: '240px',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          background: '#f5f7fa',
+          padding: '24px',
+          minHeight: 'calc(100vh - 64px)'
+        }}>
+          <div style={{ 
+            maxWidth: '1400px', 
+            margin: '0 auto',
+            width: '100%'
+          }}>
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -48,211 +48,205 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', color: '#313131', fontWeight: '700' }}>Dashboard</h1>
-        <p style={{ color: '#666', fontSize: '1.1rem' }}>Yönetim paneline hoş geldiniz</p>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '24px', marginBottom: '4px', color: '#1f2937', fontWeight: '600', letterSpacing: '-0.5px' }}>Dashboard</h1>
+        <p style={{ color: '#6b7280', fontSize: '14px' }}>Yönetim paneline hoş geldiniz</p>
       </div>
 
       {/* İstatistikler */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '1.5rem',
-        marginBottom: '2rem'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '16px',
+        marginBottom: '24px'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          background: '#ffffff',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
         }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.25rem' }}>{stats.menus}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Toplam Menü</div>
+          <div style={{ fontSize: '20px', marginBottom: '8px', color: '#6b7280' }}>☰</div>
+          <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.menus}</div>
+          <div style={{ fontSize: '13px', color: '#6b7280' }}>Toplam Menü</div>
         </div>
 
         <div style={{
-          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          background: '#ffffff',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
         }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.25rem' }}>{stats.contents}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Toplam İçerik</div>
+          <div style={{ fontSize: '20px', marginBottom: '8px', color: '#6b7280' }}>📄</div>
+          <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.contents}</div>
+          <div style={{ fontSize: '13px', color: '#6b7280' }}>Toplam İçerik</div>
         </div>
 
         <div style={{
-          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          background: '#ffffff',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
         }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.25rem' }}>{stats.activeContents}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Aktif İçerik</div>
+          <div style={{ fontSize: '20px', marginBottom: '8px', color: '#6b7280' }}>✓</div>
+          <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.activeContents}</div>
+          <div style={{ fontSize: '13px', color: '#6b7280' }}>Aktif İçerik</div>
         </div>
 
         <div style={{
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          background: '#ffffff',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
         }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👥</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.25rem' }}>{stats.totalUsers}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Toplam Kullanıcı</div>
+          <div style={{ fontSize: '20px', marginBottom: '8px', color: '#6b7280' }}>👤</div>
+          <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.totalUsers}</div>
+          <div style={{ fontSize: '13px', color: '#6b7280' }}>Toplam Kullanıcı</div>
         </div>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+        gap: '16px' 
+      }}>
         <Link
           href="/admin/dashboard/menus"
           style={{
-            background: 'white',
-            padding: '2.5rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             textDecoration: 'none',
-            color: '#313131',
+            color: '#1f2937',
             display: 'block',
-            transition: 'all 0.3s',
-            border: '2px solid transparent',
+            transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-5px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            e.currentTarget.style.borderColor = '#313131';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>Menü Yönetimi</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Ana menü ve footer menülerini düzenleyin. Alt menüler ekleyin ve sıralamalarını ayarlayın.</p>
+          <div style={{ fontSize: '24px', marginBottom: '12px', color: '#6b7280' }}>☰</div>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Menü Yönetimi</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px' }}>Ana menü ve footer menülerini düzenleyin.</p>
         </Link>
 
         <Link
           href="/admin/dashboard/contents"
           style={{
-            background: 'white',
-            padding: '2.5rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             textDecoration: 'none',
-            color: '#313131',
+            color: '#1f2937',
             display: 'block',
-            transition: 'all 0.3s',
-            border: '2px solid transparent',
+            transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-5px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            e.currentTarget.style.borderColor = '#313131';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>İçerik Yönetimi</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Sayfa içeriklerini, hizmetleri, haberleri ve diğer içerikleri düzenleyin.</p>
+          <div style={{ fontSize: '24px', marginBottom: '12px', color: '#6b7280' }}>📄</div>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>İçerik Yönetimi</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px' }}>Sayfa içeriklerini ve hizmetleri düzenleyin.</p>
         </Link>
 
         <Link
           href="/admin/dashboard/users"
           style={{
-            background: 'white',
-            padding: '2.5rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             textDecoration: 'none',
-            color: '#313131',
+            color: '#1f2937',
             display: 'block',
-            transition: 'all 0.3s',
-            border: '2px solid transparent',
+            transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-5px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            e.currentTarget.style.borderColor = '#313131';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>Kullanıcı Yönetimi</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Kullanıcıları görüntüleyin, düzenleyin ve yönetin. Roller ve izinleri ayarlayın.</p>
+          <div style={{ fontSize: '24px', marginBottom: '12px', color: '#6b7280' }}>👤</div>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Kullanıcı Yönetimi</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px' }}>Kullanıcıları görüntüleyin ve yönetin.</p>
         </Link>
 
         <Link
           href="/admin/dashboard/media"
           style={{
-            background: 'white',
-            padding: '2.5rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             textDecoration: 'none',
-            color: '#313131',
+            color: '#1f2937',
             display: 'block',
-            transition: 'all 0.3s',
-            border: '2px solid transparent',
+            transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-5px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            e.currentTarget.style.borderColor = '#313131';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🖼️</div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>Medya Yönetimi</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Resim, video ve diğer medya dosyalarını yükleyin ve yönetin.</p>
+          <div style={{ fontSize: '24px', marginBottom: '12px', color: '#6b7280' }}>🖼</div>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Medya Yönetimi</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px' }}>Resim ve PDF dosyalarını yükleyin.</p>
         </Link>
 
         <Link
           href="/admin/dashboard/settings"
           style={{
-            background: 'white',
-            padding: '2.5rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             textDecoration: 'none',
-            color: '#313131',
+            color: '#1f2937',
             display: 'block',
-            transition: 'all 0.3s',
-            border: '2px solid transparent',
+            transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-5px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            e.currentTarget.style.borderColor = '#313131';
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚙️</div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>Ayarlar</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Site ayarlarını, genel bilgileri ve sistem konfigürasyonlarını yönetin.</p>
+          <div style={{ fontSize: '24px', marginBottom: '12px', color: '#6b7280' }}>⚙</div>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Ayarlar</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px' }}>Site ayarlarını yönetin.</p>
         </Link>
       </div>
     </div>

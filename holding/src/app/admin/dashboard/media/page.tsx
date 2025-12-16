@@ -153,24 +153,26 @@ export default function MediaManagement() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '2rem',
-        paddingBottom: '1rem',
-        borderBottom: '2px solid #e2e8f0'
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '2rem', color: '#313131', fontWeight: '700', margin: 0 }}>Medya Yönetimi</h1>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Medya Yönetimi</h1>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131', fontSize: '0.9rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#6b7280', fontSize: '13px' }}>
             Filtrele
           </label>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
             style={{
-              padding: '0.5rem 1rem',
-              border: '2px solid #e2e8f0',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              cursor: 'pointer'
+              padding: '6px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              background: '#ffffff',
+              color: '#1f2937'
             }}
           >
             <option value="all">Tümü</option>
@@ -182,28 +184,30 @@ export default function MediaManagement() {
 
       {/* Yükleme Bölümü */}
       <div style={{ 
-        background: 'white', 
-        padding: '2rem', 
-        borderRadius: '12px', 
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        marginBottom: '2rem'
+        background: '#ffffff', 
+        padding: '20px', 
+        borderRadius: '8px', 
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        marginBottom: '24px'
       }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#313131', fontWeight: '600' }}>
+        <h2 style={{ fontSize: '16px', marginBottom: '16px', color: '#1f2937', fontWeight: '600' }}>
           Dosya Yükle
         </h2>
         <div style={{ 
-          border: '2px dashed #e2e8f0', 
-          borderRadius: '8px', 
-          padding: '2rem',
+          border: '1px dashed #d1d5db', 
+          borderRadius: '6px', 
+          padding: '24px',
           textAlign: 'center',
-          transition: 'border-color 0.2s'
+          transition: 'border-color 0.15s',
+          background: '#f9fafb'
         }}
         onDragOver={(e) => {
           e.preventDefault();
-          e.currentTarget.style.borderColor = '#313131';
+          e.currentTarget.style.borderColor = '#9ca3af';
         }}
         onDragLeave={(e) => {
-          e.currentTarget.style.borderColor = '#e2e8f0';
+          e.currentTarget.style.borderColor = '#d1d5db';
         }}
         >
           <input
@@ -218,28 +222,26 @@ export default function MediaManagement() {
             htmlFor="file-upload"
             style={{
               display: 'inline-block',
-              padding: '1rem 2rem',
-              background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
+              padding: '8px 16px',
+              background: '#1f2937',
               color: 'white',
-              borderRadius: '8px',
+              borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: '600',
-              fontSize: '1rem',
-              transition: 'all 0.3s',
-              marginBottom: '1rem'
+              fontWeight: '500',
+              fontSize: '14px',
+              transition: 'all 0.15s',
+              marginBottom: '12px'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              e.currentTarget.style.background = '#374151';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.background = '#1f2937';
             }}
           >
             📁 Dosya Seç
           </label>
-          <p style={{ color: '#666', marginTop: '1rem' }}>
+          <p style={{ color: '#6b7280', marginTop: '12px', fontSize: '13px' }}>
             {selectedFiles.length > 0 
               ? `${selectedFiles.length} dosya seçildi` 
               : 'Dosyaları buraya sürükleyin veya tıklayarak seçin'}
@@ -249,16 +251,26 @@ export default function MediaManagement() {
               onClick={handleUpload}
               disabled={uploading}
               style={{
-                marginTop: '1rem',
-                background: uploading ? '#ccc' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                marginTop: '12px',
+                background: uploading ? '#9ca3af' : '#1f2937',
                 color: 'white',
                 border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
+                padding: '8px 16px',
+                borderRadius: '6px',
                 cursor: uploading ? 'not-allowed' : 'pointer',
-                fontWeight: '600',
-                fontSize: '1rem',
-                transition: 'all 0.3s',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!uploading) {
+                  e.currentTarget.style.background = '#374151';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!uploading) {
+                  e.currentTarget.style.background = '#1f2937';
+                }
               }}
             >
               {uploading ? 'Yükleniyor...' : 'Yükle'}
@@ -270,35 +282,36 @@ export default function MediaManagement() {
       {/* Dosya Listesi */}
       {files.length === 0 ? (
         <div style={{ 
-          background: 'white', 
-          padding: '3rem', 
-          borderRadius: '12px', 
+          background: '#ffffff', 
+          padding: '48px', 
+          borderRadius: '8px', 
           textAlign: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          border: '1px solid #e5e7eb'
         }}>
-          <p style={{ color: '#666', fontSize: '1.1rem' }}>Henüz medya dosyası yüklenmemiş.</p>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Henüz medya dosyası yüklenmemiş.</p>
         </div>
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-          gap: '1.5rem' 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+          gap: '16px' 
         }}>
           {files.map((file) => (
             <div key={file._id} style={{ 
-              background: 'white', 
-              padding: '1rem', 
-              borderRadius: '12px', 
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s, box-shadow 0.2s'
+              background: '#ffffff', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              transition: 'all 0.15s'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
+              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+              e.currentTarget.style.borderColor = '#e5e7eb';
+              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
             }}
             >
               {file.type === 'image' ? (
@@ -345,12 +358,12 @@ export default function MediaManagement() {
                   📁
                 </div>
               )}
-              <div style={{ marginBottom: '0.5rem' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <p style={{ 
-                  fontSize: '0.9rem', 
-                  fontWeight: '600', 
-                  color: '#313131',
-                  marginBottom: '0.25rem',
+                  fontSize: '13px', 
+                  fontWeight: '500', 
+                  color: '#1f2937',
+                  marginBottom: '4px',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -358,11 +371,11 @@ export default function MediaManagement() {
                 }}>
                   {file.originalName}
                 </p>
-                <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.25rem' }}>
+                <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
                   {formatFileSize(file.size)}
                 </p>
-                <p style={{ fontSize: '0.75rem', color: '#999' }}>
-                  {file.type === 'image' ? '🖼️ Resim' : file.type === 'pdf' ? '📄 PDF' : '📁 Dosya'}
+                <p style={{ fontSize: '11px', color: '#9ca3af' }}>
+                  {file.type === 'image' ? '🖼 Resim' : file.type === 'pdf' ? '📄 PDF' : '📁 Dosya'}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -372,20 +385,20 @@ export default function MediaManagement() {
                   rel="noopener noreferrer"
                   style={{
                     flex: 1,
-                    background: '#414141',
+                    background: '#1f2937',
                     color: 'white',
                     border: 'none',
-                    padding: '0.5rem',
+                    padding: '6px 12px',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: '500',
-                    fontSize: '0.9rem',
+                    fontSize: '13px',
                     textDecoration: 'none',
                     textAlign: 'center',
-                    transition: 'background 0.2s'
+                    transition: 'background 0.15s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#313131'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#414141'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#374151'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#1f2937'}
                 >
                   Görüntüle
                 </a>
@@ -393,18 +406,18 @@ export default function MediaManagement() {
                   onClick={() => handleDelete(file._id)}
                   style={{
                     flex: 1,
-                    background: '#dc2626',
+                    background: '#ef4444',
                     color: 'white',
                     border: 'none',
-                    padding: '0.5rem',
+                    padding: '6px 12px',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: '500',
-                    fontSize: '0.9rem',
-                    transition: 'background 0.2s'
+                    fontSize: '13px',
+                    transition: 'background 0.15s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#b91c1c'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#dc2626'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
                 >
                   Sil
                 </button>
