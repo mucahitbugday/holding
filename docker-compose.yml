@@ -5,7 +5,7 @@ services:
     build: .
     container_name: holding-website
     ports:
-      - "80:80"
+      - "3124:80"
     volumes:
       - ./:/usr/share/nginx/html:ro
       - ./images:/usr/share/nginx/html/images:ro
