@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -20,21 +21,5 @@ export default function AdminPage() {
   }, [router]);
 
   // Yönlendirme yapılırken loading göster
-  return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #313131 0%, #414141 100%)'
-    }}>
-      <div style={{ 
-        color: 'white', 
-        fontSize: '1.25rem',
-        textAlign: 'center'
-      }}>
-        Yönlendiriliyor...
-      </div>
-    </div>
-  );
+  return <LoadingScreen />;
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import Link from 'next/link';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   if (!user) {
-    return <div>Yükleniyor...</div>;
+    return <LoadingScreen />;
   }
 
   return (
