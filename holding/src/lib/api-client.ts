@@ -44,7 +44,14 @@ export class ApiClient {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Bir hata oluştu');
+      // Validation hatalarını da içeren detaylı hata mesajı
+      const errorMessage = data.error || 'Bir hata oluştu';
+      const error = new Error(errorMessage);
+      // Validation hatalarını error objesine ekle
+      if (data.validationErrors) {
+        (error as any).validationErrors = data.validationErrors;
+      }
+      throw error;
     }
 
     return data;
@@ -157,6 +164,18 @@ export class ApiClient {
 
   async updateHomePageSettings(data: any) {
     return this.request('/homepage', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Settings
+  async getSettings() {
+    return this.request('/settings');
+  }
+
+  async updateSettings(data: any) {
+    return this.request('/settings', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
