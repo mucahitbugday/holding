@@ -445,8 +445,61 @@ export default function SettingsPage() {
           setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         }}
         title="Şifre Değiştir"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+              }}
+              style={{
+                background: '#f3f4f6',
+                color: '#1f2937',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f3f4f6';
+              }}
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              form="password-form"
+              style={{
+                background: '#1f2937',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#374151';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#1f2937';
+              }}
+            >
+              Değiştir
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handlePasswordChange}>
+        <form id="password-form" onSubmit={handlePasswordChange}>
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
               Mevcut Şifre
@@ -509,40 +562,6 @@ export default function SettingsPage() {
               onFocus={(e) => e.currentTarget.style.borderColor = '#313131'}
               onBlur={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
             />
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setShowPasswordModal(false);
-                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-              }}
-              style={{
-                background: '#e2e8f0',
-                color: '#313131',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              style={{
-                background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
-              Değiştir
-            </button>
           </div>
         </form>
       </Modal>

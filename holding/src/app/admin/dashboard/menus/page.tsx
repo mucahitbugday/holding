@@ -500,8 +500,69 @@ export default function MenuManagement() {
         onClose={closeModal}
         title={editingMenu ? 'Menü Düzenle' : 'Yeni Menü Ekle'}
         size="large"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={closeModal}
+              disabled={submitting}
+              style={{
+                background: '#f3f4f6',
+                color: '#1f2937',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+                opacity: submitting ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#e5e7eb';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#f3f4f6';
+                }
+              }}
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              form="menu-form"
+              disabled={submitting}
+              style={{
+                background: submitting ? '#9ca3af' : '#1f2937',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#374151';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#1f2937';
+                }
+              }}
+            >
+              {submitting ? 'Kaydediliyor...' : (editingMenu ? 'Güncelle' : 'Oluştur')}
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleSubmit}>
+        <form id="menu-form" onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
               Menü Adı <span style={{ color: '#dc2626' }}>*</span>
@@ -959,42 +1020,6 @@ export default function MenuManagement() {
                 </div>
               )}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
-            <button
-              type="button"
-              onClick={closeModal}
-              disabled={submitting}
-              style={{
-                background: '#e2e8f0',
-                color: '#313131',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '600',
-                opacity: submitting ? 0.6 : 1
-              }}
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{
-                background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '600',
-                opacity: submitting ? 0.6 : 1
-              }}
-            >
-              {submitting ? 'Kaydediliyor...' : (editingMenu ? 'Güncelle' : 'Oluştur')}
-            </button>
           </div>
         </form>
       </Modal>
