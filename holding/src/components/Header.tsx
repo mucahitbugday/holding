@@ -7,6 +7,8 @@ interface MenuItem {
   label: string;
   href: string;
   order: number;
+  imageUrl?: string;
+  pdfUrl?: string;
   children?: MenuItem[];
 }
 
@@ -33,10 +35,13 @@ export default function Header() {
       const response = await fetch('/api/menu?type=main');
       const data = await response.json();
       if (data.success && data.menus && data.menus.length > 0) {
-        // Ana menüyü bul ve öğelerini sırala
-        const mainMenu = data.menus[0];
-        const sortedItems = [...mainMenu.items].sort((a, b) => a.order - b.order);
-        setMenuItems(sortedItems);
+        // Aktif ana menüyü bul
+        const activeMenu = data.menus.find((menu: Menu) => menu.isActive) || data.menus[0];
+        if (activeMenu && activeMenu.items) {
+          // Menü öğelerini sırala ve imageUrl/pdfUrl alanlarını dahil et
+          const sortedItems = [...activeMenu.items].sort((a, b) => a.order - b.order);
+          setMenuItems(sortedItems);
+        }
       }
     } catch (error) {
       console.error('Menü yüklenemedi:', error);
@@ -82,13 +87,17 @@ export default function Header() {
     const hasChildren = item.children && item.children.length > 0;
     const itemId = `item-${index}`;
     const isExternalLink = item.href.startsWith('/');
+    // Medya dosyası kontrolü - imageUrl/pdfUrl varsa veya href medya dosyası uzantısına sahipse
+    const isMediaFile = item.imageUrl || item.pdfUrl || 
+      (item.href && (item.href.includes('/uploads/') || 
+       item.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)));
 
     return (
       <li
         key={index}
         className={hasChildren ? `has-submenu ${activeSubmenu === itemId ? 'active' : ''}` : ''}
       >
-        {isExternalLink ? (
+        {isExternalLink && !isMediaFile ? (
           <Link
             href={item.href}
             onClick={(e) => {
@@ -105,6 +114,8 @@ export default function Header() {
         ) : (
           <a
             href={item.href}
+            target={isMediaFile ? "_blank" : undefined}
+            rel={isMediaFile ? "noopener noreferrer" : undefined}
             onClick={(e) => {
               if (hasChildren && window.innerWidth <= 968) {
                 e.preventDefault();
@@ -123,14 +134,23 @@ export default function Header() {
               ?.sort((a, b) => a.order - b.order)
               .map((child, childIndex) => {
                 const isChildExternalLink = child.href.startsWith('/');
+                // Alt menü medya dosyası kontrolü - imageUrl/pdfUrl varsa veya href medya dosyası uzantısına sahipse
+                const isChildMediaFile = child.imageUrl || child.pdfUrl || 
+                  (child.href && (child.href.includes('/uploads/') || 
+                   child.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)));
                 return (
                   <li key={childIndex}>
-                    {isChildExternalLink ? (
+                    {isChildExternalLink && !isChildMediaFile ? (
                       <Link href={child.href} onClick={handleLinkClick}>
                         {child.label}
                       </Link>
                     ) : (
-                      <a href={child.href} onClick={handleLinkClick}>
+                      <a 
+                        href={child.href} 
+                        target={isChildMediaFile ? "_blank" : undefined}
+                        rel={isChildMediaFile ? "noopener noreferrer" : undefined}
+                        onClick={handleLinkClick}
+                      >
                         {child.label}
                       </a>
                     )}

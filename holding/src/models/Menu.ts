@@ -4,6 +4,8 @@ export interface IMenuItem {
   label: string;
   href: string;
   order: number;
+  imageUrl?: string; // Resim URL'i
+  pdfUrl?: string; // PDF URL'i
   children?: IMenuItem[];
 }
 
@@ -20,6 +22,8 @@ const MenuItemSchema: Schema = new Schema({
   label: { type: String, required: true },
   href: { type: String, required: true },
   order: { type: Number, required: true },
+  imageUrl: { type: String }, // Resim URL'i
+  pdfUrl: { type: String }, // PDF URL'i
   children: [{ type: Schema.Types.Mixed }],
 });
 

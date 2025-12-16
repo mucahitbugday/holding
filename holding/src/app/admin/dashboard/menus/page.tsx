@@ -11,7 +11,17 @@ interface MenuItem {
   label: string;
   href: string;
   order: number;
+  imageUrl?: string;
+  pdfUrl?: string;
   children?: MenuItem[];
+}
+
+interface MediaFile {
+  _id: string;
+  filename: string;
+  originalName: string;
+  url: string;
+  type: 'image' | 'pdf' | 'other';
 }
 
 interface Menu {
@@ -31,6 +41,11 @@ export default function MenuManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'main' | 'footer'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [selectedMediaType, setSelectedMediaType] = useState<'image' | 'pdf' | null>(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
+  const [selectedChildIndex, setSelectedChildIndex] = useState<{ parentIndex: number; childIndex: number } | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: 'main' as 'main' | 'footer',
@@ -48,7 +63,62 @@ export default function MenuManagement() {
 
   useEffect(() => {
     loadMenus();
+    loadMedia();
   }, []);
+
+  const loadMedia = async () => {
+    try {
+      const response = await apiClient.getMedia();
+      setMediaFiles(response.files || []);
+    } catch (error) {
+      console.error('Medya dosyaları yüklenemedi:', error);
+    }
+  };
+
+  const openMediaModal = (type: 'image' | 'pdf', itemIndex: number, childIndex?: number) => {
+    setSelectedMediaType(type);
+    setSelectedItemIndex(itemIndex);
+    if (childIndex !== undefined) {
+      setSelectedChildIndex({ parentIndex: itemIndex, childIndex });
+    } else {
+      setSelectedChildIndex(null);
+    }
+    setShowMediaModal(true);
+  };
+
+  const selectMedia = (mediaUrl: string) => {
+    if (selectedItemIndex === null || !selectedMediaType) return;
+
+    const newItems = [...formData.items];
+    if (selectedChildIndex) {
+      // Alt menü için
+      if (!newItems[selectedChildIndex.parentIndex].children) {
+        newItems[selectedChildIndex.parentIndex].children = [];
+      }
+      const child = newItems[selectedChildIndex.parentIndex].children![selectedChildIndex.childIndex];
+      if (selectedMediaType === 'image') {
+        child.imageUrl = mediaUrl;
+        child.href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+      } else {
+        child.pdfUrl = mediaUrl;
+        child.href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+      }
+    } else {
+      // Ana menü item için
+      if (selectedMediaType === 'image') {
+        newItems[selectedItemIndex].imageUrl = mediaUrl;
+        newItems[selectedItemIndex].href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+      } else {
+        newItems[selectedItemIndex].pdfUrl = mediaUrl;
+        newItems[selectedItemIndex].href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+      }
+    }
+    setFormData({ ...formData, items: newItems });
+    setShowMediaModal(false);
+    setSelectedMediaType(null);
+    setSelectedItemIndex(null);
+    setSelectedChildIndex(null);
+  };
 
   const loadMenus = async () => {
     try {
@@ -563,6 +633,7 @@ export default function MenuManagement() {
                         placeholder="Href *"
                         value={item.href}
                         onChange={(e) => {
+                          if (item.imageUrl || item.pdfUrl) return; // Medya dosyası varsa değişikliğe izin verme
                           updateMenuItem(index, 'href', e.target.value);
                           if (errors.itemHrefs && errors.itemHrefs[index]) {
                             const newItemHrefs = { ...errors.itemHrefs };
@@ -570,12 +641,23 @@ export default function MenuManagement() {
                             setErrors({ ...errors, itemHrefs: newItemHrefs });
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (item.imageUrl || item.pdfUrl) {
+                            e.preventDefault();
+                            return false;
+                          }
+                        }}
+                        disabled={!!(item.imageUrl || item.pdfUrl)}
+                        readOnly={!!(item.imageUrl || item.pdfUrl)}
                         style={{ 
                           width: '100%',
                           padding: '0.625rem', 
                           border: `2px solid ${errors.itemHrefs && errors.itemHrefs[index] ? '#dc2626' : '#e2e8f0'}`, 
                           borderRadius: '6px', 
-                          fontSize: '0.9rem' 
+                          fontSize: '0.9rem',
+                          backgroundColor: (item.imageUrl || item.pdfUrl) ? '#f3f4f6' : 'white',
+                          cursor: (item.imageUrl || item.pdfUrl) ? 'not-allowed' : 'text',
+                          opacity: (item.imageUrl || item.pdfUrl) ? 0.7 : 1
                         }}
                       />
                     </div>
@@ -603,7 +685,7 @@ export default function MenuManagement() {
                       Sil
                     </button>
                   </div>
-                  <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <button
                       type="button"
                       onClick={() => {
@@ -630,12 +712,68 @@ export default function MenuManagement() {
                     >
                       + Alt Menü Ekle
                     </button>
-                    {item.children && item.children.length > 0 && (
-                      <div style={{ marginTop: '0.75rem', paddingLeft: '1rem', borderLeft: '3px solid #313131' }}>
+                    <button
+                      type="button"
+                      onClick={() => openMediaModal('image', index)}
+                      style={{
+                        background: '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      🖼️ Resim Seç
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openMediaModal('pdf', index)}
+                      style={{
+                        background: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📄 PDF Seç
+                    </button>
+                    {item.imageUrl && (
+                      <span style={{ 
+                        fontSize: '0.875rem', 
+                        color: '#10b981', 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}>
+                        ✓ Resim: {item.imageUrl.split('/').pop()?.substring(0, 20)}...
+                      </span>
+                    )}
+                    {item.pdfUrl && (
+                      <span style={{ 
+                        fontSize: '0.875rem', 
+                        color: '#3b82f6', 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}>
+                        ✓ PDF: {item.pdfUrl.split('/').pop()?.substring(0, 20)}...
+                      </span>
+                    )}
+                  </div>
+                  {item.children && item.children.length > 0 && (
+                    <div style={{ marginTop: '0.75rem', paddingLeft: '1rem', borderLeft: '3px solid #313131' }}>
                         {item.children.map((child, childIndex) => {
                           const childKey = `${index}-${childIndex}`;
                           return (
-                          <div key={childIndex} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                          <div key={childIndex} style={{ marginBottom: '0.75rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.5rem' }}>
                             <input
                               type="text"
                               placeholder="Alt Menü Label *"
@@ -690,6 +828,7 @@ export default function MenuManagement() {
                               placeholder="Alt Menü Href *"
                               value={child.href}
                               onChange={(e) => {
+                                if (child.imageUrl || child.pdfUrl) return; // Medya dosyası varsa değişikliğe izin verme
                                 const newItems = [...formData.items];
                                 if (!newItems[index].children) newItems[index].children = [];
                                 // Boşlukları "-" ile değiştir (yazmayı engelleme, sadece replace)
@@ -713,11 +852,22 @@ export default function MenuManagement() {
                                   setErrors({ ...errors, childHrefs: newChildHrefs });
                                 }
                               }}
+                              onKeyDown={(e) => {
+                                if (child.imageUrl || child.pdfUrl) {
+                                  e.preventDefault();
+                                  return false;
+                                }
+                              }}
+                              disabled={!!(child.imageUrl || child.pdfUrl)}
+                              readOnly={!!(child.imageUrl || child.pdfUrl)}
                               style={{ 
                                 padding: '0.625rem', 
                                 border: `2px solid ${errors.childHrefs && errors.childHrefs[childKey] ? '#dc2626' : '#e2e8f0'}`, 
                                 borderRadius: '6px', 
-                                fontSize: '0.9rem' 
+                                fontSize: '0.9rem',
+                                backgroundColor: (child.imageUrl || child.pdfUrl) ? '#f3f4f6' : 'white',
+                                cursor: (child.imageUrl || child.pdfUrl) ? 'not-allowed' : 'text',
+                                opacity: (child.imageUrl || child.pdfUrl) ? 0.7 : 1
                               }}
                             />
                             <input
@@ -754,12 +904,56 @@ export default function MenuManagement() {
                             >
                               Sil
                             </button>
+                            </div>
+                            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                onClick={() => openMediaModal('image', index, childIndex)}
+                                style={{
+                                  background: '#10b981',
+                                  color: 'white',
+                                  border: 'none',
+                                  padding: '0.375rem 0.75rem',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                🖼️ Resim
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openMediaModal('pdf', index, childIndex)}
+                                style={{
+                                  background: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  padding: '0.375rem 0.75rem',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                📄 PDF
+                              </button>
+                              {child.imageUrl && (
+                                <span style={{ fontSize: '0.8rem', color: '#10b981' }}>
+                                  ✓ Resim
+                                </span>
+                              )}
+                              {child.pdfUrl && (
+                                <span style={{ fontSize: '0.8rem', color: '#3b82f6' }}>
+                                  ✓ PDF
+                                </span>
+                              )}
+                            </div>
                           </div>
                           );
                         })}
                       </div>
                     )}
-                  </div>
                 </div>
               ))}
               {formData.items.length === 0 && (
@@ -806,6 +1000,93 @@ export default function MenuManagement() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Medya Seçim Modal */}
+      <Modal
+        isOpen={showMediaModal}
+        onClose={() => {
+          setShowMediaModal(false);
+          setSelectedMediaType(null);
+          setSelectedItemIndex(null);
+          setSelectedChildIndex(null);
+        }}
+        title={selectedMediaType === 'image' ? 'Resim Seç' : 'PDF Seç'}
+        size="large"
+      >
+        <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+          {mediaFiles.filter(file => file.type === selectedMediaType).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+              {selectedMediaType === 'image' ? 'Henüz resim yüklenmemiş.' : 'Henüz PDF yüklenmemiş.'}
+            </div>
+          ) : (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
+              gap: '1rem' 
+            }}>
+              {mediaFiles
+                .filter(file => file.type === selectedMediaType)
+                .map((file) => (
+                  <div
+                    key={file._id}
+                    onClick={() => selectMedia(file.url)}
+                    style={{
+                      cursor: 'pointer',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#313131';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    {file.type === 'image' ? (
+                      <img
+                        src={file.url}
+                        alt={file.originalName}
+                        style={{
+                          width: '100%',
+                          height: '120px',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        height: '120px',
+                        background: '#f8fafc',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem'
+                      }}>
+                        📄
+                      </div>
+                    )}
+                    <div style={{ padding: '0.5rem' }}>
+                      <p style={{
+                        fontSize: '0.8rem',
+                        margin: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        color: '#313131'
+                      }}>
+                        {file.originalName}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       </Modal>
 
       {/* Arama ve Filtre */}

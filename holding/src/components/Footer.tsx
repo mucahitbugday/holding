@@ -7,6 +7,8 @@ interface MenuItem {
   label: string;
   href: string;
   order: number;
+  imageUrl?: string;
+  pdfUrl?: string;
   children?: MenuItem[];
 }
 
@@ -59,14 +61,35 @@ export default function Footer() {
                   {item.children && item.children.length > 0 ? (
                     item.children
                       .sort((a, b) => a.order - b.order)
-                      .map((child, childIndex) => (
-                        <li key={child._id || childIndex}>
-                          <a href={child.href}>{child.label}</a>
-                        </li>
-                      ))
+                      .map((child, childIndex) => {
+                        const isChildMediaFile = child.imageUrl || child.pdfUrl || 
+                          (child.href && (child.href.includes('/uploads/') || 
+                           child.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)));
+                        return (
+                          <li key={child._id || childIndex}>
+                            <a 
+                              href={child.href}
+                              target={isChildMediaFile ? "_blank" : undefined}
+                              rel={isChildMediaFile ? "noopener noreferrer" : undefined}
+                            >
+                              {child.label}
+                            </a>
+                          </li>
+                        );
+                      })
                   ) : (
                     <li>
-                      <a href={item.href}>{item.label}</a>
+                      <a 
+                        href={item.href}
+                        target={(item.imageUrl || item.pdfUrl || 
+                          (item.href && (item.href.includes('/uploads/') || 
+                           item.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)))) ? "_blank" : undefined}
+                        rel={(item.imageUrl || item.pdfUrl || 
+                          (item.href && (item.href.includes('/uploads/') || 
+                           item.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)))) ? "noopener noreferrer" : undefined}
+                      >
+                        {item.label}
+                      </a>
                     </li>
                   )}
                 </ul>

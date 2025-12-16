@@ -161,6 +161,45 @@ export class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Media
+  async getMedia(type?: 'image' | 'pdf') {
+    const query = type ? `?type=${type}` : '';
+    return this.request(`/media${query}`);
+  }
+
+  async uploadMedia(files: File[]) {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const API_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_URL}/api/media`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Bir hata oluştu');
+    }
+
+    return data;
+  }
+
+  async deleteMedia(id: string) {
+    return this.request(`/media/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
