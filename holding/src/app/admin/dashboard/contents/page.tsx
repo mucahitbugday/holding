@@ -346,61 +346,6 @@ export default function ContentManagement() {
     });
   };
 
-  // Tablo ekleme fonksiyonu
-  const insertTable = (rows: number = 3, cols: number = 3) => {
-    if (quillInstance) {
-      const range = quillInstance.getSelection();
-      const index = range ? range.index : quillInstance.getLength();
-      
-      let tableHTML = '<table style="border-collapse: collapse; width: 100%; margin: 20px 0; border: 1px solid #e5e7eb;"><tbody>';
-      for (let i = 0; i < rows; i++) {
-        tableHTML += '<tr>';
-        for (let j = 0; j < cols; j++) {
-          const isHeader = i === 0;
-          const tag = isHeader ? 'th' : 'td';
-          tableHTML += `<${tag} style="border: 1px solid #e5e7eb; padding: 12px; ${isHeader ? 'background: #f3f4f6; font-weight: 600;' : ''}">&nbsp;</${tag}>`;
-        }
-        tableHTML += '</tr>';
-      }
-      tableHTML += '</tbody></table>';
-      
-      quillInstance.clipboard.dangerouslyPasteHTML(index, tableHTML);
-    }
-  };
-
-  // Tarihçe ekleme fonksiyonu
-  const insertTimeline = () => {
-    if (quillInstance) {
-      const range = quillInstance.getSelection();
-      const index = range ? range.index : quillInstance.getLength();
-      
-      const timelineHTML = `
-        <div style="margin: 30px 0; padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #1f2937;">
-          <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px; font-weight: 600;">Tarihçe</h3>
-          <div style="position: relative; padding-left: 30px;">
-            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #d1d5db;"></div>
-            <div style="margin-bottom: 30px; position: relative;">
-              <div style="position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #1f2937; border: 3px solid #f9fafb;"></div>
-              <div style="font-weight: 600; color: #1f2937; margin-bottom: 8px;">Yıl</div>
-              <div style="color: #6b7280; line-height: 1.6;">Açıklama buraya gelecek...</div>
-            </div>
-            <div style="margin-bottom: 30px; position: relative;">
-              <div style="position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #1f2937; border: 3px solid #f9fafb;"></div>
-              <div style="font-weight: 600; color: #1f2937; margin-bottom: 8px;">Yıl</div>
-              <div style="color: #6b7280; line-height: 1.6;">Açıklama buraya gelecek...</div>
-            </div>
-            <div style="margin-bottom: 0; position: relative;">
-              <div style="position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #1f2937; border: 3px solid #f9fafb;"></div>
-              <div style="font-weight: 600; color: #1f2937; margin-bottom: 8px;">Yıl</div>
-              <div style="color: #6b7280; line-height: 1.6;">Açıklama buraya gelecek...</div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      quillInstance.clipboard.dangerouslyPasteHTML(index, timelineHTML);
-    }
-  };
 
   // Quill modülleri ve toolbar konfigürasyonu
   const modules = {
@@ -729,74 +674,7 @@ export default function ContentManagement() {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <label style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>İçerik</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const rowsInput = prompt('Satır sayısı (örn: 3):', '3');
-                    const colsInput = prompt('Sütun sayısı (örn: 3):', '3');
-                    if (rowsInput && colsInput) {
-                      const rows = parseInt(rowsInput) || 3;
-                      const cols = parseInt(colsInput) || 3;
-                      if (rows > 0 && rows <= 20 && cols > 0 && cols <= 20) {
-                        insertTable(rows, cols);
-                      } else {
-                        Swal.fire({
-                          icon: 'warning',
-                          title: 'Geçersiz Değer',
-                          text: 'Satır ve sütun sayısı 1-20 arasında olmalıdır.',
-                          confirmButtonColor: '#1f2937',
-                        });
-                      }
-                    }
-                  }}
-                  style={{
-                    background: '#f3f4f6',
-                    color: '#1f2937',
-                    border: '1px solid #e5e7eb',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#e5e7eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#f3f4f6';
-                  }}
-                >
-                  📊 Tablo Ekle
-                </button>
-                <button
-                  type="button"
-                  onClick={insertTimeline}
-                  style={{
-                    background: '#f3f4f6',
-                    color: '#1f2937',
-                    border: '1px solid #e5e7eb',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#e5e7eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#f3f4f6';
-                  }}
-                >
-                  📅 Tarihçe Ekle
-                </button>
-              </div>
-            </div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>İçerik</label>
             <div style={{ 
               border: '1px solid #e5e7eb', 
               borderRadius: '6px',
