@@ -18,7 +18,6 @@
 
 html {
     scroll-behavior: smooth;
-    scroll-snap-type: y mandatory;
     width: 100%;
     height: 100%;
     overflow-x: hidden;
@@ -206,8 +205,6 @@ body {
     min-height: calc(100vh - 70px);
      overflow: hidden;
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 
 .hero-slider {
@@ -377,15 +374,13 @@ body {
 /* Section Styles */
 section {
     min-height: 100vh;
-    height: 100vh;
+    height: auto;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 2rem 0;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     box-sizing: border-box;
 }
@@ -395,14 +390,12 @@ section .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-    height: 100%;
+    min-height: calc(100vh - 4rem);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: visible;
     box-sizing: border-box;
-    -webkit-overflow-scrolling: touch;
 }
 
 .section-header {
@@ -428,6 +421,39 @@ section .container {
 .about {
     background: linear-gradient(to bottom, var(--white) 0%, var(--light-color) 100%);
     position: relative;
+}
+
+.about::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    z-index: 0;
+}
+
+.about .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* If section has background image, show overlay */
+section[style*="background-image"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    z-index: 0;
+}
+
+section[style*="background-image"] .container {
+    position: relative;
+    z-index: 1;
 }
 
 .about-grid {
@@ -480,6 +506,22 @@ section .container {
 .services {
     background: var(--white);
     position: relative;
+}
+
+.services::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 0;
+}
+
+.services .container {
+    position: relative;
+    z-index: 1;
 }
 
 .services-grid {
@@ -561,9 +603,13 @@ section .container {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    opacity: 0.08;
+    background: linear-gradient(135deg, rgba(49, 49, 49, 0.7) 0%, rgba(65, 65, 65, 0.8) 100%);
     z-index: 0;
+}
+
+/* If hr-policy has background image, adjust overlay */
+.hr-policy[style*="background-image"]::before {
+    background: linear-gradient(135deg, rgba(49, 49, 49, 0.7) 0%, rgba(65, 65, 65, 0.8) 100%);
 }
 
 .hr-policy .container {
@@ -624,6 +670,27 @@ section .container {
 }
 
 /* News Section */
+.news {
+    background: var(--light-color);
+    position: relative;
+}
+
+.news::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(248, 250, 252, 0.85);
+    z-index: 0;
+}
+
+.news .container {
+    position: relative;
+    z-index: 1;
+}
+
 .news-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1064,15 +1131,15 @@ section .container {
 
     section {
         min-height: 100vh;
-        height: 100vh;
+        height: auto;
         width: 100%;
         padding: 1.5rem 0;
     }
 
     section .container {
         padding: 0 15px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        min-height: calc(100vh - 3rem);
+        overflow: visible;
     }
 
     .hero-content {
@@ -1106,6 +1173,11 @@ section .container {
         width: 100%;
     }
 
+    /* Disable fixed background on mobile for better performance */
+    section[style*="background-image"] {
+        background-attachment: scroll !important;
+    }
+
     .hero-content {
         padding: 1rem;
     }
@@ -1122,15 +1194,15 @@ section .container {
 
     section {
         min-height: 100vh;
-        height: 100vh;
+        height: auto;
         width: 100%;
         padding: 1rem 0;
     }
 
     section .container {
         padding: 0 15px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        min-height: calc(100vh - 2rem);
+        overflow: visible;
     }
 
     .section-header {

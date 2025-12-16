@@ -223,51 +223,36 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Keyboard navigation for full-screen sections
-let isScrolling = false;
-window.addEventListener('wheel', (e) => {
-    if (isScrolling) return;
+
+// Load section background images dynamically
+document.addEventListener('DOMContentLoaded', () => {
+    const sections = document.querySelectorAll('section[id]');
     
-    const sections = document.querySelectorAll('section');
-    const currentScroll = window.pageYOffset;
-    const windowHeight = window.innerHeight;
-    
-    if (e.deltaY > 0) {
-        // Scrolling down
-        sections.forEach((section, index) => {
-            const sectionTop = section.offsetTop;
-            const sectionBottom = sectionTop + section.offsetHeight;
-            
-            if (currentScroll >= sectionTop - 100 && currentScroll < sectionBottom - 100) {
-                isScrolling = true;
-                if (sections[index + 1]) {
-                    sections[index + 1].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                    setTimeout(() => { isScrolling = false; }, 1000);
-                }
-            }
-        });
-    } else {
-        // Scrolling up
-        sections.forEach((section, index) => {
-            const sectionTop = section.offsetTop;
-            const sectionBottom = sectionTop + section.offsetHeight;
-            
-            if (currentScroll > sectionTop && currentScroll <= sectionBottom) {
-                isScrolling = true;
-                if (sections[index - 1]) {
-                    sections[index - 1].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                    setTimeout(() => { isScrolling = false; }, 1000);
-                }
-            }
-        });
-    }
-}, { passive: true });
+    sections.forEach(section => {
+        const sectionId = section.getAttribute('id');
+        if (!sectionId) return;
+        
+        // Check if image exists for this section
+        const imgPath = `images/${sectionId}.jpg`;
+        const img = new Image();
+        
+        img.onload = () => {
+            // Image exists, set it as background
+            section.style.backgroundImage = `url('${imgPath}')`;
+            section.style.backgroundSize = 'cover';
+            section.style.backgroundPosition = 'center';
+            section.style.backgroundAttachment = 'fixed';
+            section.style.backgroundRepeat = 'no-repeat';
+        };
+        
+        img.onerror = () => {
+            // Image doesn't exist, don't set background
+            // Keep existing background or default
+        };
+        
+        img.src = imgPath;
+    });
+});
 
 // Newsletter Form
 const newsletterForm = document.getElementById('newsletterForm');
