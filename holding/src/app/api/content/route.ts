@@ -48,19 +48,70 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
-    const content = await Content.create(data);
-
-    return NextResponse.json({ success: true, content }, { status: 201 });
+    console.log('Creating content with data:', JSON.stringify(data, null, 2));
+    
+    // Sections'ı temizle
+    if (data.sections && Array.isArray(data.sections)) {
+      data.sections = data.sections.map((section: any, index: number) => {
+        const cleaned: any = {
+          type: section.type,
+          order: index
+        };
+        
+        if (section.type === 'text') {
+          cleaned.content = section.content || '';
+        } else if (section.type === 'card') {
+          // contentIds varsa onu kullan, yoksa contentId'yi array'e çevir
+          if (section.contentIds && Array.isArray(section.contentIds) && section.contentIds.length > 0) {
+            cleaned.contentIds = section.contentIds;
+          } else if (section.contentId) {
+            cleaned.contentIds = [section.contentId];
+          } else {
+            cleaned.contentIds = [];
+          }
+        }
+        
+        return cleaned;
+      });
+    }
+    
+    // Content field'ını her zaman ayarla (sections varsa bile)
+    // Eğer sections varsa, content'i boş yap (sections kullanılacak)
+    if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
+      data.content = '';
+    } else {
+      // Sections yoksa, content'i kontrol et
+      if (data.content === undefined || data.content === null) {
+        data.content = '';
+      }
+    }
+    
+    // Content field'ını her zaman string olarak ayarla (undefined/null olamaz)
+    data.content = data.content || '';
+    
+    console.log('Cleaned sections:', JSON.stringify(data.sections, null, 2));
+    console.log('Final content value:', data.content);
+    console.log('Content type:', typeof data.content);
+    console.log('Data to create:', JSON.stringify({ ...data, sections: data.sections?.length || 0 }, null, 2));
+    
+    try {
+      const content = await Content.create(data);
+      console.log('Content created successfully:', content._id);
+      return NextResponse.json({ success: true, content }, { status: 201 });
+    } catch (createError: any) {
+      console.error('Mongoose create error:', createError);
+      if (createError.code === 11000) {
+        return NextResponse.json(
+          { success: false, error: 'Bu slug zaten kullanılıyor' },
+          { status: 400 }
+        );
+      }
+      throw createError;
+    }
   } catch (error: any) {
     console.error('Create content error:', error);
-    if (error.code === 11000) {
-      return NextResponse.json(
-        { error: 'Bu slug zaten kullanılıyor' },
-        { status: 400 }
-      );
-    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { success: false, error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

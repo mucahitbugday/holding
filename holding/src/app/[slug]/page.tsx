@@ -47,6 +47,36 @@ export default async function DynamicPage({ params }: PageProps) {
   }
 
   const featuredImage = (content as any).featuredImage || content.metadata?.image;
+  
+  // Kart içeriklerini yükle
+  const cardContents: { [key: string]: any } = {};
+  if ((content as any).sections && Array.isArray((content as any).sections)) {
+    const cardSectionIds: string[] = [];
+    (content as any).sections.forEach((s: any) => {
+      if (s.type === 'card') {
+        if (s.contentIds && Array.isArray(s.contentIds)) {
+          cardSectionIds.push(...s.contentIds);
+        } else if (s.contentId) {
+          cardSectionIds.push(s.contentId);
+        }
+      }
+    });
+    
+    if (cardSectionIds.length > 0) {
+      try {
+        await connectDB();
+        const cards = await Content.find({ 
+          _id: { $in: cardSectionIds },
+          isActive: true 
+        });
+        cards.forEach((card: any) => {
+          cardContents[card._id.toString()] = card;
+        });
+      } catch (error) {
+        console.error('Error loading card contents:', error);
+      }
+    }
+  }
 
   return (
     <>
@@ -152,17 +182,114 @@ export default async function DynamicPage({ params }: PageProps) {
         )}
         <div style={{ minHeight: '60vh', padding: '2rem 0' }}>
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>        
-              <div
-                className="content-body"
-                style={{
-                  fontSize: '1rem',
-                  lineHeight: '1.8',
-                  color: '#333',
-                  marginTop: '2rem'
-                }}
-                dangerouslySetInnerHTML={{ __html: content.content }}
-              />
+            <article style={{ background: 'white', padding: '2rem', borderRadius: '8px', }}>
+              {(content as any).sections && (content as any).sections.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {(content as any).sections
+                    .sort((a: any, b: any) => a.order - b.order)
+                    .map((section: any, index: number) => {
+                      if (section.type === 'text') {
+                        return (
+                          <div
+                            key={index}
+                            className="content-body"
+                            style={{
+                              fontSize: '1rem',
+                              lineHeight: '1.8',
+                              color: '#333'
+                            }}
+                            dangerouslySetInnerHTML={{ __html: section.content || '' }}
+                          />
+                        );
+                      } else if (section.type === 'card') {
+                        const cardIds = section.contentIds || (section.contentId ? [section.contentId] : []);
+                        if (cardIds.length === 0) {
+                          return null;
+                        }
+                        
+                        return (
+                          <div key={index} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                            {cardIds.map((cardId: string, cardIndex: number) => {
+                              const cardContent = cardContents[cardId];
+                              if (!cardContent) {
+                                return null;
+                              }
+                              const cardImage = cardContent.featuredImage || cardContent.metadata?.image;
+                              const cardSlug = cardContent.slug;
+                              
+                              return (
+                                <a
+                                  key={cardIndex}
+                                  href={`/${cardSlug}`}
+                                  className="content-card"
+                                  style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    display: 'block'
+                                  }}
+                                >
+                                  {cardImage && (
+                                    <div style={{
+                                      width: '100%',
+                                      height: '250px',
+                                      overflow: 'hidden',
+                                      background: '#f3f4f6'
+                                    }}>
+                                      <img
+                                        src={cardImage}
+                                        alt={cardContent.title}
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover',
+                                          display: 'block'
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  <div style={{ padding: '1.5rem' }}>
+                                    <h3 style={{
+                                      margin: 0,
+                                      fontSize: '1.5rem',
+                                      fontWeight: '600',
+                                      color: '#1f2937',
+                                      lineHeight: '1.3',
+                                      marginBottom: cardContent.description ? '0.75rem' : '0'
+                                    }}>
+                                      {cardContent.title}
+                                    </h3>
+                                    {cardContent.description && (
+                                      <p style={{
+                                        margin: 0,
+                                        fontSize: '1rem',
+                                        color: '#6b7280',
+                                        lineHeight: '1.6'
+                                      }}>
+                                        {cardContent.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </a>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                </div>
+              ) : (
+                <div
+                  className="content-body"
+                  style={{
+                    fontSize: '1rem',
+                    lineHeight: '1.8',
+                    color: '#333',
+                    marginTop: '2rem'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: content.content || '' }}
+                />
+              )}
               <style dangerouslySetInnerHTML={{
                 __html: `
                 .content-body h1, .content-body h2, .content-body h3, 
@@ -230,6 +357,40 @@ export default async function DynamicPage({ params }: PageProps) {
                 .content-body pre code {
                   background: none;
                   padding: 0;
+                }
+                .content-card {
+                  border: 1px solid #e5e7eb;
+                  border-radius: 8px;
+                  overflow: hidden;
+                  background: #ffffff;
+                  transition: all 0.2s ease;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  text-decoration: none;
+                  color: inherit;
+                  display: block;
+                }
+                .content-card:hover {
+                  transform: translateY(-4px);
+                  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+                }
+                .content-card img {
+                  width: 100%;
+                  height: 250px;
+                  object-fit: cover;
+                  display: block;
+                }
+                .content-card h3 {
+                  margin: 0;
+                  font-size: 1.5rem;
+                  font-weight: 600;
+                  color: #1f2937;
+                  line-height: 1.3;
+                }
+                .content-card p {
+                  margin: 0.75rem 0 0 0;
+                  font-size: 1rem;
+                  color: #6b7280;
+                  line-height: 1.6;
                 }
               ` }} />
             </article>

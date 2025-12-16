@@ -1,16 +1,26 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+export interface IContentSection {
+  type: 'text' | 'card';
+  order: number;
+  content?: string; // Text type için HTML content
+  contentId?: string; // Card type için tek içerik ID (backward compatibility)
+  contentIds?: string[]; // Card type için birden fazla içerik ID
+}
+
 export interface IContent extends Document {
   slug: string;
   title: string;
   description?: string;
-  content: string;
+  content?: string; // Eski format için (backward compatibility)
+  sections?: IContentSection[]; // Yeni section-based format
   type: 'page';
   metadata?: {
     image?: string;
     keywords?: string[];
     [key: string]: any;
   };
+  featuredImage?: string;
   isActive: boolean;
   order?: number;
   createdAt: Date;
@@ -31,8 +41,23 @@ const ContentSchema: Schema = new Schema(
     description: String,
     content: {
       type: String,
-      required: true,
+      default: '',
+      required: false,
     },
+    sections: [{
+      type: {
+        type: String,
+        enum: ['text', 'card'],
+        required: true,
+      },
+      order: {
+        type: Number,
+        required: true,
+      },
+      content: String, // Text type için HTML content
+      contentId: String, // Card type için tek içerik ID (backward compatibility)
+      contentIds: [String], // Card type için birden fazla içerik ID
+    }],
     type: {
       type: String,
       enum: ['page'],
@@ -57,6 +82,11 @@ const ContentSchema: Schema = new Schema(
   }
 );
 
-const Content: Model<IContent> = mongoose.models.Content || mongoose.model<IContent>('Content', ContentSchema);
+// Model cache'ini temizle ve yeniden oluştur
+if (mongoose.models.Content) {
+  delete mongoose.models.Content;
+}
+
+const Content: Model<IContent> = mongoose.model<IContent>('Content', ContentSchema);
 
 export default Content;

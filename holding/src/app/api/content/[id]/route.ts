@@ -49,24 +49,76 @@ export async function PUT(
     const { id } = await params;
 
     const data = await request.json();
-    const content = await Content.findByIdAndUpdate(
-      id,
-      data,
-      { new: true, runValidators: true }
-    );
-
-    if (!content) {
-      return NextResponse.json(
-        { error: 'İçerik bulunamadı' },
-        { status: 404 }
-      );
+    console.log('Updating content with data:', JSON.stringify(data, null, 2));
+    
+    // Sections'ı temizle
+    if (data.sections && Array.isArray(data.sections)) {
+      data.sections = data.sections.map((section: any, index: number) => {
+        const cleaned: any = {
+          type: section.type,
+          order: index
+        };
+        
+        if (section.type === 'text') {
+          cleaned.content = section.content || '';
+        } else if (section.type === 'card') {
+          // contentIds varsa onu kullan, yoksa contentId'yi array'e çevir
+          if (section.contentIds && Array.isArray(section.contentIds) && section.contentIds.length > 0) {
+            cleaned.contentIds = section.contentIds;
+          } else if (section.contentId) {
+            cleaned.contentIds = [section.contentId];
+          } else {
+            cleaned.contentIds = [];
+          }
+        }
+        
+        return cleaned;
+      });
     }
+    
+    // Content field'ını her zaman ayarla (sections varsa bile)
+    // Eğer sections varsa, content'i boş yap (sections kullanılacak)
+    if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
+      data.content = '';
+    } else {
+      // Sections yoksa, content'i kontrol et
+      if (data.content === undefined || data.content === null) {
+        data.content = '';
+      }
+    }
+    
+    // Content field'ını her zaman string olarak ayarla (undefined/null olamaz)
+    data.content = data.content || '';
+    
+    console.log('Cleaned sections:', JSON.stringify(data.sections, null, 2));
+    console.log('Final content value:', data.content);
+    console.log('Content type:', typeof data.content);
+    console.log('Data to update:', JSON.stringify({ ...data, sections: data.sections?.length || 0 }, null, 2));
+    
+    try {
+      const content = await Content.findByIdAndUpdate(
+        id,
+        data,
+        { new: true, runValidators: true }
+      );
 
-    return NextResponse.json({ success: true, content });
-  } catch (error) {
+      if (!content) {
+        return NextResponse.json(
+          { success: false, error: 'İçerik bulunamadı' },
+          { status: 404 }
+        );
+      }
+
+      console.log('Content updated successfully:', content._id);
+      return NextResponse.json({ success: true, content });
+    } catch (updateError: any) {
+      console.error('Mongoose update error:', updateError);
+      throw updateError;
+    }
+  } catch (error: any) {
     console.error('Update content error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { success: false, error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
