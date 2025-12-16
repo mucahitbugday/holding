@@ -47,6 +47,7 @@ export default function ContentManagement() {
   const [quillInstance, setQuillInstance] = useState<any>(null);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
+  const [expandedContents, setExpandedContents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadContents();
@@ -147,6 +148,16 @@ export default function ContentManagement() {
     } catch (error: any) {
       alert(error.message || 'Bir hata oluştu');
     }
+  };
+
+  const toggleContentDetails = (id: string) => {
+    const newExpanded = new Set(expandedContents);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedContents(newExpanded);
   };
 
   const openNewContentModal = () => {
@@ -759,18 +770,47 @@ export default function ContentManagement() {
               e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
             }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: expandedContents.has(content._id) ? '16px' : '0' }}>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>{content.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px' }}>
                     <span>Slug: <strong>{content.slug}</strong></span>
                     <span>Durum: <strong style={{ color: content.isActive ? '#10b981' : '#ef4444' }}>{content.isActive ? 'Aktif' : 'Pasif'}</strong></span>
                   </div>
-                  {content.description && (
-                    <p style={{ marginTop: '8px', color: '#9ca3af', fontSize: '13px' }}>{content.description}</p>
-                  )}
                 </div>
-                <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginLeft: '16px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => toggleContentDetails(content._id)}
+                    style={{
+                      background: '#f3f4f6',
+                      color: '#1f2937',
+                      border: '1px solid #e5e7eb',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      fontSize: '13px',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#f3f4f6';
+                    }}
+                  >
+                    <span style={{ 
+                      transform: expandedContents.has(content._id) ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s',
+                      display: 'inline-block'
+                    }}>
+                      ▼
+                    </span>
+                    {expandedContents.has(content._id) ? 'Detayları Gizle' : 'Detayları Göster'}
+                  </button>
                   <button
                     onClick={() => handleEdit(content)}
                     style={{
@@ -809,46 +849,94 @@ export default function ContentManagement() {
                   </button>
                 </div>
               </div>
-              {(content.featuredImage || content.metadata?.image) && (
-                <div style={{ marginBottom: '16px' }}>
-                  <img
-                    src={content.featuredImage || content.metadata?.image}
-                    alt={content.title}
-                    style={{
-                      width: '100%',
-                      maxHeight: '400px',
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                      border: '1px solid #e5e7eb'
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              <div style={{ 
-                background: '#ffffff', 
-                padding: '24px', 
-                borderRadius: '6px', 
-                border: '1px solid #e5e7eb',
-                minHeight: '100px'
-              }}>
-                <div 
-                  className="content-preview"
-                  style={{ 
-                    color: '#374151', 
-                    fontSize: '15px', 
-                    lineHeight: '1.8',
-                    wordBreak: 'break-word'
-                  }}
-                  dangerouslySetInnerHTML={{ 
-                    __html: content.content.length > 500 
-                      ? content.content.substring(0, 500) + '<p style="color: #9ca3af; margin-top: 16px; font-style: italic;">... (devamı için düzenleyin)</p>' 
-                      : content.content 
-                  }}
-                />
-                <style>{`
+              
+              {expandedContents.has(content._id) && (
+                <div style={{ 
+                  marginTop: '16px',
+                  paddingTop: '16px',
+                  borderTop: '1px solid #e5e7eb',
+                  animation: 'fadeIn 0.2s ease-in'
+                }}>
+                  <style>{`
+                    @keyframes fadeIn {
+                      from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                      }
+                      to {
+                        opacity: 1;
+                        transform: translateY(0);
+                      }
+                    }
+                  `}</style>
+                  {content.description && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ 
+                        color: '#6b7280', 
+                        fontSize: '14px', 
+                        lineHeight: '1.6',
+                        margin: 0
+                      }}>
+                        <strong style={{ color: '#1f2937' }}>Açıklama:</strong> {content.description}
+                      </p>
+                    </div>
+                  )}
+                  {(content.featuredImage || content.metadata?.image) && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ 
+                        color: '#1f2937', 
+                        fontSize: '14px', 
+                        fontWeight: '500',
+                        marginBottom: '8px'
+                      }}>
+                        Öne Çıkan Görsel:
+                      </p>
+                      <img
+                        src={content.featuredImage || content.metadata?.image}
+                        alt={content.title}
+                        style={{
+                          width: '100%',
+                          maxHeight: '400px',
+                          objectFit: 'cover',
+                          borderRadius: '6px',
+                          border: '1px solid #e5e7eb'
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ 
+                    background: '#ffffff', 
+                    padding: '24px', 
+                    borderRadius: '6px', 
+                    border: '1px solid #e5e7eb',
+                    minHeight: '100px'
+                  }}>
+                    <p style={{ 
+                      color: '#1f2937', 
+                      fontSize: '14px', 
+                      fontWeight: '500',
+                      marginBottom: '12px'
+                    }}>
+                      İçerik Önizlemesi:
+                    </p>
+                    <div 
+                      className="content-preview"
+                      style={{ 
+                        color: '#374151', 
+                        fontSize: '15px', 
+                        lineHeight: '1.8',
+                        wordBreak: 'break-word'
+                      }}
+                      dangerouslySetInnerHTML={{ 
+                        __html: content.content.length > 500 
+                          ? content.content.substring(0, 500) + '<p style="color: #9ca3af; margin-top: 16px; font-style: italic;">... (devamı için düzenleyin)</p>' 
+                          : content.content 
+                      }}
+                    />
+                    <style>{`
                   .content-preview h1, .content-preview h2, .content-preview h3, 
                   .content-preview h4, .content-preview h5, .content-preview h6 {
                     margin: 16px 0 8px 0;
@@ -912,7 +1000,9 @@ export default function ContentManagement() {
                     padding: 0;
                   }
                 `}</style>
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
