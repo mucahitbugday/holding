@@ -9,7 +9,7 @@ export interface IMenuItem {
 
 export interface IMenu extends Document {
   name: string;
-  type: 'main' | 'footer' | 'sidebar';
+  type: 'main' | 'footer';
   items: IMenuItem[];
   isActive: boolean;
   createdAt: Date;
@@ -32,7 +32,7 @@ const MenuSchema: Schema = new Schema(
     },
     type: {
       type: String,
-      enum: ['main', 'footer', 'sidebar'],
+      enum: ['main', 'footer'],
       required: true,
     },
     items: [MenuItemSchema],

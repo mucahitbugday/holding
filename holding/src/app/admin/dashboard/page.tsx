@@ -136,7 +136,7 @@ export default function Dashboard() {
         >
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
           <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', fontWeight: '600' }}>Menü Yönetimi</h2>
-          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Ana menü, footer ve sidebar menülerini düzenleyin. Alt menüler ekleyin ve sıralamalarını ayarlayın.</p>
+          <p style={{ color: '#666', lineHeight: '1.6', fontSize: '1rem' }}>Ana menü ve footer menülerini düzenleyin. Alt menüler ekleyin ve sıralamalarını ayarlayın.</p>
         </Link>
 
         <Link

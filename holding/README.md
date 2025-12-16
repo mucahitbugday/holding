@@ -88,7 +88,7 @@ Proje `http://localhost:3000` adresinde çalışacaktır.
 
 ### Menü Yönetimi
 
-1. Menü ekleyin (Ana Menü, Footer, Sidebar)
+1. Menü ekleyin (Ana Menü, Footer)
 2. Menü öğeleri ekleyin (Label, Href, Sıra)
 3. Alt menüler ekleyin (her menü öğesine alt menü eklenebilir)
 4. Menü sırasını `order` alanı ile belirleyin
@@ -135,7 +135,7 @@ Proje `http://localhost:3000` adresinde çalışacaktır.
 - resetPasswordToken, resetPasswordExpires
 
 ### Menu
-- name, type (main/footer/sidebar)
+- name, type (main/footer)
 - items (array of MenuItem)
 - isActive
 

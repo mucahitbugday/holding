@@ -16,7 +16,7 @@ interface MenuItem {
 interface Menu {
   _id: string;
   name: string;
-  type: 'main' | 'footer' | 'sidebar';
+  type: 'main' | 'footer';
   items: MenuItem[];
   isActive: boolean;
 }
@@ -28,10 +28,10 @@ export default function MenuManagement() {
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'main' | 'footer' | 'sidebar'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'main' | 'footer'>('all');
   const [formData, setFormData] = useState({
     name: '',
-    type: 'main' as 'main' | 'footer' | 'sidebar',
+    type: 'main' as 'main' | 'footer',
     items: [] as MenuItem[],
     isActive: true,
   });
@@ -189,9 +189,9 @@ export default function MenuManagement() {
   // Filtrelenmiş menüleri getir
   const filteredMenus = menus.filter(menu => {
     const matchesSearch = menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      menu.items.some(item => 
+      menu.items.some(item =>
         item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.children && item.children.some(child => 
+        (item.children && item.children.some(child =>
           child.label.toLowerCase().includes(searchTerm.toLowerCase())
         ))
       );
@@ -205,10 +205,10 @@ export default function MenuManagement() {
 
   return (
     <div style={{ padding: '0' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '2rem',
         paddingBottom: '1rem',
         borderBottom: '2px solid #e2e8f0'
@@ -255,10 +255,10 @@ export default function MenuManagement() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              style={{ 
-                width: '100%', 
-                padding: '0.75rem', 
-                border: '2px solid #e2e8f0', 
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '2px solid #e2e8f0',
                 borderRadius: '8px',
                 fontSize: '1rem',
                 transition: 'border-color 0.2s'
@@ -274,10 +274,10 @@ export default function MenuManagement() {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem', 
-                  border: '2px solid #e2e8f0', 
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e2e8f0',
                   borderRadius: '8px',
                   fontSize: '1rem',
                   cursor: 'pointer'
@@ -285,7 +285,6 @@ export default function MenuManagement() {
               >
                 <option value="main">Ana Menü</option>
                 <option value="footer">Footer</option>
-                <option value="sidebar">Sidebar</option>
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -327,12 +326,12 @@ export default function MenuManagement() {
 
             <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '0.5rem' }}>
               {formData.items.map((item, index) => (
-                <div key={index} style={{ 
-                  background: '#f8fafc', 
-                  padding: '1rem', 
-                  borderRadius: '8px', 
-                  marginBottom: '0.75rem', 
-                  border: '1px solid #e2e8f0' 
+                <div key={index} style={{
+                  background: '#f8fafc',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  marginBottom: '0.75rem',
+                  border: '1px solid #e2e8f0'
                 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.75rem' }}>
                     <input
@@ -414,9 +413,9 @@ export default function MenuManagement() {
                                 const newLabel = e.target.value;
                                 const currentHref = child.href;
                                 const hasId = child._id; // ID var mı kontrol et
-                                
+
                                 let newHref = currentHref;
-                                
+
                                 if (newLabel && newLabel.trim() !== '') {
                                   if (!hasId) {
                                     // ID yoksa (yeni menü): label değiştiğinde otomatik slug ile href oluştur
@@ -431,9 +430,9 @@ export default function MenuManagement() {
                                     // href doluysa değiştirme (zaten newHref = currentHref)
                                   }
                                 }
-                                
-                                newItems[index].children![childIndex] = { 
-                                  ...newItems[index].children![childIndex], 
+
+                                newItems[index].children![childIndex] = {
+                                  ...newItems[index].children![childIndex],
                                   label: newLabel,
                                   href: newHref
                                 };
@@ -553,10 +552,10 @@ export default function MenuManagement() {
 
       {/* Arama ve Filtre */}
       {menus.length > 0 && (
-        <div style={{ 
-          background: 'white', 
-          padding: '1.5rem', 
-          borderRadius: '12px', 
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
+          borderRadius: '12px',
           marginBottom: '1.5rem',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
@@ -570,10 +569,10 @@ export default function MenuManagement() {
                 placeholder="Menü adı veya öğe adı ile ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem', 
-                  border: '2px solid #e2e8f0', 
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e2e8f0',
                   borderRadius: '8px',
                   fontSize: '1rem'
                 }}
@@ -586,10 +585,10 @@ export default function MenuManagement() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as any)}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem', 
-                  border: '2px solid #e2e8f0', 
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e2e8f0',
                   borderRadius: '8px',
                   fontSize: '1rem',
                   cursor: 'pointer'
@@ -598,7 +597,6 @@ export default function MenuManagement() {
                 <option value="all">Tümü</option>
                 <option value="main">Ana Menü</option>
                 <option value="footer">Footer</option>
-                <option value="sidebar">Sidebar</option>
               </select>
             </div>
           </div>
@@ -611,10 +609,10 @@ export default function MenuManagement() {
       )}
 
       {menus.length === 0 ? (
-        <div style={{ 
-          background: 'white', 
-          padding: '3rem', 
-          borderRadius: '12px', 
+        <div style={{
+          background: 'white',
+          padding: '3rem',
+          borderRadius: '12px',
           textAlign: 'center',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
@@ -636,16 +634,16 @@ export default function MenuManagement() {
           </button>
         </div>
       ) : filteredMenus.length === 0 ? (
-        <div style={{ 
-          background: 'white', 
-          padding: '3rem', 
-          borderRadius: '12px', 
+        <div style={{
+          background: 'white',
+          padding: '3rem',
+          borderRadius: '12px',
           textAlign: 'center',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
           <p style={{ color: '#666', fontSize: '1.1rem' }}>
-            {searchTerm || filterType !== 'all' 
-              ? 'Arama kriterlerinize uygun menü bulunamadı.' 
+            {searchTerm || filterType !== 'all'
+              ? 'Arama kriterlerinize uygun menü bulunamadı.'
               : 'Henüz menü eklenmemiş.'}
           </p>
           {searchTerm && (
@@ -670,35 +668,35 @@ export default function MenuManagement() {
           )}
         </div>
       ) : (
-        <div style={{ 
-          display: 'grid', 
+        <div style={{
+          display: 'grid',
           gap: '1.5rem',
           maxHeight: 'calc(100vh - 300px)',
           overflowY: 'auto',
           paddingRight: '0.5rem'
         }}>
           {filteredMenus.map((menu) => (
-            <div key={menu._id} style={{ 
-              background: 'white', 
-              padding: '1.5rem', 
-              borderRadius: '12px', 
+            <div key={menu._id} style={{
+              background: 'white',
+              padding: '1.5rem',
+              borderRadius: '12px',
               boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
               transition: 'transform 0.2s, box-shadow 0.2s'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+              }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
                 <div>
                   <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>{menu.name}</h3>
                   <div style={{ display: 'flex', gap: '1rem', color: '#666', fontSize: '0.9rem' }}>
-                    <span>Tip: <strong>{menu.type === 'main' ? 'Ana Menü' : menu.type === 'footer' ? 'Footer' : 'Sidebar'}</strong></span>
+                    <span>Tip: <strong>{menu.type === 'main' ? 'Ana Menü' : 'Footer'}</strong></span>
                     <span>Durum: <strong style={{ color: menu.isActive ? '#10b981' : '#ef4444' }}>{menu.isActive ? 'Aktif' : 'Pasif'}</strong></span>
                   </div>
                 </div>

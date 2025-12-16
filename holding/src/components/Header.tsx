@@ -13,7 +13,7 @@ interface MenuItem {
 interface Menu {
   _id: string;
   name: string;
-  type: 'main' | 'footer' | 'sidebar';
+  type: 'main' | 'footer';
   items: MenuItem[];
   isActive: boolean;
 }
