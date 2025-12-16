@@ -7,10 +7,11 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   size?: 'small' | 'medium' | 'large' | 'xlarge';
 }
 
-export default function Modal({ isOpen, onClose, title, children, size = 'medium' }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, footer, size = 'medium' }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -52,24 +53,34 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
         className={sizeClasses[size]}
         style={{
           backgroundColor: 'white',
-          borderRadius: '12px',
+          borderRadius: '8px',
           width: '100%',
           maxHeight: '90vh',
-          overflow: 'auto',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Sabit Header */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '1.5rem',
-            borderBottom: '1px solid #e2e8f0',
+            padding: '16px 20px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: '#ffffff',
+            flexShrink: 0,
           }}
         >
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#313131', margin: 0 }}>
+          <h2 style={{ 
+            fontSize: '18px', 
+            fontWeight: '600', 
+            color: '#1f2937', 
+            margin: 0,
+            letterSpacing: '-0.3px'
+          }}>
             {title}
           </h2>
           <button
@@ -77,26 +88,72 @@ export default function Modal({ isOpen, onClose, title, children, size = 'medium
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: '1.5rem',
-              color: '#666',
+              fontSize: '20px',
+              color: '#6b7280',
               cursor: 'pointer',
-              padding: '0.25rem 0.5rem',
+              padding: '4px 8px',
               borderRadius: '4px',
-              transition: 'all 0.2s',
+              transition: 'all 0.15s',
+              lineHeight: '1',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f1f5f9';
-              e.currentTarget.style.color = '#313131';
+              e.currentTarget.style.backgroundColor = '#f3f4f6';
+              e.currentTarget.style.color = '#1f2937';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = '#666';
+              e.currentTarget.style.color = '#6b7280';
             }}
           >
             ×
           </button>
         </div>
-        <div style={{ padding: '1.5rem' }}>{children}</div>
+        
+        {/* Scroll İçerik Alanı */}
+        <div 
+          style={{ 
+            padding: '20px',
+            overflowY: 'auto',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <style>{`
+            ::-webkit-scrollbar {
+              width: 6px;
+            }
+            ::-webkit-scrollbar-track {
+              background: #f9fafb;
+            }
+            ::-webkit-scrollbar-thumb {
+              background: #d1d5db;
+              border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+              background: #9ca3af;
+            }
+          `}</style>
+          {children}
+        </div>
+        
+        {/* Sabit Footer */}
+        {footer && (
+          <div
+            style={{
+              padding: '16px 20px',
+              borderTop: '1px solid #e5e7eb',
+              backgroundColor: '#ffffff',
+              flexShrink: 0,
+            }}
+          >
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

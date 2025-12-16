@@ -314,8 +314,69 @@ export default function ContentManagement() {
         onClose={closeModal}
         title={editingContent ? 'İçerik Düzenle' : 'Yeni İçerik Ekle'}
         size="xlarge"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={closeModal}
+              disabled={submitting}
+              style={{
+                background: '#f3f4f6',
+                color: '#1f2937',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+                opacity: submitting ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#e5e7eb';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#f3f4f6';
+                }
+              }}
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              form="content-form"
+              disabled={submitting}
+              style={{
+                background: submitting ? '#9ca3af' : '#1f2937',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#374151';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!submitting) {
+                  e.currentTarget.style.background = '#1f2937';
+                }
+              }}
+            >
+              {submitting ? 'Kaydediliyor...' : (editingContent ? 'Güncelle' : 'Oluştur')}
+            </button>
+          </div>
+        }
       >
-        <form onSubmit={handleSubmit}>
+        <form id="content-form" onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Slug</label>
@@ -606,65 +667,6 @@ export default function ContentManagement() {
                 }}
               />
             </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
-            <button
-              type="button"
-              onClick={closeModal}
-              disabled={submitting}
-              style={{
-                background: '#f3f4f6',
-                color: '#1f2937',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-                opacity: submitting ? 0.6 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#e5e7eb';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#f3f4f6';
-                }
-              }}
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{
-                background: submitting ? '#9ca3af' : '#1f2937',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#374151';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#1f2937';
-                }
-              }}
-            >
-              {submitting ? 'Kaydediliyor...' : (editingContent ? 'Güncelle' : 'Oluştur')}
-            </button>
           </div>
         </form>
       </Modal>
