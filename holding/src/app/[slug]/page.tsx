@@ -208,7 +208,14 @@ export default async function DynamicPage({ params }: PageProps) {
                         }
                         
                         return (
-                          <div key={index} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                          <div key={index} style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+                            gap: '2rem',
+                            marginTop: '1rem',
+                            marginBottom: '1rem',
+                            alignItems: 'stretch'
+                          }}>
                             {cardIds.map((cardId: string, cardIndex: number) => {
                               const cardContent = cardContents[cardId];
                               if (!cardContent) {
@@ -221,20 +228,27 @@ export default async function DynamicPage({ params }: PageProps) {
                                 <a
                                   key={cardIndex}
                                   href={`/${cardSlug}`}
-                                  className="content-card"
+                                  className={`content-card ${cardImage ? 'has-image' : 'no-image'}`}
                                   style={{
                                     textDecoration: 'none',
                                     color: 'inherit',
-                                    display: 'block'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    background: '#ffffff',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    overflow: 'hidden',
+                                    height: '100%'
                                   }}
                                 >
-                                  {cardImage && (
-                                    <div style={{
-                                      width: '100%',
-                                      height: '250px',
-                                      overflow: 'hidden',
-                                      background: '#f3f4f6'
-                                    }}>
+                                  <div style={{
+                                    width: '100%',
+                                    height: '220px',
+                                    overflow: 'hidden',
+                                    background: cardImage ? '#f9fafb' : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                                    position: 'relative',
+                                    flexShrink: 0
+                                  }}>
+                                    {cardImage ? (
                                       <img
                                         src={cardImage}
                                         alt={cardContent.title}
@@ -242,32 +256,90 @@ export default async function DynamicPage({ params }: PageProps) {
                                           width: '100%',
                                           height: '100%',
                                           objectFit: 'cover',
-                                          display: 'block'
+                                          display: 'block',
+                                          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                         }}
+                                        className="card-image"
                                       />
-                                    </div>
-                                  )}
-                                  <div style={{ padding: '1.5rem' }}>
-                                    <h3 style={{
-                                      margin: 0,
-                                      fontSize: '1.5rem',
-                                      fontWeight: '600',
-                                      color: '#1f2937',
-                                      lineHeight: '1.3',
-                                      marginBottom: cardContent.description ? '0.75rem' : '0'
-                                    }}>
-                                      {cardContent.title}
-                                    </h3>
-                                    {cardContent.description && (
-                                      <p style={{
-                                        margin: 0,
-                                        fontSize: '1rem',
-                                        color: '#6b7280',
-                                        lineHeight: '1.6'
+                                    ) : (
+                                      <div style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
                                       }}>
-                                        {cardContent.description}
-                                      </p>
+                                        <div style={{
+                                          width: '64px',
+                                          height: '64px',
+                                          borderRadius: '50%',
+                                          background: '#ffffff',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                                        }}>
+                                          <svg 
+                                            width="32" 
+                                            height="32" 
+                                            viewBox="0 0 24 24" 
+                                            fill="none" 
+                                            stroke="#9ca3af" 
+                                            strokeWidth="1.5"
+                                            style={{ opacity: 0.6 }}
+                                          >
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                                            <polyline points="21 15 16 10 5 21"/>
+                                          </svg>
+                                        </div>
+                                      </div>
                                     )}
+                                  </div>
+                                  <div style={{ 
+                                    padding: '2rem',
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between'
+                                  }}>
+                                    <div>
+                                      <h3 style={{
+                                        margin: 0,
+                                        fontSize: '1.375rem',
+                                        fontWeight: '600',
+                                        color: '#111827',
+                                        lineHeight: '1.4',
+                                        marginBottom: cardContent.description ? '0.875rem' : '0',
+                                        letterSpacing: '-0.01em'
+                                      }}>
+                                        {cardContent.title}
+                                      </h3>
+                                      {cardContent.description && (
+                                        <p style={{
+                                          margin: 0,
+                                          fontSize: '0.9375rem',
+                                          color: '#6b7280',
+                                          lineHeight: '1.7',
+                                          fontWeight: '400'
+                                        }}>
+                                          {cardContent.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div style={{
+                                      marginTop: '1.5rem',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      color: '#1f2937',
+                                      fontSize: '0.875rem',
+                                      fontWeight: '500',
+                                      opacity: 0.7,
+                                      transition: 'opacity 0.2s ease'
+                                    }} className="card-link">
+                                      Daha Fazla
+                                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>→</span>
+                                    </div>
                                   </div>
                                 </a>
                               );
@@ -359,38 +431,71 @@ export default async function DynamicPage({ params }: PageProps) {
                   padding: 0;
                 }
                 .content-card {
-                  border: 1px solid #e5e7eb;
-                  border-radius: 8px;
+                  border: none;
+                  border-radius: 0;
                   overflow: hidden;
                   background: #ffffff;
-                  transition: all 0.2s ease;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                  box-shadow: none;
                   text-decoration: none;
                   color: inherit;
-                  display: block;
+                  display: flex;
+                  flex-direction: column;
+                  position: relative;
+                }
+                .content-card::before {
+                  content: '';
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  border: 1px solid #e5e7eb;
+                  transition: border-color 0.3s ease;
+                  pointer-events: none;
                 }
                 .content-card:hover {
-                  transform: translateY(-4px);
-                  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+                  transform: translateY(-2px);
                 }
-                .content-card img {
+                .content-card:hover::before {
+                  border-color: #d1d5db;
+                }
+                .content-card.has-image:hover .card-image {
+                  transform: scale(1.03);
+                }
+                .content-card:hover .card-link {
+                  opacity: 1;
+                }
+                .content-card {
+                  height: 100%;
+                }
+                .content-card.no-image::before {
+                  border-color: #f3f4f6;
+                }
+                .content-card.no-image:hover::before {
+                  border-color: #e5e7eb;
+                }
+                .content-card .card-image {
                   width: 100%;
-                  height: 250px;
+                  height: 220px;
                   object-fit: cover;
                   display: block;
+                  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .content-card h3 {
                   margin: 0;
-                  font-size: 1.5rem;
+                  font-size: 1.375rem;
                   font-weight: 600;
-                  color: #1f2937;
-                  line-height: 1.3;
+                  color: #111827;
+                  line-height: 1.4;
+                  letter-spacing: -0.01em;
                 }
                 .content-card p {
-                  margin: 0.75rem 0 0 0;
-                  font-size: 1rem;
+                  margin: 0.875rem 0 0 0;
+                  font-size: 0.9375rem;
                   color: #6b7280;
-                  line-height: 1.6;
+                  line-height: 1.7;
+                  font-weight: 400;
                 }
               ` }} />
             </article>
