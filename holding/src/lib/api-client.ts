@@ -69,17 +69,6 @@ export class ApiClient {
     return data;
   }
 
-  async register(email: string, password: string, name: string) {
-    const data = await this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, name }),
-    });
-    if (data.token) {
-      this.setToken(data.token);
-    }
-    return data;
-  }
-
   async forgotPassword(email: string) {
     return this.request('/auth/forgot-password', {
       method: 'POST',

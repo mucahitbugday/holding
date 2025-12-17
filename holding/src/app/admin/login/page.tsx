@@ -89,12 +89,9 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div style={{ marginTop: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
           <Link href="/admin/forgot-password" style={{ color: '#313131', textDecoration: 'none' }}>
             Şifremi Unuttum
-          </Link>
-          <Link href="/admin/register" style={{ color: '#313131', textDecoration: 'none', fontSize: '0.9rem' }}>
-            Hesap Oluştur
           </Link>
         </div>
       </div>
