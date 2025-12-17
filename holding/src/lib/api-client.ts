@@ -208,6 +208,36 @@ export class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Users
+  async getUsers(search?: string) {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.request(`/users${query}`);
+  }
+
+  async getUser(id: string) {
+    return this.request(`/users/${id}`);
+  }
+
+  async createUser(data: { email: string; password: string; name: string; role?: 'admin' | 'user'; isActive?: boolean }) {
+    return this.request('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUser(id: string, data: { email?: string; password?: string; name?: string; role?: 'admin' | 'user'; isActive?: boolean }) {
+    return this.request(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.request(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
