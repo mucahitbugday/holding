@@ -10,6 +10,7 @@ import News from '@/components/News';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import SmoothScroll from '@/components/SmoothScroll';
+import StructuredData from '@/components/StructuredData';
 
 interface HomePageSection {
   type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
@@ -21,10 +22,24 @@ interface HomePageSection {
 export default function Home() {
   const [sections, setSections] = useState<HomePageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<any>(null);
 
   useEffect(() => {
     loadHomePageSettings();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      const data = await response.json();
+      if (data.success && data.settings) {
+        setSettings(data.settings);
+      }
+    } catch (error) {
+      console.error('Ayarlar yüklenemedi:', error);
+    }
+  };
 
   const loadHomePageSettings = async () => {
     try {
@@ -97,6 +112,8 @@ export default function Home() {
 
   return (
     <>
+      <StructuredData type="organization" data={settings} id="org" />
+      <StructuredData type="website" data={settings} id="website" />
       <SmoothScroll />
       <Header />
       <main>

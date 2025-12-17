@@ -3,6 +3,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import connectDB from '@/lib/mongodb';
 import Content from '@/models/Content';
+import Settings from '@/models/Settings';
+import { Metadata } from 'next';
+import StructuredData from '@/components/StructuredData';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -22,9 +25,21 @@ async function getContentBySlug(slug: string) {
   }
 }
 
-export async function generateMetadata({ params }: PageProps) {
+async function getSettings() {
+  try {
+    await connectDB();
+    const settings = await Settings.findOne();
+    return settings;
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const content = await getContentBySlug(slug);
+  const settings = await getSettings();
 
   if (!content) {
     return {
@@ -32,15 +47,62 @@ export async function generateMetadata({ params }: PageProps) {
     };
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteName = settings?.siteName || 'Holding Şirketi';
+  const pageUrl = `${siteUrl}/${slug}`;
+  const featuredImage = content.featuredImage || content.metadata?.image;
+  const imageUrl = featuredImage ? `${siteUrl}${featuredImage}` : `${siteUrl}/images/og-default.jpg`;
+
   return {
-    title: content.title || 'Sayfa',
-    description: content.description || '',
+    title: `${content.title} | ${siteName}`,
+    description: content.description || settings?.siteDescription || '',
+    keywords: content.metadata?.keywords || settings?.metaKeywords || [],
+    authors: [{ name: settings?.companyName || siteName }],
+    openGraph: {
+      type: 'article',
+      locale: 'tr_TR',
+      url: pageUrl,
+      siteName: siteName,
+      title: content.title,
+      description: content.description || '',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: content.title,
+        },
+      ],
+      publishedTime: content.createdAt?.toString(),
+      modifiedTime: content.updatedAt?.toString() || content.createdAt?.toString(),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: content.title,
+      description: content.description || '',
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: pageUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
   };
 }
 
 export default async function DynamicPage({ params }: PageProps) {
   const { slug } = await params;
   const content = await getContentBySlug(slug);
+  const settings = await getSettings();
 
   if (!content) {
     notFound();
@@ -80,6 +142,7 @@ export default async function DynamicPage({ params }: PageProps) {
 
   return (
     <>
+      <StructuredData type="article" data={settings} content={content} slug={slug} id="article" />
       <Header />
       <main style={{ minHeight: '60vh', padding: '0' }}>
         {featuredImage ? (
