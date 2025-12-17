@@ -3,10 +3,93 @@ import connectDB from '@/lib/mongodb';
 import Content from '@/models/Content';
 import { getAuthUser } from '@/lib/auth';
 
+// Default içerikleri oluştur
+async function initializeDefaultContents() {
+  try {
+    const contentCount = await Content.countDocuments();
+    
+    if (contentCount === 0) {
+      const defaultContents = [
+        {
+          slug: 'hakkimizda',
+          title: 'Hakkımızda',
+          description: 'Şirketimiz hakkında bilgiler',
+          content: '<h2>Hakkımızda</h2><p>Şirketimiz hakkında detaylı bilgiler burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 0,
+        },
+        {
+          slug: 'hizmetlerimiz',
+          title: 'Hizmetlerimiz',
+          description: 'Sunduğumuz hizmetler',
+          content: '<h2>Hizmetlerimiz</h2><p>Şirketimizin sunduğu hizmetler burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 1,
+        },
+        {
+          slug: 'haberler',
+          title: 'Haberler',
+          description: 'Güncel haberler ve duyurular',
+          content: '<h2>Haberler</h2><p>Güncel haberler ve duyurular burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 2,
+        },
+        {
+          slug: 'iletisim',
+          title: 'İletişim',
+          description: 'Bizimle iletişime geçin',
+          content: '<h2>İletişim</h2><p>Bizimle iletişime geçmek için aşağıdaki bilgileri kullanabilirsiniz.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 3,
+        },
+        {
+          slug: 'gizlilik-politikasi',
+          title: 'Gizlilik Politikası',
+          description: 'Gizlilik politikamız',
+          content: '<h2>Gizlilik Politikası</h2><p>Gizlilik politikamız hakkında detaylı bilgiler burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 4,
+        },
+        {
+          slug: 'kullanim-kosullari',
+          title: 'Kullanım Koşulları',
+          description: 'Kullanım koşullarımız',
+          content: '<h2>Kullanım Koşulları</h2><p>Kullanım koşullarımız hakkında detaylı bilgiler burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 5,
+        },
+        {
+          slug: 'kvkk',
+          title: 'KVKK',
+          description: 'Kişisel Verilerin Korunması Kanunu',
+          content: '<h2>KVKK</h2><p>Kişisel Verilerin Korunması Kanunu kapsamında bilgilendirme metni burada yer alacaktır.</p>',
+          type: 'page' as const,
+          isActive: true,
+          order: 6,
+        },
+      ];
+
+      await Content.insertMany(defaultContents);
+      console.log('✅ Varsayılan içerikler oluşturuldu');
+    }
+  } catch (error: any) {
+    console.error('❌ Varsayılan içerik oluşturma hatası:', error.message);
+  }
+}
+
 // GET - İçerikleri getir
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+
+    // Varsayılan içerikleri kontrol et ve oluştur
+    await initializeDefaultContents();
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
