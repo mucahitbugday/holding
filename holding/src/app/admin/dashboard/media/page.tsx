@@ -359,16 +359,17 @@ export default function MediaManagement() {
                 </div>
               )}
               <div style={{ marginBottom: '8px' }}>
-                <p style={{ 
-                  fontSize: '13px', 
-                  fontWeight: '500', 
-                  color: '#1f2937',
-                  marginBottom: '4px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  title: file.originalName
-                }}>
+                <p 
+                  title={file.originalName}
+                  style={{ 
+                    fontSize: '13px', 
+                    fontWeight: '500', 
+                    color: '#1f2937',
+                    marginBottom: '4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
                   {file.originalName}
                 </p>
                 <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
