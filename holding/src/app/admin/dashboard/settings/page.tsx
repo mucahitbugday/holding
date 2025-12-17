@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
 import { apiClient } from '@/lib/api-client';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Checkbox from '@/components/ui/Checkbox';
 import Swal from 'sweetalert2';
 
 interface Settings {
@@ -279,33 +282,9 @@ export default function SettingsPage() {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Ayarlar</h1>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            background: saving ? '#9ca3af' : '#1f2937',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            fontWeight: '500',
-            fontSize: '14px',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            if (!saving) {
-              e.currentTarget.style.background = '#374151';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!saving) {
-              e.currentTarget.style.background = '#1f2937';
-            }
-          }}
-        >
-          {saving ? 'Kaydediliyor...' : 'Kaydet'}
-        </button>
+        <Button onClick={handleSave} variant="primary" size="md" isLoading={saving}>
+          Kaydet
+        </Button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
@@ -320,26 +299,12 @@ export default function SettingsPage() {
           </h2>
           <div style={{ display: 'grid', gap: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Site Adı <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Site Adı"
                 value={settings.siteName}
                 onChange={(e) => updateField('siteName', e.target.value)}
                 required
                 placeholder="Site adını girin"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -367,25 +332,11 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Site Logo URL
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Site Logo URL"
                 value={settings.siteLogo || ''}
                 onChange={(e) => updateField('siteLogo', e.target.value)}
                 placeholder="/uploads/logo.png veya URL"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
           </div>
@@ -402,162 +353,67 @@ export default function SettingsPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Şirket Adı <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Şirket Adı"
                 value={settings.companyName}
                 onChange={(e) => updateField('companyName', e.target.value)}
                 required
                 placeholder="Şirket adı"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Kurucu
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Kurucu"
                 value={settings.companyFounder || ''}
                 onChange={(e) => updateField('companyFounder', e.target.value)}
                 placeholder="Kurucu adı"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Kuruluş Yılı
-              </label>
-              <input
+              <Input
+                label="Kuruluş Yılı"
                 type="number"
                 value={settings.companyFoundedYear || ''}
                 onChange={(e) => updateField('companyFoundedYear', e.target.value ? parseInt(e.target.value) : undefined)}
                 placeholder="2024"
-                min="1900"
-                max="2100"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                min={1900}
+                max={2100}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Vergi Numarası
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Vergi Numarası"
                 value={settings.companyTaxNumber || ''}
                 onChange={(e) => updateField('companyTaxNumber', e.target.value)}
                 placeholder="Vergi numarası"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Ticaret Sicil No
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Ticaret Sicil No"
                 value={settings.companyTradeRegistryNumber || ''}
                 onChange={(e) => updateField('companyTradeRegistryNumber', e.target.value)}
                 placeholder="Ticaret sicil numarası"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                E-posta <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <input
+              <Input
+                label="E-posta"
                 type="email"
                 value={settings.companyEmail}
                 onChange={(e) => updateField('companyEmail', e.target.value)}
                 required
                 placeholder="info@example.com"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Telefon <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <input
+              <Input
+                label="Telefon"
                 type="tel"
                 value={settings.companyPhone}
                 onChange={(e) => updateField('companyPhone', e.target.value)}
                 required
                 placeholder="+90 (212) 123 45 67"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
@@ -857,15 +713,11 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.smtp?.secure || false}
-                  onChange={(e) => updateSmtpField('secure', e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>SSL/TLS Kullan (Secure)</span>
-              </label>
+              <Checkbox
+                label="SSL/TLS Kullan (Secure)"
+                checked={settings.smtp?.secure || false}
+                onChange={(e) => updateSmtpField('secure', e.target.checked)}
+              />
             </div>
           </div>
         </div>

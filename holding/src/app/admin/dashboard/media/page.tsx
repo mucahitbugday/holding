@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
+import Select from '@/components/ui/Select';
 import Swal from 'sweetalert2';
 
 interface MediaFile {
@@ -158,28 +160,17 @@ export default function MediaManagement() {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Medya Yönetimi</h1>
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#6b7280', fontSize: '13px' }}>
-            Filtrele
-          </label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as any)}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #e5e7eb',
-              borderRadius: '6px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              background: '#ffffff',
-              color: '#1f2937'
-            }}
-          >
-            <option value="all">Tümü</option>
-            <option value="image">Resimler</option>
-            <option value="pdf">PDF Dosyaları</option>
-          </select>
-        </div>
+        <Select
+          label="Filtrele"
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value as any)}
+          options={[
+            { value: 'all', label: 'Tümü' },
+            { value: 'image', label: 'Resimler' },
+            { value: 'pdf', label: 'PDF Dosyaları' },
+          ]}
+          style={{ width: '200px' }}
+        />
       </div>
 
       {/* Yükleme Bölümü */}
@@ -222,21 +213,21 @@ export default function MediaManagement() {
             htmlFor="file-upload"
             style={{
               display: 'inline-block',
-              padding: '8px 16px',
-              background: '#1f2937',
+              padding: '0.5rem 1rem',
+              background: '#313131',
               color: 'white',
-              borderRadius: '6px',
+              borderRadius: '0.5rem',
               cursor: 'pointer',
-              fontWeight: '500',
-              fontSize: '14px',
-              transition: 'all 0.15s',
-              marginBottom: '12px'
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              transition: 'all 0.2s',
+              marginBottom: '12px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#374151';
+              e.currentTarget.style.background = '#414141';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#1f2937';
+              e.currentTarget.style.background = '#313131';
             }}
           >
             📁 Dosya Seç
@@ -247,34 +238,15 @@ export default function MediaManagement() {
               : 'Dosyaları buraya sürükleyin veya tıklayarak seçin'}
           </p>
           {selectedFiles.length > 0 && (
-            <button
+            <Button
               onClick={handleUpload}
-              disabled={uploading}
-              style={{
-                marginTop: '12px',
-                background: uploading ? '#9ca3af' : '#1f2937',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: uploading ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (!uploading) {
-                  e.currentTarget.style.background = '#374151';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!uploading) {
-                  e.currentTarget.style.background = '#1f2937';
-                }
-              }}
+              variant="primary"
+              size="md"
+              isLoading={uploading}
+              style={{ marginTop: '12px' }}
             >
-              {uploading ? 'Yükleniyor...' : 'Yükle'}
-            </button>
+              Yükle
+            </Button>
           )}
         </div>
       </div>
@@ -384,44 +356,20 @@ export default function MediaManagement() {
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    flex: 1,
-                    background: '#1f2937',
-                    color: 'white',
-                    border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    textDecoration: 'none',
-                    textAlign: 'center',
-                    transition: 'background 0.15s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#374151'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#1f2937'}
+                  style={{ flex: 1, textDecoration: 'none' }}
                 >
-                  Görüntüle
+                  <Button variant="primary" size="sm" style={{ width: '100%' }}>
+                    Görüntüle
+                  </Button>
                 </a>
-                <button
+                <Button
                   onClick={() => handleDelete(file._id)}
-                  style={{
-                    flex: 1,
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    transition: 'background 0.15s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+                  variant="danger"
+                  size="sm"
+                  style={{ flex: 1 }}
                 >
                   Sil
-                </button>
+                </Button>
               </div>
             </div>
           ))}

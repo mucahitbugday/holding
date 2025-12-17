@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import Modal from '@/components/Modal';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import Checkbox from '@/components/ui/Checkbox';
 import Swal from 'sweetalert2';
 
 interface MenuItem {
@@ -91,26 +95,24 @@ export default function MenuManagement() {
 
     const newItems = [...formData.items];
     if (selectedChildIndex) {
-      // Alt menü için
       if (!newItems[selectedChildIndex.parentIndex].children) {
         newItems[selectedChildIndex.parentIndex].children = [];
       }
       const child = newItems[selectedChildIndex.parentIndex].children![selectedChildIndex.childIndex];
       if (selectedMediaType === 'image') {
         child.imageUrl = mediaUrl;
-        child.href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+        child.href = mediaUrl;
       } else {
         child.pdfUrl = mediaUrl;
-        child.href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+        child.href = mediaUrl;
       }
     } else {
-      // Ana menü item için
       if (selectedMediaType === 'image') {
         newItems[selectedItemIndex].imageUrl = mediaUrl;
-        newItems[selectedItemIndex].href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+        newItems[selectedItemIndex].href = mediaUrl;
       } else {
         newItems[selectedItemIndex].pdfUrl = mediaUrl;
-        newItems[selectedItemIndex].href = mediaUrl; // URL'yi otomatik olarak href'e yaz
+        newItems[selectedItemIndex].href = mediaUrl;
       }
     }
     setFormData({ ...formData, items: newItems });
@@ -127,6 +129,11 @@ export default function MenuManagement() {
       setMenus(response.menus || []);
     } catch (error) {
       console.error('Menüler yüklenemedi:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Menüler yüklenirken bir hata oluştu',
+      });
     } finally {
       setLoading(false);
     }
@@ -136,19 +143,16 @@ export default function MenuManagement() {
     const newErrors: typeof errors = {};
     let isValid = true;
 
-    // Menü adı kontrolü
     if (!formData.name || formData.name.trim() === '') {
       newErrors.name = true;
       isValid = false;
     }
 
-    // Menü öğeleri kontrolü
     if (formData.items.length === 0) {
       newErrors.items = true;
       isValid = false;
     }
 
-    // Her menü öğesi için kontrol
     formData.items.forEach((item, index) => {
       if (!item.label || item.label.trim() === '') {
         if (!newErrors.itemLabels) newErrors.itemLabels = {};
@@ -161,7 +165,6 @@ export default function MenuManagement() {
         isValid = false;
       }
 
-      // Alt menü öğeleri için kontrol
       if (item.children && item.children.length > 0) {
         item.children.forEach((child, childIndex) => {
           const childKey = `${index}-${childIndex}`;
@@ -183,15 +186,36 @@ export default function MenuManagement() {
     return isValid;
   };
 
+  const createSlug = (text: string): string => {
+    const turkishToEnglish: { [key: string]: string } = {
+      'ç': 'c', 'Ç': 'C',
+      'ğ': 'g', 'Ğ': 'G',
+      'ı': 'i', 'İ': 'I',
+      'ö': 'o', 'Ö': 'O',
+      'ş': 's', 'Ş': 'S',
+      'ü': 'u', 'Ü': 'U'
+    };
+
+    return text
+      .split('')
+      .map(char => turkishToEnglish[char] || char)
+      .join('')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Form validasyonu
     if (!validateForm()) {
       await Swal.fire({
         icon: 'error',
         title: 'Eksik Bilgi!',
-        html: 'Lütfen tüm zorunlu alanları doldurun. Kırmızı ile işaretli alanlar zorunludur.',
+        html: 'Lütfen tüm zorunlu alanları doldurun.',
         confirmButtonColor: '#313131'
       });
       return;
@@ -199,30 +223,13 @@ export default function MenuManagement() {
 
     setSubmitting(true);
     try {
-      // Alt menülerin href'lerini slug formatına çevir
       const processedItems = formData.items.map(item => {
         if (item.children && item.children.length > 0) {
           const processedChildren = item.children.map(child => {
             let href = child.href;
-            if (href) {
-              // Eğer / ile başlamıyorsa, slug formatına çevir
-              if (!href.startsWith('/')) {
-                // # ile başlıyorsa #'i kaldır
-                if (href.startsWith('#')) {
-                  href = href.substring(1);
-                }
-                const slug = createSlug(href);
-                href = slug ? `/${slug}` : href;
-              } else {
-                // / işaretinden sonrasını slug formatına çevir
-                const slugPart = href.substring(1);
-                const slug = createSlug(slugPart);
-                href = slug ? `/${slug}` : '/';
-              }
-            } else if (child.label) {
-              // Eğer href boşsa ama label varsa, label'dan slug oluştur
-              const slug = createSlug(child.label);
-              href = slug ? `/${slug}` : '';
+            if (href && !href.startsWith('/') && !href.startsWith('http') && !href.startsWith('#')) {
+              const slug = createSlug(href);
+              href = slug ? `/${slug}` : href;
             }
             return { ...child, href };
           });
@@ -234,7 +241,6 @@ export default function MenuManagement() {
       const processedFormData = { ...formData, items: processedItems };
 
       if (editingMenu) {
-        // Menü güncellenirken, eğer aktif yapılıyorsa ve aynı tipte başka aktif menü varsa kontrol et
         if (processedFormData.isActive) {
           const activeMenuOfSameType = menus.find(
             menu => menu.type === processedFormData.type && 
@@ -257,10 +263,9 @@ export default function MenuManagement() {
 
             if (!result.isConfirmed) {
               setSubmitting(false);
-              return; // İşlemi iptal et
+              return;
             }
 
-            // Mevcut aktif menüyü pasif yap
             await apiClient.updateMenu(activeMenuOfSameType._id, {
               ...activeMenuOfSameType,
               isActive: false
@@ -277,7 +282,6 @@ export default function MenuManagement() {
           showConfirmButton: false
         });
       } else {
-        // Yeni menü eklerken, eğer aktif yapılıyorsa aynı tipte aktif menü var mı kontrol et
         if (processedFormData.isActive) {
           const activeMenuOfSameType = menus.find(
             menu => menu.type === processedFormData.type && menu.isActive
@@ -298,10 +302,9 @@ export default function MenuManagement() {
 
             if (!result.isConfirmed) {
               setSubmitting(false);
-              return; // İşlemi iptal et
+              return;
             }
 
-            // Mevcut aktif menüyü pasif yap
             await apiClient.updateMenu(activeMenuOfSameType._id, {
               ...activeMenuOfSameType,
               isActive: false
@@ -318,7 +321,7 @@ export default function MenuManagement() {
           showConfirmButton: false
         });
       }
-      // Başarılı olduğunda modal'ı kapat ve sayfayı yenile
+      
       setShowModal(false);
       setEditingMenu(null);
       setFormData({ name: '', type: 'main', items: [], isActive: true });
@@ -417,30 +420,6 @@ export default function MenuManagement() {
     });
   };
 
-  // Türkçe karakterleri İngilizce karakterlere çevir ve slug oluştur
-  const createSlug = (text: string): string => {
-    const turkishToEnglish: { [key: string]: string } = {
-      'ç': 'c', 'Ç': 'C',
-      'ğ': 'g', 'Ğ': 'G',
-      'ı': 'i', 'İ': 'I',
-      'ö': 'o', 'Ö': 'O',
-      'ş': 's', 'Ş': 'S',
-      'ü': 'u', 'Ü': 'U'
-    };
-
-    return text
-      .split('')
-      .map(char => turkishToEnglish[char] || char)
-      .join('')
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')  // Boşlukları "-" ile değiştir
-      .replace(/[^a-z0-9-]/g, '')  // Sadece harf, rakam ve "-" bırak
-      .replace(/-+/g, '-')  // Birden fazla "-" varsa tek "-" yap
-      .replace(/^-|-$/g, '');  // Başta ve sonda "-" varsa kaldır
-  };
-
-  // Filtrelenmiş menüleri getir
   const filteredMenus = menus.filter(menu => {
     const matchesSearch = menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       menu.items.some(item =>
@@ -462,113 +441,210 @@ export default function MenuManagement() {
 
   return (
     <div style={{ padding: '0' }}>
+      {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '24px',
         paddingBottom: '16px',
-        borderBottom: '1px solid #e5e7eb'
+        borderBottom: '1px solid #e5e7eb',
+        flexWrap: 'wrap',
+        gap: '1rem'
       }}>
-        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Menü Yönetimi</h1>
-        <button
-          onClick={openNewMenuModal}
-          style={{
-            background: '#1f2937',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '14px',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#374151';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1f2937';
-          }}
-        >
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0 }}>Menü Yönetimi</h1>
+        <Button onClick={openNewMenuModal} variant="primary" size="md">
           + Yeni Menü
-        </button>
+        </Button>
       </div>
 
+      {/* Filters */}
+      {menus.length > 0 && (
+        <div style={{
+          background: 'white',
+          padding: '1.5rem',
+          borderRadius: '12px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '1rem' 
+          }}>
+            <Input
+              label="Arama"
+              placeholder="Menü adı veya öğe adı ile ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Select
+              label="Menü Tipi"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as any)}
+              options={[
+                { value: 'all', label: 'Tümü' },
+                { value: 'main', label: 'Ana Menü' },
+                { value: 'footer', label: 'Footer' },
+              ]}
+            />
+            <Select
+              label="Durum"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              options={[
+                { value: 'all', label: 'Tümü' },
+                { value: 'active', label: 'Aktif' },
+                { value: 'inactive', label: 'Pasif' },
+              ]}
+            />
+          </div>
+          {(searchTerm || filterType !== 'all' || filterStatus !== 'all') && (
+            <div style={{ marginTop: '1rem', color: '#666', fontSize: '0.9rem' }}>
+              {filteredMenus.length} menü bulundu
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Menu List */}
+      {menus.length === 0 ? (
+        <div style={{
+          background: 'white',
+          padding: '3rem',
+          borderRadius: '12px',
+          textAlign: 'center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ color: '#666', fontSize: '1.1rem', marginBottom: '1rem' }}>Henüz menü eklenmemiş.</p>
+          <Button onClick={openNewMenuModal} variant="primary" size="lg">
+            İlk Menüyü Ekle
+          </Button>
+        </div>
+      ) : filteredMenus.length === 0 ? (
+        <div style={{
+          background: 'white',
+          padding: '3rem',
+          borderRadius: '12px',
+          textAlign: 'center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ color: '#666', fontSize: '1.1rem', marginBottom: '1rem' }}>
+            Arama kriterlerinize uygun menü bulunamadı.
+          </p>
+          <Button
+            onClick={() => {
+              setSearchTerm('');
+              setFilterType('all');
+              setFilterStatus('all');
+            }}
+            variant="outline"
+            size="md"
+          >
+            Filtreleri Temizle
+          </Button>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gap: '1.5rem',
+        }}>
+          {filteredMenus.map((menu) => (
+            <div key={menu._id} style={{
+              background: 'white',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'start', 
+                marginBottom: '1rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
+                    {menu.name}
+                  </h3>
+                  <div style={{ display: 'flex', gap: '1rem', color: '#666', fontSize: '0.9rem', flexWrap: 'wrap' }}>
+                    <span>Tip: <strong>{menu.type === 'main' ? 'Ana Menü' : 'Footer'}</strong></span>
+                    <span>Durum: <strong style={{ color: menu.isActive ? '#10b981' : '#ef4444' }}>
+                      {menu.isActive ? 'Aktif' : 'Pasif'}
+                    </strong></span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <Button onClick={() => handleEdit(menu)} variant="primary" size="sm">
+                    Düzenle
+                  </Button>
+                  <Button onClick={() => handleDelete(menu._id)} variant="danger" size="sm">
+                    Sil
+                  </Button>
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <strong style={{ color: '#313131', fontSize: '0.95rem' }}>
+                    Öğeler: {menu.items.length} ana öğe, {menu.items.reduce((acc, item) => acc + (item.children?.length || 0), 0)} alt öğe
+                  </strong>
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <ul style={{ paddingLeft: '1.5rem', listStyle: 'none' }}>
+                    {menu.items
+                      .sort((a, b) => a.order - b.order)
+                      .map((item, idx) => (
+                        <li key={idx} style={{ marginBottom: '1rem', color: '#313131', padding: '0.75rem', background: '#f8fafc', borderRadius: '6px' }}>
+                          <div style={{ fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <span>{item.label}</span>
+                            <span style={{ color: '#666', fontWeight: '400', fontSize: '0.85rem' }}>({item.href})</span>
+                            <span style={{ color: '#999', fontSize: '0.8rem' }}>• Sıra: {item.order}</span>
+                          </div>
+                          {item.children && item.children.length > 0 && (
+                            <ul style={{ marginTop: '0.5rem', paddingLeft: '1rem', color: '#666', borderLeft: '2px solid #e2e8f0' }}>
+                              {item.children
+                                .sort((a, b) => a.order - b.order)
+                                .map((child, childIdx) => (
+                                  <li key={childIdx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', padding: '0.25rem 0' }}>
+                                    <span style={{ fontWeight: '500' }}>{child.label}</span>
+                                    <span style={{ color: '#999', fontSize: '0.85rem', marginLeft: '0.5rem' }}>({child.href})</span>
+                                    <span style={{ color: '#999', fontSize: '0.8rem', marginLeft: '0.5rem' }}>• Sıra: {child.order}</span>
+                                  </li>
+                                ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Menu Form Modal */}
       <Modal
         isOpen={showModal}
         onClose={closeModal}
         title={editingMenu ? 'Menü Düzenle' : 'Yeni Menü Ekle'}
         size="large"
         footer={
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={closeModal}
-              disabled={submitting}
-              style={{
-                background: '#f3f4f6',
-                color: '#1f2937',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-                opacity: submitting ? 0.6 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#e5e7eb';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#f3f4f6';
-                }
-              }}
-            >
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <Button onClick={closeModal} variant="outline" size="md" disabled={submitting}>
               İptal
-            </button>
-            <button
-              type="submit"
-              form="menu-form"
-              disabled={submitting}
-              style={{
-                background: submitting ? '#9ca3af' : '#1f2937',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#374151';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#1f2937';
-                }
-              }}
-            >
-              {submitting ? 'Kaydediliyor...' : (editingMenu ? 'Güncelle' : 'Oluştur')}
-            </button>
+            </Button>
+            <Button type="submit" form="menu-form" variant="primary" size="md" isLoading={submitting}>
+              {editingMenu ? 'Güncelle' : 'Oluştur'}
+            </Button>
           </div>
         }
       >
         <form id="menu-form" onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
-              Menü Adı <span style={{ color: '#dc2626' }}>*</span>
-            </label>
-            <input
-              type="text"
+            <Input
+              label="Menü Adı"
               value={formData.name}
               onChange={(e) => {
                 setFormData({ ...formData, name: e.target.value });
@@ -577,83 +653,43 @@ export default function MenuManagement() {
                 }
               }}
               required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `2px solid ${errors.name ? '#dc2626' : '#e2e8f0'}`,
-                borderRadius: '8px',
-                fontSize: '1rem',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#313131'}
-              onBlur={(e) => {
-                if (!errors.name) {
-                  e.currentTarget.style.borderColor = '#e2e8f0';
-                }
-              }}
+              error={errors.name}
+              errorMessage="Menü adı gereklidir"
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>Menü Tipi</label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="main">Ana Menü</option>
-                <option value="footer">Footer</option>
-              </select>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                <span style={{ fontWeight: '600', color: '#313131' }}>Aktif</span>
-              </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <Select
+              label="Menü Tipi"
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+              options={[
+                { value: 'main', label: 'Ana Menü' },
+                { value: 'footer', label: 'Footer' },
+              ]}
+            />
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <Checkbox
+                label="Aktif"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+              />
             </div>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <label style={{ fontWeight: '600', color: '#313131', fontSize: '1.1rem' }}>
-                Menü Öğeleri <span style={{ color: '#dc2626' }}>*</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <label style={{ fontWeight: '600', color: '#313131', fontSize: '1rem' }}>
+                Menü Öğeleri
+                <span style={{ color: '#dc2626', marginLeft: '0.25rem' }}>*</span>
                 {errors.items && <span style={{ color: '#dc2626', fontSize: '0.9rem', marginLeft: '0.5rem' }}>(En az bir öğe gerekli)</span>}
               </label>
-              <button
-                type="button"
-                onClick={addMenuItem}
-                style={{
-                  background: '#414141',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  fontSize: '0.9rem',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#313131'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#414141'}
-              >
+              <Button type="button" onClick={addMenuItem} variant="secondary" size="sm">
                 + Öğe Ekle
-              </button>
+              </Button>
             </div>
 
-            <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+            <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
               {formData.items.map((item, index) => (
                 <div key={index} style={{
                   background: '#f8fafc',
@@ -662,89 +698,52 @@ export default function MenuManagement() {
                   marginBottom: '0.75rem',
                   border: `1px solid ${errors.items ? '#dc2626' : '#e2e8f0'}`
                 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div>
-                      <input
-                        type="text"
-                        placeholder="Label *"
-                        value={item.label}
-                        onChange={(e) => {
-                          updateMenuItem(index, 'label', e.target.value);
-                          if (errors.itemLabels && errors.itemLabels[index]) {
-                            const newItemLabels = { ...errors.itemLabels };
-                            delete newItemLabels[index];
-                            setErrors({ ...errors, itemLabels: newItemLabels });
-                          }
-                        }}
-                        style={{ 
-                          width: '100%',
-                          padding: '0.625rem', 
-                          border: `2px solid ${errors.itemLabels && errors.itemLabels[index] ? '#dc2626' : '#e2e8f0'}`, 
-                          borderRadius: '6px', 
-                          fontSize: '0.9rem' 
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        placeholder="Href *"
-                        value={item.href}
-                        onChange={(e) => {
-                          if (item.imageUrl || item.pdfUrl) return; // Medya dosyası varsa değişikliğe izin verme
-                          updateMenuItem(index, 'href', e.target.value);
-                          if (errors.itemHrefs && errors.itemHrefs[index]) {
-                            const newItemHrefs = { ...errors.itemHrefs };
-                            delete newItemHrefs[index];
-                            setErrors({ ...errors, itemHrefs: newItemHrefs });
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (item.imageUrl || item.pdfUrl) {
-                            e.preventDefault();
-                            return false;
-                          }
-                        }}
-                        disabled={!!(item.imageUrl || item.pdfUrl)}
-                        readOnly={!!(item.imageUrl || item.pdfUrl)}
-                        style={{ 
-                          width: '100%',
-                          padding: '0.625rem', 
-                          border: `2px solid ${errors.itemHrefs && errors.itemHrefs[index] ? '#dc2626' : '#e2e8f0'}`, 
-                          borderRadius: '6px', 
-                          fontSize: '0.9rem',
-                          backgroundColor: (item.imageUrl || item.pdfUrl) ? '#f3f4f6' : 'white',
-                          cursor: (item.imageUrl || item.pdfUrl) ? 'not-allowed' : 'text',
-                          opacity: (item.imageUrl || item.pdfUrl) ? 0.7 : 1
-                        }}
-                      />
-                    </div>
-                    <input
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <Input
+                      placeholder="Label *"
+                      value={item.label}
+                      onChange={(e) => {
+                        updateMenuItem(index, 'label', e.target.value);
+                        if (errors.itemLabels && errors.itemLabels[index]) {
+                          const newItemLabels = { ...errors.itemLabels };
+                          delete newItemLabels[index];
+                          setErrors({ ...errors, itemLabels: newItemLabels });
+                        }
+                      }}
+                      error={errors.itemLabels && errors.itemLabels[index]}
+                    />
+                    <Input
+                      placeholder="Href *"
+                      value={item.href}
+                      onChange={(e) => {
+                        if (item.imageUrl || item.pdfUrl) return;
+                        updateMenuItem(index, 'href', e.target.value);
+                        if (errors.itemHrefs && errors.itemHrefs[index]) {
+                          const newItemHrefs = { ...errors.itemHrefs };
+                          delete newItemHrefs[index];
+                          setErrors({ ...errors, itemHrefs: newItemHrefs });
+                        }
+                      }}
+                      disabled={!!(item.imageUrl || item.pdfUrl)}
+                      error={errors.itemHrefs && errors.itemHrefs[index]}
+                    />
+                    <Input
                       type="number"
                       placeholder="Sıra"
                       value={item.order}
                       onChange={(e) => updateMenuItem(index, 'order', parseInt(e.target.value) || 0)}
-                      style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeMenuItem(index)}
-                      style={{
-                        background: '#dc2626',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.625rem',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
-                      }}
+                      variant="danger"
+                      size="sm"
                     >
                       Sil
-                    </button>
+                    </Button>
                   </div>
-                  <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Button
                       type="button"
                       onClick={() => {
                         const newItems = [...formData.items];
@@ -757,266 +756,149 @@ export default function MenuManagement() {
                         ];
                         setFormData({ ...formData, items: newItems });
                       }}
-                      style={{
-                        background: '#414141',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '500'
-                      }}
+                      variant="secondary"
+                      size="sm"
                     >
-                      + Alt Menü Ekle
-                    </button>
-                    <button
+                      + Alt Menü
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => openMediaModal('image', index)}
-                      style={{
-                        background: '#10b981',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '500'
-                      }}
+                      variant="success"
+                      size="sm"
                     >
-                      🖼️ Resim Seç
-                    </button>
-                    <button
+                      🖼️ Resim
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => openMediaModal('pdf', index)}
-                      style={{
-                        background: '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '500'
-                      }}
+                      variant="success"
+                      size="sm"
                     >
-                      📄 PDF Seç
-                    </button>
+                      📄 PDF
+                    </Button>
                     {item.imageUrl && (
-                      <span style={{ 
-                        fontSize: '0.875rem', 
-                        color: '#10b981', 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        ✓ Resim: {item.imageUrl.split('/').pop()?.substring(0, 20)}...
+                      <span style={{ fontSize: '0.875rem', color: '#10b981', display: 'flex', alignItems: 'center' }}>
+                        ✓ Resim seçildi
                       </span>
                     )}
                     {item.pdfUrl && (
-                      <span style={{ 
-                        fontSize: '0.875rem', 
-                        color: '#3b82f6', 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        ✓ PDF: {item.pdfUrl.split('/').pop()?.substring(0, 20)}...
+                      <span style={{ fontSize: '0.875rem', color: '#3b82f6', display: 'flex', alignItems: 'center' }}>
+                        ✓ PDF seçildi
                       </span>
                     )}
                   </div>
                   {item.children && item.children.length > 0 && (
                     <div style={{ marginTop: '0.75rem', paddingLeft: '1rem', borderLeft: '3px solid #313131' }}>
-                        {item.children.map((child, childIndex) => {
-                          const childKey = `${index}-${childIndex}`;
-                          return (
+                      {item.children.map((child, childIndex) => {
+                        const childKey = `${index}-${childIndex}`;
+                        return (
                           <div key={childIndex} style={{ marginBottom: '0.75rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                            <input
-                              type="text"
-                              placeholder="Alt Menü Label *"
-                              value={child.label}
-                              onChange={(e) => {
-                                const newItems = [...formData.items];
-                                if (!newItems[index].children) newItems[index].children = [];
-                                const newLabel = e.target.value;
-                                const currentHref = child.href;
-                                const hasId = child._id; // ID var mı kontrol et
-
-                                let newHref = currentHref;
-
-                                if (newLabel && newLabel.trim() !== '') {
-                                  if (!hasId) {
-                                    // ID yoksa (yeni menü): label değiştiğinde otomatik slug ile href oluştur
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                              <Input
+                                placeholder="Alt Menü Label *"
+                                value={child.label}
+                                onChange={(e) => {
+                                  const newItems = [...formData.items];
+                                  if (!newItems[index].children) newItems[index].children = [];
+                                  const newLabel = e.target.value;
+                                  let newHref = child.href;
+                                  if (newLabel && !child._id) {
                                     const slug = createSlug(newLabel);
                                     newHref = slug ? `/${slug}` : '';
-                                  } else {
-                                    // ID varsa (kayıtlı menü): href boşsa otomatik slug ile doldur, doluysa değiştirme
-                                    if (!currentHref || currentHref === '') {
-                                      const slug = createSlug(newLabel);
-                                      newHref = slug ? `/${slug}` : '';
-                                    }
-                                    // href doluysa değiştirme (zaten newHref = currentHref)
                                   }
-                                }
-
-                                newItems[index].children![childIndex] = {
-                                  ...newItems[index].children![childIndex],
-                                  label: newLabel,
-                                  href: newHref
-                                };
-                                setFormData({ ...formData, items: newItems });
-                                
-                                // Hata durumunu temizle
-                                if (errors.childLabels && errors.childLabels[childKey]) {
-                                  const newChildLabels = { ...errors.childLabels };
-                                  delete newChildLabels[childKey];
-                                  setErrors({ ...errors, childLabels: newChildLabels });
-                                }
-                              }}
-                              style={{ 
-                                padding: '0.625rem', 
-                                border: `2px solid ${errors.childLabels && errors.childLabels[childKey] ? '#dc2626' : '#e2e8f0'}`, 
-                                borderRadius: '6px', 
-                                fontSize: '0.9rem' 
-                              }}
-                            />
-                            <input
-                              type="text"
-                              placeholder="Alt Menü Href *"
-                              value={child.href}
-                              onChange={(e) => {
-                                if (child.imageUrl || child.pdfUrl) return; // Medya dosyası varsa değişikliğe izin verme
-                                const newItems = [...formData.items];
-                                if (!newItems[index].children) newItems[index].children = [];
-                                // Boşlukları "-" ile değiştir (yazmayı engelleme, sadece replace)
-                                let hrefValue = e.target.value;
-                                // Eğer / ile başlamıyorsa ve boşluk varsa, boşlukları "-" ile değiştir
-                                if (hrefValue && !hrefValue.startsWith('/')) {
-                                  hrefValue = hrefValue.replace(/\s+/g, '-');
-                                } else if (hrefValue && hrefValue.startsWith('/')) {
-                                  // / işaretinden sonrasındaki boşlukları "-" ile değiştir
-                                  const afterSlash = hrefValue.substring(1);
-                                  const replaced = afterSlash.replace(/\s+/g, '-');
-                                  hrefValue = `/${replaced}`;
-                                }
-                                newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: hrefValue };
-                                setFormData({ ...formData, items: newItems });
-                                
-                                // Hata durumunu temizle
-                                if (errors.childHrefs && errors.childHrefs[childKey]) {
-                                  const newChildHrefs = { ...errors.childHrefs };
-                                  delete newChildHrefs[childKey];
-                                  setErrors({ ...errors, childHrefs: newChildHrefs });
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (child.imageUrl || child.pdfUrl) {
-                                  e.preventDefault();
-                                  return false;
-                                }
-                              }}
-                              disabled={!!(child.imageUrl || child.pdfUrl)}
-                              readOnly={!!(child.imageUrl || child.pdfUrl)}
-                              style={{ 
-                                padding: '0.625rem', 
-                                border: `2px solid ${errors.childHrefs && errors.childHrefs[childKey] ? '#dc2626' : '#e2e8f0'}`, 
-                                borderRadius: '6px', 
-                                fontSize: '0.9rem',
-                                backgroundColor: (child.imageUrl || child.pdfUrl) ? '#f3f4f6' : 'white',
-                                cursor: (child.imageUrl || child.pdfUrl) ? 'not-allowed' : 'text',
-                                opacity: (child.imageUrl || child.pdfUrl) ? 0.7 : 1
-                              }}
-                            />
-                            <input
-                              type="number"
-                              placeholder="Sıra"
-                              value={child.order}
-                              onChange={(e) => {
-                                const newItems = [...formData.items];
-                                if (!newItems[index].children) newItems[index].children = [];
-                                newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], order: parseInt(e.target.value) || 0 };
-                                setFormData({ ...formData, items: newItems });
-                              }}
-                              style={{ padding: '0.625rem', border: '2px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9rem' }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newItems = [...formData.items];
-                                if (newItems[index].children) {
-                                  newItems[index].children = newItems[index].children!.filter((_, i) => i !== childIndex);
-                                }
-                                setFormData({ ...formData, items: newItems });
-                              }}
-                              style={{
-                                background: '#dc2626',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.625rem',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                fontWeight: '500'
-                              }}
-                            >
-                              Sil
-                            </button>
+                                  newItems[index].children![childIndex] = {
+                                    ...newItems[index].children![childIndex],
+                                    label: newLabel,
+                                    href: newHref
+                                  };
+                                  setFormData({ ...formData, items: newItems });
+                                  if (errors.childLabels && errors.childLabels[childKey]) {
+                                    const newChildLabels = { ...errors.childLabels };
+                                    delete newChildLabels[childKey];
+                                    setErrors({ ...errors, childLabels: newChildLabels });
+                                  }
+                                }}
+                                error={errors.childLabels && errors.childLabels[childKey]}
+                              />
+                              <Input
+                                placeholder="Alt Menü Href *"
+                                value={child.href}
+                                onChange={(e) => {
+                                  if (child.imageUrl || child.pdfUrl) return;
+                                  const newItems = [...formData.items];
+                                  if (!newItems[index].children) newItems[index].children = [];
+                                  newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], href: e.target.value };
+                                  setFormData({ ...formData, items: newItems });
+                                  if (errors.childHrefs && errors.childHrefs[childKey]) {
+                                    const newChildHrefs = { ...errors.childHrefs };
+                                    delete newChildHrefs[childKey];
+                                    setErrors({ ...errors, childHrefs: newChildHrefs });
+                                  }
+                                }}
+                                disabled={!!(child.imageUrl || child.pdfUrl)}
+                                error={errors.childHrefs && errors.childHrefs[childKey]}
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Sıra"
+                                value={child.order}
+                                onChange={(e) => {
+                                  const newItems = [...formData.items];
+                                  if (!newItems[index].children) newItems[index].children = [];
+                                  newItems[index].children![childIndex] = { ...newItems[index].children![childIndex], order: parseInt(e.target.value) || 0 };
+                                  setFormData({ ...formData, items: newItems });
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  const newItems = [...formData.items];
+                                  if (newItems[index].children) {
+                                    newItems[index].children = newItems[index].children!.filter((_, i) => i !== childIndex);
+                                  }
+                                  setFormData({ ...formData, items: newItems });
+                                }}
+                                variant="danger"
+                                size="sm"
+                              >
+                                Sil
+                              </Button>
                             </div>
-                            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                              <button
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <Button
                                 type="button"
                                 onClick={() => openMediaModal('image', index, childIndex)}
-                                style={{
-                                  background: '#10b981',
-                                  color: 'white',
-                                  border: 'none',
-                                  padding: '0.375rem 0.75rem',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '0.8rem',
-                                  fontWeight: '500'
-                                }}
+                                variant="success"
+                                size="sm"
                               >
                                 🖼️ Resim
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type="button"
                                 onClick={() => openMediaModal('pdf', index, childIndex)}
-                                style={{
-                                  background: '#3b82f6',
-                                  color: 'white',
-                                  border: 'none',
-                                  padding: '0.375rem 0.75rem',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '0.8rem',
-                                  fontWeight: '500'
-                                }}
+                                variant="success"
+                                size="sm"
                               >
                                 📄 PDF
-                              </button>
+                              </Button>
                               {child.imageUrl && (
-                                <span style={{ fontSize: '0.8rem', color: '#10b981' }}>
-                                  ✓ Resim
-                                </span>
+                                <span style={{ fontSize: '0.8rem', color: '#10b981' }}>✓ Resim</span>
                               )}
                               {child.pdfUrl && (
-                                <span style={{ fontSize: '0.8rem', color: '#3b82f6' }}>
-                                  ✓ PDF
-                                </span>
+                                <span style={{ fontSize: '0.8rem', color: '#3b82f6' }}>✓ PDF</span>
                               )}
                             </div>
                           </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
               {formData.items.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '2rem', color: errors.items ? '#dc2626' : '#666' }}>
-                  {errors.items ? 'En az bir menü öğesi eklemelisiniz!' : 'Henüz menü öğesi eklenmedi. Yukarıdaki butona tıklayarak ekleyebilirsiniz.'}
+                  {errors.items ? 'En az bir menü öğesi eklemelisiniz!' : 'Henüz menü öğesi eklenmedi.'}
                 </div>
               )}
             </div>
@@ -1024,7 +906,7 @@ export default function MenuManagement() {
         </form>
       </Modal>
 
-      {/* Medya Seçim Modal */}
+      {/* Media Selection Modal */}
       <Modal
         isOpen={showMediaModal}
         onClose={() => {
@@ -1110,257 +992,6 @@ export default function MenuManagement() {
           )}
         </div>
       </Modal>
-
-      {/* Arama ve Filtre */}
-      {menus.length > 0 && (
-        <div style={{
-          background: 'white',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '1.5rem',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
-                Arama
-              </label>
-              <input
-                type="text"
-                placeholder="Menü adı veya öğe adı ile ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
-                Menü Tipi
-              </label>
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="all">Tümü</option>
-                <option value="main">Ana Menü</option>
-                <option value="footer">Footer</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>
-                Durum
-              </label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="all">Tümü</option>
-                <option value="active">Aktif</option>
-                <option value="inactive">Pasif</option>
-              </select>
-            </div>
-          </div>
-          {(searchTerm || filterType !== 'all' || filterStatus !== 'all') && (
-            <div style={{ marginTop: '1rem', color: '#666', fontSize: '0.9rem' }}>
-              {filteredMenus.length} menü bulundu
-            </div>
-          )}
-        </div>
-      )}
-
-      {menus.length === 0 ? (
-        <div style={{
-          background: 'white',
-          padding: '3rem',
-          borderRadius: '12px',
-          textAlign: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <p style={{ color: '#666', fontSize: '1.1rem' }}>Henüz menü eklenmemiş.</p>
-          <button
-            onClick={openNewMenuModal}
-            style={{
-              marginTop: '1rem',
-              background: 'linear-gradient(135deg, #313131 0%, #414141 100%)',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '600',
-            }}
-          >
-            İlk Menüyü Ekle
-          </button>
-        </div>
-      ) : filteredMenus.length === 0 ? (
-        <div style={{
-          background: 'white',
-          padding: '3rem',
-          borderRadius: '12px',
-          textAlign: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <p style={{ color: '#666', fontSize: '1.1rem' }}>
-            {searchTerm || filterType !== 'all' || filterStatus !== 'all'
-              ? 'Arama kriterlerinize uygun menü bulunamadı.'
-              : 'Henüz menü eklenmemiş.'}
-          </p>
-          {(searchTerm || filterType !== 'all' || filterStatus !== 'all') && (
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilterType('all');
-                setFilterStatus('all');
-              }}
-              style={{
-                marginTop: '1rem',
-                background: '#313131',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
-              Filtreleri Temizle
-            </button>
-          )}
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gap: '1.5rem',
-          maxHeight: 'calc(100vh - 300px)',
-          overflowY: 'auto',
-          paddingRight: '0.5rem'
-        }}>
-          {filteredMenus.map((menu) => (
-            <div key={menu._id} style={{
-              background: 'white',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s, box-shadow 0.2s'
-            }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>{menu.name}</h3>
-                  <div style={{ display: 'flex', gap: '1rem', color: '#666', fontSize: '0.9rem' }}>
-                    <span>Tip: <strong>{menu.type === 'main' ? 'Ana Menü' : 'Footer'}</strong></span>
-                    <span>Durum: <strong style={{ color: menu.isActive ? '#10b981' : '#ef4444' }}>{menu.isActive ? 'Aktif' : 'Pasif'}</strong></span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => handleEdit(menu)}
-                    style={{
-                      background: '#313131',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '0.9rem',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#414141'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#313131'}
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    onClick={() => handleDelete(menu._id)}
-                    style={{
-                      background: '#dc2626',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '0.9rem',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#b91c1c'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#dc2626'}
-                  >
-                    Sil
-                  </button>
-                </div>
-              </div>
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <strong style={{ color: '#313131', fontSize: '0.95rem' }}>
-                    Öğeler: {menu.items.length} ana öğe, {menu.items.reduce((acc, item) => acc + (item.children?.length || 0), 0)} alt öğe
-                  </strong>
-                </div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                  <ul style={{ paddingLeft: '1.5rem', listStyle: 'none' }}>
-                    {menu.items
-                      .sort((a, b) => a.order - b.order)
-                      .map((item, idx) => (
-                        <li key={idx} style={{ marginBottom: '1rem', color: '#313131', padding: '0.75rem', background: '#f8fafc', borderRadius: '6px' }}>
-                          <div style={{ fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span>{item.label}</span>
-                            <span style={{ color: '#666', fontWeight: '400', fontSize: '0.85rem' }}>({item.href})</span>
-                            <span style={{ color: '#999', fontSize: '0.8rem' }}>• Sıra: {item.order}</span>
-                          </div>
-                          {item.children && item.children.length > 0 && (
-                            <ul style={{ marginTop: '0.5rem', paddingLeft: '1rem', color: '#666', borderLeft: '2px solid #e2e8f0' }}>
-                              {item.children
-                                .sort((a, b) => a.order - b.order)
-                                .map((child, childIdx) => (
-                                  <li key={childIdx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', padding: '0.25rem 0' }}>
-                                    <span style={{ fontWeight: '500' }}>{child.label}</span>
-                                    <span style={{ color: '#999', fontSize: '0.85rem', marginLeft: '0.5rem' }}>({child.href})</span>
-                                    <span style={{ color: '#999', fontSize: '0.8rem', marginLeft: '0.5rem' }}>• Sıra: {child.order}</span>
-                                  </li>
-                                ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

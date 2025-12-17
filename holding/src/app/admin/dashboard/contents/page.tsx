@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import Modal from '@/components/Modal';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import Swal from 'sweetalert2';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
@@ -559,28 +562,9 @@ export default function ContentManagement() {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>İçerik Yönetimi</h1>
-        <button
-          onClick={openNewContentModal}
-          style={{
-            background: '#1f2937',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '14px',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#374151';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1f2937';
-          }}
-        >
+        <Button onClick={openNewContentModal} variant="primary" size="md">
           + Yeni İçerik
-        </button>
+        </Button>
       </div>
 
       <Modal
@@ -589,232 +573,106 @@ export default function ContentManagement() {
         title={editingContent ? 'İçerik Düzenle' : 'Yeni İçerik Ekle'}
         size="xlarge"
         footer={
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={closeModal}
-              disabled={submitting}
-              style={{
-                background: '#f3f4f6',
-                color: '#1f2937',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-                opacity: submitting ? 0.6 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#e5e7eb';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#f3f4f6';
-                }
-              }}
-            >
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <Button type="button" onClick={closeModal} variant="outline" size="md" disabled={submitting}>
               İptal
-            </button>
-            <button
-              type="submit"
-              form="content-form"
-              disabled={submitting}
-              style={{
-                background: submitting ? '#9ca3af' : '#1f2937',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#374151';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.currentTarget.style.background = '#1f2937';
-                }
-              }}
-            >
-              {submitting ? 'Kaydediliyor...' : (editingContent ? 'Güncelle' : 'Oluştur')}
-            </button>
+            </Button>
+            <Button type="submit" form="content-form" variant="primary" size="md" isLoading={submitting}>
+              {editingContent ? 'Güncelle' : 'Oluştur'}
+            </Button>
           </div>
         }
       >
         <form id="content-form" onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                Slug <span style={{ color: '#dc2626' }}>*</span>
-              </label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                <input
-                  type="text"
+                <Input
+                  label="Slug"
                   value={formData.slug}
-                   
                   required
                   placeholder="Menüden link seçin"
+                  error={!formData.slug}
+                  errorMessage="Slug gereklidir"
                   style={{ 
                     flex: 1,
-                    padding: '8px 12px', 
-                    border: formData.slug ? '1px solid #e5e7eb' : '1px solid #dc2626', 
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    transition: 'border-color 0.15s',
                     background: '#f9fafb',
                     cursor: 'not-allowed',
                     color: formData.slug ? '#1f2937' : '#9ca3af'
                   }}
+                  readOnly
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLinkSearchTerm('');
-                    setShowLinkModal(true);
-                  }}
-                  style={{
-                    background: '#1f2937',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#374151';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#1f2937';
-                  }}
-                >
-                  🔗 Link Seç
-                </button>
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setLinkSearchTerm('');
+                      setShowLinkModal(true);
+                    }}
+                    variant="primary"
+                    size="md"
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    🔗 Link Seç
+                  </Button>
+                </div>
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Durum</label>
-              <select
+              <Select
+                label="Durum"
                 value={formData.isActive ? 'active' : 'inactive'}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
-                style={{ 
-                  width: '100%', 
-                  padding: '8px 12px', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  background: '#ffffff'
-                }}
-              >
-                <option value="active">Aktif</option>
-                <option value="inactive">Pasif</option>
-              </select>
+                options={[
+                  { value: 'active', label: 'Aktif' },
+                  { value: 'inactive', label: 'Pasif' },
+                ]}
+              />
             </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Başlık</label>
-            <input
-              type="text"
+            <Input
+              label="Başlık"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
               placeholder="İçerik başlığı"
-              style={{ 
-                width: '100%', 
-                padding: '8px 12px', 
-                border: '1px solid #e5e7eb', 
-                borderRadius: '6px',
-                fontSize: '14px',
-                transition: 'border-color 0.15s',
-                background: '#ffffff'
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
             />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Açıklama</label>
-            <input
-              type="text"
+            <Input
+              label="Açıklama"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Kısa açıklama (opsiyonel)"
-              style={{ 
-                width: '100%', 
-                padding: '8px 12px', 
-                border: '1px solid #e5e7eb', 
-                borderRadius: '6px',
-                fontSize: '14px',
-                transition: 'border-color 0.15s',
-                background: '#ffffff'
-              }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
             />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>Öne Çıkan Görsel (Sayfa Başı)</label>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-              <input
-                type="text"
+              <Input
                 value={formData.featuredImage}
                 onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
                 placeholder="/uploads/image.jpg veya URL"
-                style={{ 
-                  flex: 1,
-                  padding: '8px 12px', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s',
-                  background: '#ffffff'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                style={{ flex: 1 }}
               />
-                <button
+              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                <Button
                   type="button"
                   onClick={() => {
                     loadMedia();
                     setShowMediaModal(true);
                   }}
-                style={{
-                  background: '#f3f4f6',
-                  color: '#1f2937',
-                  border: '1px solid #e5e7eb',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#e5e7eb';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#f3f4f6';
-                }}
-              >
-                🖼️ Görsel Seç
-              </button>
+                  variant="outline"
+                  size="md"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  🖼️ Görsel Seç
+                </Button>
+              </div>
             </div>
             {formData.featuredImage && (
               <div style={{ marginTop: '12px' }}>
@@ -839,59 +697,23 @@ export default function ContentManagement() {
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <label style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>İçerik Bölümleri</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <Button
                   type="button"
                   onClick={addTextSection}
-                  style={{
-                    background: '#1f2937',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#374151';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#1f2937';
-                  }}
+                  variant="primary"
+                  size="sm"
                 >
                   📝 İçerik Ekle
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={addCardSection}
-                  style={{
-                    background: '#1f2937',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '13px',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#374151';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#1f2937';
-                  }}
+                  variant="primary"
+                  size="sm"
                 >
                   🎴 Kart Ekle
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -1566,29 +1388,14 @@ export default function ContentManagement() {
           border: '1px solid #e5e7eb'
         }}>
           <p style={{ color: '#6b7280', fontSize: '14px' }}>Henüz içerik eklenmemiş.</p>
-          <button
+          <Button
             onClick={openNewContentModal}
-            style={{
-              marginTop: '16px',
-              background: '#1f2937',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500',
-              fontSize: '14px',
-              transition: 'all 0.15s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#374151';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#1f2937';
-            }}
+            variant="primary"
+            size="md"
+            style={{ marginTop: '16px' }}
           >
             İlk İçeriği Ekle
-          </button>
+          </Button>
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
@@ -1673,42 +1480,20 @@ export default function ContentManagement() {
                     </span>
                     {expandedContents.has(content._id) ? 'Detayları Gizle' : 'Detayları Göster'}
                   </button>
-                  <button
+                  <Button
                     onClick={() => handleEdit(content)}
-                    style={{
-                      background: '#1f2937',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '13px',
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#374151'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#1f2937'}
+                    variant="primary"
+                    size="sm"
                   >
                     Düzenle
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleDelete(content._id)}
-                    style={{
-                      background: '#ef4444',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '13px',
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+                    variant="danger"
+                    size="sm"
                   >
                     Sil
-                  </button>
+                  </Button>
                 </div>
               </div>
               

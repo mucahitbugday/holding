@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({

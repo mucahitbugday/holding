@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 interface User {
   _id: string;
@@ -67,48 +69,16 @@ export default function UserManagement() {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Kullanıcı Yönetimi</h1>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <input
-            type="text"
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Input
             placeholder="Kullanıcı ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #e5e7eb',
-              borderRadius: '6px',
-              fontSize: '14px',
-              width: '280px',
-              transition: 'border-color 0.15s',
-              background: '#ffffff'
-            }}
-            onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-            onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+            style={{ width: '280px' }}
           />
-          <button
-            style={{
-              background: '#1f2937',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              fontSize: '1rem',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-            }}
-          >
+          <Button variant="primary" size="md">
             + Yeni Kullanıcı
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -157,41 +127,13 @@ export default function UserManagement() {
                     <span>Kayıt: <strong>{new Date(user.createdAt).toLocaleDateString('tr-TR')}</strong></span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                  <button
-                    style={{
-                      background: '#313131',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '0.9rem',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#414141'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#313131'}
-                  >
+                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', flexWrap: 'wrap' }}>
+                  <Button variant="primary" size="sm">
                     Düzenle
-                  </button>
-                  <button
-                    style={{
-                      background: '#dc2626',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500',
-                      fontSize: '0.9rem',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#b91c1c'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#dc2626'}
-                  >
+                  </Button>
+                  <Button variant="danger" size="sm">
                     Sil
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

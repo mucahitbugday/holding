@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import LoadingScreen from '@/components/LoadingScreen';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Checkbox from '@/components/ui/Checkbox';
 import Swal from 'sweetalert2';
 
 interface HeroSlide {
@@ -140,33 +143,9 @@ export default function HomePageSettings() {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Anasayfa Ayarları</h1>
-        <button
-          onClick={handleSave}
-          disabled={submitting}
-          style={{
-            background: submitting ? '#9ca3af' : '#1f2937',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: submitting ? 'not-allowed' : 'pointer',
-            fontWeight: '500',
-            fontSize: '14px',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            if (!submitting) {
-              e.currentTarget.style.background = '#374151';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!submitting) {
-              e.currentTarget.style.background = '#1f2937';
-            }
-          }}
-        >
-          {submitting ? 'Kaydediliyor...' : 'Kaydet'}
-        </button>
+        <Button onClick={handleSave} variant="primary" size="md" isLoading={submitting}>
+          Kaydet
+        </Button>
       </div>
 
       {/* Component Ekleme */}
@@ -180,23 +159,14 @@ export default function HomePageSettings() {
         <h3 style={{ marginBottom: '1rem', color: '#313131' }}>Yeni Component Ekle</h3>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {(['hero', 'about', 'services', 'hrpolicy', 'news', 'contact'] as const).map((type) => (
-            <button
+            <Button
               key={type}
               onClick={() => addSection(type)}
-              style={{
-                background: '#414141',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-                fontSize: '0.9rem',
-                textTransform: 'capitalize'
-              }}
+              variant="secondary"
+              size="sm"
             >
               + {type === 'hrpolicy' ? 'HR Policy' : type.charAt(0).toUpperCase() + type.slice(1)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -219,61 +189,36 @@ export default function HomePageSettings() {
                   {section.type === 'hrpolicy' ? 'HR Policy' : section.type}
                 </h3>
                 <span style={{ color: '#666', fontSize: '0.9rem' }}>Sıra: {section.order}</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={section.isActive}
-                    onChange={(e) => updateSection(index, 'isActive', e.target.checked)}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                  />
-                  <span style={{ fontWeight: '500', color: '#313131' }}>Aktif</span>
-                </label>
+                <Checkbox
+                  label="Aktif"
+                  checked={section.isActive}
+                  onChange={(e) => updateSection(index, 'isActive', e.target.checked)}
+                />
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
+                <Button
                   onClick={() => moveSection(index, 'up')}
                   disabled={index === 0}
-                  style={{
-                    background: '#414141',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem',
-                    borderRadius: '6px',
-                    cursor: index === 0 ? 'not-allowed' : 'pointer',
-                    opacity: index === 0 ? 0.5 : 1
-                  }}
+                  variant="secondary"
+                  size="sm"
                 >
                   ↑
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => moveSection(index, 'down')}
                   disabled={index === sections.length - 1}
-                  style={{
-                    background: '#414141',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem',
-                    borderRadius: '6px',
-                    cursor: index === sections.length - 1 ? 'not-allowed' : 'pointer',
-                    opacity: index === sections.length - 1 ? 0.5 : 1
-                  }}
+                  variant="secondary"
+                  size="sm"
                 >
                   ↓
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => removeSection(index)}
-                  style={{
-                    background: '#dc2626',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '500'
-                  }}
+                  variant="danger"
+                  size="sm"
                 >
                   Sil
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -336,21 +281,9 @@ function HeroSectionEditor({ section, index, updateSection }: {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h4 style={{ color: '#313131' }}>Hero Slides</h4>
-        <button
-          onClick={addSlide}
-          style={{
-            background: '#414141',
-            color: 'white',
-            border: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '0.9rem'
-          }}
-        >
+        <Button onClick={addSlide} variant="secondary" size="sm">
           + Slide Ekle
-        </button>
+        </Button>
       </div>
       {slides.map((slide, slideIndex) => (
         <div key={slideIndex} style={{
@@ -361,102 +294,54 @@ function HeroSectionEditor({ section, index, updateSection }: {
           border: '1px solid #e2e8f0'
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <input
-              type="text"
+            <Input
               placeholder="Başlık *"
               value={slide.title}
               onChange={(e) => updateSlide(slideIndex, 'title', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
-            <input
-              type="text"
+            <Input
               placeholder="Açıklama *"
               value={slide.description}
               onChange={(e) => updateSlide(slideIndex, 'description', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <input
-              type="text"
+            <Input
               placeholder="Link *"
               value={slide.link}
               onChange={(e) => updateSlide(slideIndex, 'link', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
-            <input
-              type="text"
+            <Input
               placeholder="Buton Metni *"
               value={slide.linkText}
               onChange={(e) => updateSlide(slideIndex, 'linkText', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
-            <input
-              type="text"
+            <Input
               placeholder="Resim URL *"
               value={slide.image}
               onChange={(e) => updateSlide(slideIndex, 'image', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <input
+            <Input
               type="number"
               placeholder="Sıra"
               value={slide.order}
               onChange={(e) => updateSlide(slideIndex, 'order', parseInt(e.target.value) || 0)}
-              style={{
-                width: '100px',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              style={{ width: '100px' }}
             />
-            <button
+            <Button
               onClick={() => removeSlide(slideIndex)}
-              style={{
-                background: '#dc2626',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
+              variant="danger"
+              size="sm"
             >
               Slide Sil
-            </button>
+            </Button>
           </div>
         </div>
       ))}
@@ -496,18 +381,10 @@ function AboutSectionEditor({ section, index, updateSection }: {
   return (
     <div>
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#313131' }}>Başlık</label>
-        <input
-          type="text"
+        <Input
+          label="Başlık"
           value={section.data.title || ''}
           onChange={(e) => updateSection(index, 'data.title', e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: '2px solid #e2e8f0',
-            borderRadius: '8px',
-            fontSize: '1rem'
-          }}
         />
       </div>
       <div style={{ marginBottom: '1rem' }}>
@@ -521,27 +398,17 @@ function AboutSectionEditor({ section, index, updateSection }: {
             border: '2px solid #e2e8f0',
             borderRadius: '8px',
             fontSize: '1rem',
-            minHeight: '100px'
+            minHeight: '100px',
+            fontFamily: 'inherit',
+            resize: 'vertical'
           }}
         />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h4 style={{ color: '#313131' }}>About Items</h4>
-        <button
-          onClick={addItem}
-          style={{
-            background: '#414141',
-            color: 'white',
-            border: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '0.9rem'
-          }}
-        >
+        <Button onClick={addItem} variant="secondary" size="sm">
           + Item Ekle
-        </button>
+        </Button>
       </div>
       {items.map((item, itemIndex) => (
         <div key={itemIndex} style={{
@@ -552,31 +419,16 @@ function AboutSectionEditor({ section, index, updateSection }: {
           border: '1px solid #e2e8f0'
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <input
-              type="text"
+            <Input
               placeholder="Başlık *"
               value={item.title}
               onChange={(e) => updateItem(itemIndex, 'title', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              required
             />
-            <input
-              type="text"
+            <Input
               placeholder="Icon (örn: fas fa-globe)"
               value={item.icon || ''}
               onChange={(e) => updateItem(itemIndex, 'icon', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
             />
           </div>
           <textarea
@@ -590,37 +442,26 @@ function AboutSectionEditor({ section, index, updateSection }: {
               borderRadius: '6px',
               fontSize: '0.9rem',
               marginBottom: '0.75rem',
-              minHeight: '80px'
+              minHeight: '80px',
+              fontFamily: 'inherit',
+              resize: 'vertical'
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <input
+            <Input
               type="number"
               placeholder="Sıra"
               value={item.order}
               onChange={(e) => updateItem(itemIndex, 'order', parseInt(e.target.value) || 0)}
-              style={{
-                width: '100px',
-                padding: '0.625rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '0.9rem'
-              }}
+              style={{ width: '100px' }}
             />
-            <button
+            <Button
               onClick={() => removeItem(itemIndex)}
-              style={{
-                background: '#dc2626',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
+              variant="danger"
+              size="sm"
             >
               Item Sil
-            </button>
+            </Button>
           </div>
         </div>
       ))}
