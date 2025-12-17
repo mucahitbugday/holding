@@ -6,36 +6,58 @@ import { getAuthUser } from '@/lib/auth';
 // Default menüleri oluştur
 async function initializeDefaultMenus() {
   try {
-    const menuCount = await Menu.countDocuments();
-    
-    if (menuCount === 0) {
-      // Ana Menü
-      await Menu.create({
-        name: 'Ana Menü',
-        type: 'main',
-        isActive: true,
-        items: [
-          { label: 'Ana Sayfa', href: '/', order: 0 },
-          { label: 'Hakkımızda', href: '/hakkimizda', order: 1 },
-          { label: 'Hizmetlerimiz', href: '/hizmetlerimiz', order: 2 },
-          { label: 'Haberler', href: '/haberler', order: 3 },
-          { label: 'İletişim', href: '/iletisim', order: 4 },
-        ],
-      });
+    let createdCount = 0;
 
-      // Footer Menü
-      await Menu.create({
-        name: 'Footer Menü',
-        type: 'footer',
-        isActive: true,
-        items: [
-          { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi', order: 0 },
-          { label: 'Kullanım Koşulları', href: '/kullanim-kosullari', order: 1 },
-          { label: 'KVKK', href: '/kvkk', order: 2 },
-        ],
-      });
+    // Ana Menü kontrolü
+    const mainMenu = await Menu.findOne({ name: 'Ana Menü' });
+    if (!mainMenu) {
+      try {
+        await Menu.create({
+          name: 'Ana Menü',
+          type: 'main',
+          isActive: true,
+          items: [
+            { label: 'Ana Sayfa', href: '/', order: 0 },
+            { label: 'Hakkımızda', href: '/hakkimizda', order: 1 },
+            { label: 'Hizmetlerimiz', href: '/hizmetlerimiz', order: 2 },
+            { label: 'Haberler', href: '/haberler', order: 3 },
+            { label: 'İletişim', href: '/iletisim', order: 4 },
+          ],
+        });
+        createdCount++;
+      } catch (error: any) {
+        // Duplicate key hatası görmezden gel (zaten var demektir)
+        if (error.code !== 11000) {
+          console.error('❌ Ana Menü oluşturma hatası:', error.message);
+        }
+      }
+    }
 
-      console.log('✅ Varsayılan menüler oluşturuldu');
+    // Footer Menü kontrolü
+    const footerMenu = await Menu.findOne({ name: 'Footer Menü' });
+    if (!footerMenu) {
+      try {
+        await Menu.create({
+          name: 'Footer Menü',
+          type: 'footer',
+          isActive: true,
+          items: [
+            { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi', order: 0 },
+            { label: 'Kullanım Koşulları', href: '/kullanim-kosullari', order: 1 },
+            { label: 'KVKK', href: '/kvkk', order: 2 },
+          ],
+        });
+        createdCount++;
+      } catch (error: any) {
+        // Duplicate key hatası görmezden gel (zaten var demektir)
+        if (error.code !== 11000) {
+          console.error('❌ Footer Menü oluşturma hatası:', error.message);
+        }
+      }
+    }
+
+    if (createdCount > 0) {
+      console.log(`✅ ${createdCount} varsayılan menü oluşturuldu`);
     }
   } catch (error: any) {
     console.error('❌ Varsayılan menü oluşturma hatası:', error.message);

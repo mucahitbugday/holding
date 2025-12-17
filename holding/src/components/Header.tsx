@@ -24,11 +24,25 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [settings, setSettings] = useState<{ siteName?: string; siteLogo?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadMenu();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      const data = await response.json();
+      if (data.success && data.settings) {
+        setSettings(data.settings);
+      }
+    } catch (error) {
+      console.error('Ayarlar yüklenemedi:', error);
+    }
+  };
 
   const loadMenu = async () => {
     try {
@@ -163,13 +177,24 @@ export default function Header() {
     );
   };
 
+  const siteName = settings?.siteName || 'Holding Şirketi';
+  const siteLogo = settings?.siteLogo;
+
   if (loading) {
     return (
       <header className="header">
         <div className="container">
           <div className="header-content">
             <div className="logo">
-              <h1>Holding Şirketi</h1>
+              {siteLogo ? (
+                <Link href="/">
+                  <img src={siteLogo} alt={siteName} style={{ height: '40px', width: 'auto' }} />
+                </Link>
+              ) : (
+                <Link href="/">
+                  <h1>{siteName}</h1>
+                </Link>
+              )}
             </div>
             <div>Yükleniyor...</div>
           </div>
@@ -183,7 +208,15 @@ export default function Header() {
       <div className="container">
         <div className="header-content">
           <div className="logo">
-            <h1>Holding Şirketi</h1>
+            {siteLogo ? (
+              <Link href="/">
+                <img src={siteLogo} alt={siteName} style={{ height: '40px', width: 'auto' }} />
+              </Link>
+            ) : (
+              <Link href="/">
+                <h1>{siteName}</h1>
+              </Link>
+            )}
           </div>
           <nav className="nav">
             <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>

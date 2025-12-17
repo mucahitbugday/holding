@@ -96,21 +96,41 @@ export default function SettingsPage() {
       setLoading(true);
       const response = await apiClient.getSettings();
       if (response.success && response.settings) {
+        // Eğer ayarlar boşsa, default değerleri kullan
+        const defaultSettings = {
+          siteName: 'Holding Şirketi',
+          siteDescription: 'Dünya standartlarında hizmet anlayışı ile sektörde öncü konumdayız. Entegre tesis yönetimi, güvenlik, temizlik ve teknoloji çözümleri sunuyoruz.',
+          siteLogo: '/images/logo.png',
+          companyName: 'Holding Şirketi',
+          companyAddress: 'Küçükçamlıca Mahallesi\nLibadiye Caddesi Ümit Sokak\nNo: 13 A Bulgurlu Üsküdar / İstanbul',
+          companyPhone: '+90 0850 466 04 77',
+          companyEmail: 'info@holding.com.tr',
+          companyFounder: '',
+          companyFoundedYear: 2024,
+          companyTaxNumber: '',
+          companyTradeRegistryNumber: '',
+          googleMapsLink: 'https://www.google.com/maps/search/?api=1&query=Küçükçamlıca+Mahallesi+Libadiye+Caddesi+Ümit+Sokak+No+13+A+Bulgurlu+Üsküdar+İstanbul',
+          metaKeywords: ['tesis yönetimi', 'güvenlik hizmetleri', 'temizlik hizmetleri', 'teknoloji çözümleri', 'holding şirketi'],
+          metaDescription: 'Dünya standartlarında hizmet anlayışı ile sektörde öncü konumdayız. Entegre tesis yönetimi, güvenlik, temizlik ve teknoloji çözümleri sunuyoruz.',
+        };
+
         setSettings({
-          siteName: response.settings.siteName || '',
-          siteDescription: response.settings.siteDescription || '',
-          siteLogo: response.settings.siteLogo || '',
-          companyName: response.settings.companyName || '',
-          companyAddress: response.settings.companyAddress || '',
-          companyPhone: response.settings.companyPhone || '',
-          companyEmail: response.settings.companyEmail || '',
+          siteName: response.settings.siteName || defaultSettings.siteName,
+          siteDescription: response.settings.siteDescription || defaultSettings.siteDescription,
+          siteLogo: response.settings.siteLogo || defaultSettings.siteLogo,
+          companyName: response.settings.companyName || defaultSettings.companyName,
+          companyAddress: response.settings.companyAddress || defaultSettings.companyAddress,
+          companyPhone: response.settings.companyPhone || defaultSettings.companyPhone,
+          companyEmail: response.settings.companyEmail || defaultSettings.companyEmail,
           companyFounder: response.settings.companyFounder || '',
-          companyFoundedYear: response.settings.companyFoundedYear || undefined,
+          companyFoundedYear: response.settings.companyFoundedYear || defaultSettings.companyFoundedYear,
           companyTaxNumber: response.settings.companyTaxNumber || '',
           companyTradeRegistryNumber: response.settings.companyTradeRegistryNumber || '',
-          googleMapsLink: response.settings.googleMapsLink || '',
-          metaKeywords: response.settings.metaKeywords || [],
-          metaDescription: response.settings.metaDescription || '',
+          googleMapsLink: response.settings.googleMapsLink || defaultSettings.googleMapsLink,
+          metaKeywords: response.settings.metaKeywords && response.settings.metaKeywords.length > 0 
+            ? response.settings.metaKeywords 
+            : defaultSettings.metaKeywords,
+          metaDescription: response.settings.metaDescription || defaultSettings.metaDescription,
           smtp: response.settings.smtp || {
             host: '',
             port: 587,
