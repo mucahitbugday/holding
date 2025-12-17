@@ -12,10 +12,33 @@ interface Settings {
 
 export default function Contact() {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [sectionTitle, setSectionTitle] = useState('İletişim');
+  const [sectionDescription, setSectionDescription] = useState('');
 
   useEffect(() => {
     loadSettings();
+    loadContactSection();
   }, []);
+
+  const loadContactSection = async () => {
+    try {
+      const response = await fetch('/api/homepage');
+      const data = await response.json();
+      if (data.success && data.settings) {
+        const contactSection = data.settings.sections.find((s: any) => s.type === 'contact' && s.isActive);
+        if (contactSection && contactSection.data) {
+          if (contactSection.data.contactTitle) {
+            setSectionTitle(contactSection.data.contactTitle);
+          }
+          if (contactSection.data.contactDescription) {
+            setSectionDescription(contactSection.data.contactDescription);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Contact section verileri yüklenemedi:', error);
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -83,7 +106,8 @@ export default function Contact() {
         </a>
         <div className="contact-content">
           <div className="contact-info">
-            <h2>İletişim</h2>
+            {sectionTitle && <h2>{sectionTitle}</h2>}
+            {sectionDescription && <p style={{ marginBottom: '1rem', color: '#666' }}>{sectionDescription}</p>}
             {companyAddress && (
               <div className="contact-item">
                 <strong>Adres:</strong>

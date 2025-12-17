@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
 
-interface Service {
-  _id: string;
-  slug: string;
+interface ServiceItem {
+  icon: string;
   title: string;
-  description?: string;
-  content: string;
-  type: string;
+  description: string;
+  order: number;
 }
 
 export default function Services() {
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [sectionTitle, setSectionTitle] = useState('Hizmetlerimiz');
+  const [sectionDescription, setSectionDescription] = useState('Geniş hizmet yelpazemizle ihtiyaçlarınıza çözüm üretiyoruz');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,10 +22,22 @@ export default function Services() {
 
   const loadServices = async () => {
     try {
-      const response = await fetch('/api/content?type=service');
+      const response = await fetch('/api/homepage');
       const data = await response.json();
-      if (data.success && data.contents) {
-        setServices(data.contents);
+      if (data.success && data.settings) {
+        const servicesSection = data.settings.sections.find((s: any) => s.type === 'services' && s.isActive);
+        if (servicesSection && servicesSection.data) {
+          if (servicesSection.data.services && servicesSection.data.services.length > 0) {
+            const sortedServices = [...servicesSection.data.services].sort((a: ServiceItem, b: ServiceItem) => a.order - b.order);
+            setServices(sortedServices);
+          }
+          if (servicesSection.data.servicesTitle) {
+            setSectionTitle(servicesSection.data.servicesTitle);
+          }
+          if (servicesSection.data.servicesDescription) {
+            setSectionDescription(servicesSection.data.servicesDescription);
+          }
+        }
       }
     } catch (error) {
       console.error('Hizmetler yüklenemedi:', error);
@@ -51,52 +63,16 @@ export default function Services() {
       title: 'Güvenlik',
       description: 'Profesyonel güvenlik hizmetleri ile tesislerinizi koruyoruz.',
     },
-    {
-      icon: 'fas fa-broom',
-      title: 'Temizlik',
-      description: 'Hijyen standartlarına uygun temizlik hizmetleri sunuyoruz.',
-    },
-    {
-      icon: 'fas fa-tools',
-      title: 'Teknik Hizmetler',
-      description: 'Teknik ve mobil teknik hizmetler ile yanınızdayız.',
-    },
-    {
-      icon: 'fas fa-graduation-cap',
-      title: 'Danışmanlık & Eğitim',
-      description: 'Danışmanlık, eğitim ve denetim hizmetleri veriyoruz.',
-    },
   ];
 
-  const iconMap: { [key: string]: string } = {
-    teknoloji: 'fas fa-laptop-code',
-    tesis: 'fas fa-building',
-    guvenlik: 'fas fa-shield-alt',
-    temizlik: 'fas fa-broom',
-    teknik: 'fas fa-tools',
-    danismanlik: 'fas fa-graduation-cap',
-  };
-
-  const displayServices = services.length > 0
-    ? services.map((s) => {
-        const slugLower = s.slug.toLowerCase();
-        const icon = Object.keys(iconMap).find((key) => slugLower.includes(key))
-          ? iconMap[Object.keys(iconMap).find((key) => slugLower.includes(key))!]
-          : 'fas fa-star';
-        return {
-          icon,
-          title: s.title,
-          description: s.description || s.content.substring(0, 100),
-        };
-      })
-    : defaultServices;
+  const displayServices = services.length > 0 ? services : defaultServices;
 
   return (
     <section className="services" id="hizmetler">
       <div className="container">
         <div className="section-header">
-          <h2>Hizmetlerimiz</h2>
-          <p>Geniş hizmet yelpazemizle ihtiyaçlarınıza çözüm üretiyoruz</p>
+          <h2>{sectionTitle}</h2>
+          <p>{sectionDescription}</p>
         </div>
         <div className="services-grid">
           {displayServices.map((service, index) => (
