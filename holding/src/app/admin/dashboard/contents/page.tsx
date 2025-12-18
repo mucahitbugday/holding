@@ -754,14 +754,12 @@ export default function ContentManagement() {
                 <span style={{
                   background: '#e0e7ff',
                   color: '#6366f1',
-                  padding: '2px 6px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  minWidth: '24px',
-                  textAlign: 'center'
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: '500'
                 }}>
-                  {contents.filter(c => !c.categoryId).length}
+                  📄 {contents.filter(c => !c.categoryId).length}
                 </span>
               </button>
               {categories.map((category) => {
@@ -807,14 +805,12 @@ export default function ContentManagement() {
                       <span style={{
                         background: '#e0e7ff',
                         color: '#6366f1',
-                        padding: '2px 6px',
-                        borderRadius: '10px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        minWidth: '24px',
-                        textAlign: 'center'
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '500'
                       }}>
-                        {categoryContentCount}
+                        📄 {categoryContentCount}
                       </span>
                       {!category.isActive && (
                         <span style={{ fontSize: '10px', color: '#9ca3af' }}>●</span>
