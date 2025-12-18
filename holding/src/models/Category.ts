@@ -6,6 +6,8 @@ export interface ICategory extends Document {
   description?: string;
   isActive: boolean;
   order?: number;
+  autoAddContent?: boolean; // Otomatik içerik ekleme aktif mi?
+  autoAddLimit?: number; // Otomatik ekleme limiti (son 5, son 10 gibi)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +31,14 @@ const CategorySchema: Schema = new Schema(
     order: {
       type: Number,
       default: 0,
+    },
+    autoAddContent: {
+      type: Boolean,
+      default: false,
+    },
+    autoAddLimit: {
+      type: Number,
+      default: 5,
     },
   },
   {

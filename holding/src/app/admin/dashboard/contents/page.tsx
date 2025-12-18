@@ -50,6 +50,8 @@ interface Category {
   description?: string;
   isActive: boolean;
   order?: number;
+  autoAddContent?: boolean;
+  autoAddLimit?: number;
 }
 
 
@@ -62,6 +64,17 @@ export default function ContentManagement() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [cardModalCategoryFilter, setCardModalCategoryFilter] = useState<string>('all');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    isActive: true,
+    order: 0,
+    autoAddContent: false,
+    autoAddLimit: 5,
+  });
+  const [submittingCategory, setSubmittingCategory] = useState(false);
   const [formData, setFormData] = useState({
     slug: '',
     title: '',
@@ -192,10 +205,72 @@ export default function ContentManagement() {
 
   const loadCategories = async () => {
     try {
-      const response = await apiClient.getCategories(true);
+      const response = await apiClient.getCategories();
       setCategories(response.categories || []);
     } catch (error) {
       console.error('Kategoriler yüklenemedi:', error);
+    }
+  };
+
+  const createSlug = (text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingCategory(true);
+    try {
+      const slug = categoryFormData.slug.trim() || createSlug(categoryFormData.name);
+      const submitData = {
+        ...categoryFormData,
+        slug,
+      };
+
+      const response = await apiClient.createCategory(submitData);
+
+      if (!response.success) {
+        throw new Error(response.error || 'Kategori oluşturulamadı');
+      }
+
+      setShowCategoryModal(false);
+      setCategoryFormData({
+        name: '',
+        slug: '',
+        description: '',
+        isActive: true,
+        order: 0,
+        autoAddContent: false,
+        autoAddLimit: 5,
+      });
+      await loadCategories();
+      await Swal.fire({
+        icon: 'success',
+        title: 'Başarılı!',
+        text: 'Kategori başarıyla oluşturuldu.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
+    } catch (error: any) {
+      console.error('Category submit error:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: error.message || 'Bir hata oluştu',
+        confirmButtonColor: '#1f2937',
+      });
+    } finally {
+      setSubmittingCategory(false);
     }
   };
 
@@ -220,8 +295,8 @@ export default function ContentManagement() {
   };
 
   // Tüm menü linklerini topla (ana menü ve alt menüler)
-  const getAllMenuLinks = (): Array<{ label: string; href: string; menuName: string; isChild?: boolean }> => {
-    const links: Array<{ label: string; href: string; menuName: string; isChild?: boolean }> = [];
+  const getAllMenuLinks = (): Array<{ label: string; href: string; menuName: string; imageUrl?: string; isChild?: boolean }> => {
+    const links: Array<{ label: string; href: string; menuName: string; imageUrl?: string; isChild?: boolean }> = [];
 
     menus.forEach((menu) => {
       if (!menu.isActive) return;
@@ -233,6 +308,7 @@ export default function ContentManagement() {
             label: item.label,
             href: item.href,
             menuName: menu.name,
+            imageUrl: item.imageUrl,
             isChild: false
           });
         }
@@ -245,6 +321,7 @@ export default function ContentManagement() {
                 label: `${item.label} > ${child.label}`,
                 href: child.href,
                 menuName: menu.name,
+                imageUrl: child.imageUrl,
                 isChild: true
               });
             }
@@ -389,6 +466,54 @@ export default function ContentManagement() {
 
       if (!response.success) {
         throw new Error(response.error || 'Kayıt başarısız oldu');
+      }
+
+      const newContentId = response.content?._id || response.content?.id;
+
+      // Otomatik içerik ekleme: Eğer kategori autoAddContent aktifse ve yeni içerik oluşturulduysa
+      if (!editingContent && newContentId && formData.categoryId) {
+        const selectedCategory = categories.find(cat => cat._id === formData.categoryId);
+        if (selectedCategory?.autoAddContent) {
+          try {
+            // Bu kategorinin içeriklerini bul
+            const categoryContents = await apiClient.getContents(undefined, undefined, formData.categoryId);
+            const categoryContentList = categoryContents.contents || [];
+            
+            // Bu kategorinin içeriklerinden kart bölümü olanları bul
+            const contentsWithCardSections = categoryContentList.filter((content: any) => {
+              return content.sections && content.sections.some((section: any) => section.type === 'card');
+            });
+
+            // Her bir içeriğin kart bölümlerine yeni içeriği ekle
+            for (const content of contentsWithCardSections) {
+              const updatedSections = content.sections.map((section: any) => {
+                if (section.type === 'card') {
+                  const existingIds = section.contentIds || [];
+                  // Yeni içeriği başa ekle (en yeni en üstte)
+                  const newIds = [newContentId, ...existingIds];
+                  // Limit'e göre kes (son X kart)
+                  const limit = selectedCategory.autoAddLimit || 5;
+                  const limitedIds = newIds.slice(0, limit);
+                  
+                  return {
+                    ...section,
+                    contentIds: limitedIds
+                  };
+                }
+                return section;
+              });
+
+              // İçeriği güncelle
+              await apiClient.updateContent(content._id, {
+                ...content,
+                sections: updatedSections
+              });
+            }
+          } catch (autoAddError) {
+            console.error('Otomatik içerik ekleme hatası:', autoAddError);
+            // Hata olsa bile ana işlemi devam ettir
+          }
+        }
       }
 
       setShowModal(false);
@@ -593,22 +718,165 @@ export default function ContentManagement() {
         gap: '16px'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>İçerik Yönetimi</h1>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <Select
-            value={selectedCategoryFilter}
-            onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-            options={[
-              { value: 'all', label: 'Tüm Kategoriler' },
-              { value: 'none', label: 'Kategorisiz' },
-              ...categories.map(cat => ({ value: cat._id, label: cat.name }))
-            ]}
-            style={{ minWidth: '180px' }}
-          />
-          <Button onClick={openNewContentModal} variant="primary" size="md">
-            + Yeni İçerik
-          </Button>
-        </div>
+        <Button onClick={openNewContentModal} variant="primary" size="md">
+          + Yeni İçerik
+        </Button>
       </div>
+
+      <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+        {/* Kategori Sidebar */}
+        <aside style={{
+          width: '280px',
+          background: '#ffffff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '20px',
+          position: 'sticky',
+          top: '24px',
+          maxHeight: 'calc(100vh - 120px)',
+          overflowY: 'auto',
+          flexShrink: 0
+        }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
+              📁 Kategoriler
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={() => setSelectedCategoryFilter('all')}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: selectedCategoryFilter === 'all' ? '#f3f4f6' : 'transparent',
+                  color: selectedCategoryFilter === 'all' ? '#1f2937' : '#6b7280',
+                  fontWeight: selectedCategoryFilter === 'all' ? '600' : '500',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedCategoryFilter !== 'all') {
+                    e.currentTarget.style.background = '#f9fafb';
+                    e.currentTarget.style.color = '#1f2937';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCategoryFilter !== 'all') {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#6b7280';
+                  }
+                }}
+              >
+                <span>📄</span>
+                <span>Tümü</span>
+              </button>
+              <button
+                onClick={() => setSelectedCategoryFilter('none')}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: selectedCategoryFilter === 'none' ? '#f3f4f6' : 'transparent',
+                  color: selectedCategoryFilter === 'none' ? '#1f2937' : '#6b7280',
+                  fontWeight: selectedCategoryFilter === 'none' ? '600' : '500',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedCategoryFilter !== 'none') {
+                    e.currentTarget.style.background = '#f9fafb';
+                    e.currentTarget.style.color = '#1f2937';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCategoryFilter !== 'none') {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#6b7280';
+                  }
+                }}
+              >
+                <span>📋</span>
+                <span>Kategorisiz</span>
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => setSelectedCategoryFilter(category._id)}
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: selectedCategoryFilter === category._id ? '#f3f4f6' : 'transparent',
+                    color: selectedCategoryFilter === category._id ? '#1f2937' : '#6b7280',
+                    fontWeight: selectedCategoryFilter === category._id ? '600' : '500',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    justifyContent: 'space-between'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedCategoryFilter !== category._id) {
+                      e.currentTarget.style.background = '#f9fafb';
+                      e.currentTarget.style.color = '#1f2937';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedCategoryFilter !== category._id) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#6b7280';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>📁</span>
+                    <span>{category.name}</span>
+                  </div>
+                  {!category.isActive && (
+                    <span style={{ fontSize: '10px', color: '#9ca3af' }}>●</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '16px' }}>
+            <Button
+              onClick={() => {
+                setCategoryFormData({
+                  name: '',
+                  slug: '',
+                  description: '',
+                  isActive: true,
+                  order: 0,
+                  autoAddContent: false,
+                  autoAddLimit: 5,
+                });
+                setShowCategoryModal(true);
+              }}
+              variant="primary"
+              size="sm"
+              style={{ width: '100%' }}
+            >
+              + Kategori Ekle
+            </Button>
+          </div>
+        </aside>
+
+        {/* İçerik Listesi */}
+        <div style={{ flex: 1, minWidth: 0 }}>
 
       <Modal
         isOpen={showModal}
@@ -626,34 +894,90 @@ export default function ContentManagement() {
           </div>
         }
       >
-        <form id="content-form" onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px' }}>
+        <form id="content-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px', flexShrink: 0 }}>
             <div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                <Input
-                  label="Slug (Opsiyonel - Kart içerikleri için otomatik oluşturulur)"
-                  value={formData.slug}
-                  placeholder="Menüden link seçin veya boş bırakın"
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  style={{
-                    flex: 1,
-                  }}
-                  helperText="Sayfa içerikleri için menüden link seçin, kart içerikleri için boş bırakabilirsiniz"
-                />
-                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setLinkSearchTerm('');
-                      setShowLinkModal(true);
-                    }}
-                    variant="primary"
-                    size="md"
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    🔗 Link Seç
-                  </Button>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                Slug <span style={{ color: '#6b7280', fontWeight: '400' }}>(Opsiyonel - Kart içerikleri için otomatik oluşturulur)</span>
+              </label>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      type="text"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="Menüden link seçin veya boş bırakın"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        background: '#ffffff',
+                        color: '#1f2937',
+                        transition: 'all 0.15s',
+                        boxSizing: 'border-box'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#9ca3af';
+                        e.currentTarget.style.outline = 'none';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(156, 163, 175, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e5e7eb';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    />
+                    {formData.slug && (
+                      <div style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <span style={{
+                          fontSize: '11px',
+                          color: '#10b981',
+                          background: '#d1fae5',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontWeight: '500'
+                        }}>
+                          ✓ Seçildi
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#6b7280', lineHeight: '1.4' }}>
+                    Sayfa içerikleri için menüden link seçin, kart içerikleri için boş bırakabilirsiniz
+                  </p>
                 </div>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setLinkSearchTerm('');
+                    setShowLinkModal(true);
+                  }}
+                  variant="primary"
+                  size="md"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    minWidth: '120px',
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  <span>🔗</span>
+                  <span>Link Seç</span>
+                </Button>
               </div>
             </div>
             <div>
@@ -745,8 +1069,8 @@ export default function ContentManagement() {
             )}
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ marginBottom: '20px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexShrink: 0 }}>
               <label style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>İçerik Bölümleri</label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <Button
@@ -768,6 +1092,7 @@ export default function ContentManagement() {
               </div>
             </div>
 
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: '8px' }}>
             {formData.sections.length === 0 ? (
               <div style={{
                 padding: '3rem',
@@ -885,10 +1210,13 @@ export default function ContentManagement() {
                             <style>{`
                               .section-quill .ql-container {
                                 font-size: 14px;
-                                min-height: 300px;
+                                min-height: 400px;
+                                max-height: 600px;
                               }
                               .section-quill .ql-editor {
-                                min-height: 300px;
+                                min-height: 400px;
+                                max-height: 600px;
+                                overflow-y: auto;
                               }
                               .section-quill .ql-toolbar {
                                 border-top: none;
@@ -896,6 +1224,9 @@ export default function ContentManagement() {
                                 border-right: none;
                                 border-bottom: 1px solid #e5e7eb;
                                 background: #f9fafb;
+                                position: sticky;
+                                top: 0;
+                                z-index: 10;
                               }
                               .section-quill .ql-container {
                                 border-bottom: none;
@@ -1113,6 +1444,7 @@ export default function ContentManagement() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </form>
       </Modal>
@@ -1152,7 +1484,7 @@ export default function ContentManagement() {
                 {linkSearchTerm ? 'Arama sonucu bulunamadı.' : 'Henüz menü linki eklenmemiş.'}
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
                 {filteredLinks.map((link, index) => (
                   <div
                     key={index}
@@ -1164,33 +1496,130 @@ export default function ContentManagement() {
                       setLinkSearchTerm('');
                     }}
                     style={{
-                      padding: '12px 16px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
+                      padding: '16px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '8px',
                       cursor: 'pointer',
-                      transition: 'all 0.15s',
-                      background: '#ffffff'
+                      transition: 'all 0.2s',
+                      background: '#ffffff',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      position: 'relative',
+                      overflow: 'hidden'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#9ca3af';
+                      e.currentTarget.style.borderColor = '#313131';
                       e.currentTarget.style.background = '#f9fafb';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = '#e5e7eb';
                       e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px', marginBottom: '4px' }}>
-                          {link.label}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {link.href}
+                    {/* Görsel */}
+                    {link.imageUrl ? (
+                      <div style={{
+                        width: '100%',
+                        height: '120px',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        background: '#f3f4f6',
+                        flexShrink: 0
+                      }}>
+                        <img
+                          src={link.imageUrl}
+                          alt={link.label}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px;">Görsel Yok</div>';
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        height: '120px',
+                        borderRadius: '6px',
+                        background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '24px',
+                          color: '#9ca3af',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}>
+                          🔗
                         </div>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '12px' }}>
-                        {link.menuName}
+                    )}
+                    
+                    {/* İçerik */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        fontSize: '15px',
+                        lineHeight: '1.3',
+                        marginBottom: '2px'
+                      }}>
+                        {link.label}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#6b7280',
+                        fontFamily: 'monospace',
+                        background: '#f9fafb',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        wordBreak: 'break-all'
+                      }}>
+                        {link.href}
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginTop: '4px',
+                        paddingTop: '8px',
+                        borderTop: '1px solid #f3f4f6'
+                      }}>
+                        <span style={{
+                          fontSize: '11px',
+                          color: '#9ca3af',
+                          background: '#f3f4f6',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontWeight: '500'
+                        }}>
+                          {link.menuName}
+                        </span>
+                        <span style={{
+                          fontSize: '11px',
+                          color: '#10b981',
+                          fontWeight: '500'
+                        }}>
+                          ✓ Seç
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1276,7 +1705,10 @@ export default function ContentManagement() {
           <Select
             label="Kategoriye Göre Filtrele"
             value={cardModalCategoryFilter}
-            onChange={(e) => setCardModalCategoryFilter(e.target.value)}
+            onChange={(e) => {
+              setCardModalCategoryFilter(e.target.value);
+              setSelectedCardIds(new Set()); // Filtre değiştiğinde seçimleri temizle
+            }}
             options={[
               { value: 'all', label: 'Tüm Kategoriler' },
               { value: 'none', label: 'Kategorisiz' },
@@ -1284,6 +1716,121 @@ export default function ContentManagement() {
             ]}
           />
         </div>
+
+        {/* Hızlı Seçim Butonları */}
+        {cardModalCategoryFilter !== 'all' && cardModalCategoryFilter !== 'none' && (() => {
+          const selectedCategory = categories.find(cat => cat._id === cardModalCategoryFilter);
+          const categoryContents = contents.filter(c => {
+            if (c._id === editingContent?._id) return false;
+            if (!c.isActive) return false;
+            return c.categoryId === cardModalCategoryFilter;
+          }).sort((a, b) => {
+            // En yeni içerikler önce (createdAt'e göre)
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+          });
+
+          if (categoryContents.length === 0) return null;
+
+          return (
+            <div style={{
+              marginBottom: '16px',
+              padding: '12px',
+              background: '#f9fafb',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: '#1f2937',
+                marginBottom: '8px'
+              }}>
+                ⚡ Hızlı Seçim
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[3, 5, 10, 15, 20].map((limit) => {
+                  const limitedContents = categoryContents.slice(0, limit);
+                  return (
+                    <button
+                      key={limit}
+                      type="button"
+                      onClick={() => {
+                        const ids = new Set(limitedContents.map(c => c._id));
+                        setSelectedCardIds(ids);
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#1f2937',
+                        transition: 'all 0.15s',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#1f2937';
+                        e.currentTarget.style.background = '#f3f4f6';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#e5e7eb';
+                        e.currentTarget.style.background = '#ffffff';
+                      }}
+                    >
+                      Son {limit} Kart
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ids = new Set(categoryContents.map(c => c._id));
+                    setSelectedCardIds(ids);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#1f2937',
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#1f2937';
+                    e.currentTarget.style.background = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.background = '#ffffff';
+                  }}
+                >
+                  Tümünü Seç ({categoryContents.length})
+                </button>
+              </div>
+              {selectedCategory?.autoAddContent && (
+                <div style={{
+                  marginTop: '8px',
+                  padding: '8px',
+                  background: '#e0f2fe',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  color: '#0369a1'
+                }}>
+                  💡 Bu kategoride otomatik içerik ekleme aktif. Yeni içerikler otomatik olarak eklenir.
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
           {(() => {
             const availableContents = contents.filter(c => {
@@ -1292,6 +1839,11 @@ export default function ContentManagement() {
               if (cardModalCategoryFilter === 'all') return true;
               if (cardModalCategoryFilter === 'none') return !c.categoryId;
               return c.categoryId === cardModalCategoryFilter;
+            }).sort((a, b) => {
+              // En yeni içerikler önce
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
             });
 
             return availableContents.length === 0 ? (
@@ -1461,15 +2013,15 @@ export default function ContentManagement() {
         </div>
       </Modal>
 
-      {(() => {
-        // Kategori filtresine göre içerikleri filtrele
-        const filteredContents = contents.filter((content) => {
-          if (selectedCategoryFilter === 'all') return true;
-          if (selectedCategoryFilter === 'none') return !content.categoryId;
-          return content.categoryId === selectedCategoryFilter;
-        });
+          {(() => {
+            // Kategori filtresine göre içerikleri filtrele
+            const filteredContents = contents.filter((content) => {
+              if (selectedCategoryFilter === 'all') return true;
+              if (selectedCategoryFilter === 'none') return !content.categoryId;
+              return content.categoryId === selectedCategoryFilter;
+            });
 
-        return filteredContents.length === 0 ? (
+            return filteredContents.length === 0 ? (
         <div style={{
           background: '#ffffff',
           padding: '48px',
@@ -1746,11 +2298,189 @@ export default function ContentManagement() {
                 </div>
               )}
             </div>
-          );
-          })}
+              );
+            })}
+          </div>
+        );
+        })()}
         </div>
-      );
-      })()}
+      </div>
+
+      {/* Kategori Ekleme Modal */}
+      <Modal
+        isOpen={showCategoryModal}
+        onClose={() => {
+          setShowCategoryModal(false);
+          setCategoryFormData({
+            name: '',
+            slug: '',
+            description: '',
+            isActive: true,
+            order: 0,
+            autoAddContent: false,
+            autoAddLimit: 5,
+          });
+        }}
+        title="Yeni Kategori Ekle"
+        size="medium"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <Button
+              type="button"
+              onClick={() => {
+                setShowCategoryModal(false);
+                setCategoryFormData({
+                  name: '',
+                  slug: '',
+                  description: '',
+                  isActive: true,
+                  order: 0,
+                  autoAddContent: false,
+                  autoAddLimit: 5,
+                });
+              }}
+              variant="outline"
+              size="md"
+              disabled={submittingCategory}
+            >
+              İptal
+            </Button>
+            <Button
+              type="submit"
+              form="category-form"
+              variant="primary"
+              size="md"
+              isLoading={submittingCategory}
+            >
+              Oluştur
+            </Button>
+          </div>
+        }
+      >
+        <form id="category-form" onSubmit={handleCategorySubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <Input
+              label="Kategori Adı"
+              value={categoryFormData.name}
+              onChange={(e) => {
+                const name = e.target.value;
+                setCategoryFormData({
+                  ...categoryFormData,
+                  name,
+                  slug: categoryFormData.slug || createSlug(name),
+                });
+              }}
+              required
+              placeholder="Örn: Haberler, Blog"
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <Input
+              label="Slug"
+              value={categoryFormData.slug}
+              onChange={(e) => setCategoryFormData({ ...categoryFormData, slug: createSlug(e.target.value) })}
+              required
+              placeholder="Otomatik oluşturulur"
+              helperText="URL'de kullanılacak benzersiz tanımlayıcı"
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <Input
+              label="Açıklama"
+              value={categoryFormData.description}
+              onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
+              placeholder="Kategori hakkında kısa açıklama (opsiyonel)"
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <Select
+              label="Durum"
+              value={categoryFormData.isActive ? 'active' : 'inactive'}
+              onChange={(e) => setCategoryFormData({ ...categoryFormData, isActive: e.target.value === 'active' })}
+              options={[
+                { value: 'active', label: 'Aktif' },
+                { value: 'inactive', label: 'Pasif' },
+              ]}
+            />
+            <Input
+              label="Sıra"
+              type="number"
+              value={categoryFormData.order}
+              onChange={(e) => setCategoryFormData({ ...categoryFormData, order: parseInt(e.target.value) || 0 })}
+              placeholder="0"
+            />
+          </div>
+
+          <div style={{
+            padding: '16px',
+            background: '#f9fafb',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <input
+                type="checkbox"
+                id="autoAddContent"
+                checked={categoryFormData.autoAddContent}
+                onChange={(e) => setCategoryFormData({
+                  ...categoryFormData,
+                  autoAddContent: e.target.checked
+                })}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer'
+                }}
+              />
+              <label
+                htmlFor="autoAddContent"
+                style={{
+                  fontWeight: '500',
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  flex: 1
+                }}
+              >
+                Otomatik İçerik Ekleme
+              </label>
+            </div>
+            <p style={{
+              margin: '0 0 12px 30px',
+              fontSize: '12px',
+              color: '#6b7280',
+              lineHeight: '1.5'
+            }}>
+              Bu kategoriye içerik eklendiğinde, otomatik olarak bu kategorinin kartlarına eklenir. 
+              Örneğin "Haberler" kategorisine yeni bir haber eklendiğinde, otomatik olarak haberler sayfasındaki kartlara eklenir.
+            </p>
+            {categoryFormData.autoAddContent && (
+              <div style={{ marginLeft: '30px' }}>
+                <Select
+                  label="Otomatik Ekleme Limiti"
+                  value={categoryFormData.autoAddLimit?.toString() || '5'}
+                  onChange={(e) => setCategoryFormData({
+                    ...categoryFormData,
+                    autoAddLimit: parseInt(e.target.value) || 5
+                  })}
+                  options={[
+                    { value: '3', label: 'Son 3 Kart' },
+                    { value: '5', label: 'Son 5 Kart' },
+                    { value: '10', label: 'Son 10 Kart' },
+                    { value: '15', label: 'Son 15 Kart' },
+                    { value: '20', label: 'Son 20 Kart' },
+                  ]}
+                  helperText="Yeni içerik eklendiğinde, bu kategorinin son kaç kartına otomatik ekleneceğini belirler"
+                />
+              </div>
+            )}
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

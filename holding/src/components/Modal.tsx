@@ -59,7 +59,7 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
           borderRadius: isFullscreen ? '0' : '8px',
           width: isFullscreen ? '100%' : '100%',
           height: isFullscreen ? '100%' : 'auto',
-          maxHeight: isFullscreen ? '100%' : '90vh',
+          maxHeight: isFullscreen ? '100%' : '95vh',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: isFullscreen ? 'none' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',

@@ -120,21 +120,6 @@ export default function Home() {
       <StructuredData type="organization" data={settings} id="org" />
       <StructuredData type="website" data={settings} id="website" />
       <SmoothScroll />
-      <a href="#main-content" className="skip-link" style={{
-        position: 'absolute',
-        left: '-9999px',
-        zIndex: 999,
-        padding: '1em',
-        backgroundColor: '#000',
-        color: '#fff',
-        textDecoration: 'none'
-      }} onFocus={(e) => {
-        e.currentTarget.style.left = '0';
-      }} onBlur={(e) => {
-        e.currentTarget.style.left = '-9999px';
-      }}>
-        Ana içeriğe geç
-      </a>
       <Header />
       <main id="main-content" role="main" aria-label="Ana içerik">
         {sections.map((section) => renderSection(section))}
