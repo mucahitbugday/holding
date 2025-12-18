@@ -56,10 +56,33 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
 
   useEffect(() => {
     if (slides.length === 0) return;
-    const interval = setInterval(() => {
+    
+    // Pause auto-play when page is not visible (mobile battery optimization)
+    let interval: NodeJS.Timeout;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (interval) clearInterval(interval);
+      } else {
+        interval = setInterval(() => {
+          setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+      }
+    };
+    
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 640;
+    const autoPlayInterval = isMobile ? 6000 : 5000; // Longer interval on mobile
+    
+    interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
+    }, autoPlayInterval);
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [slides.length]);
 
   const nextSlide = () => {
@@ -95,13 +118,14 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
               fill
               priority={index === 0}
               fetchPriority={index === 0 ? 'high' : 'auto'}
-              quality={85}
-              sizes="100vw"
+              quality={index === 0 ? 85 : 75}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1920px"
               style={{
                 objectFit: 'cover',
                 objectPosition: 'center',
               }}
               className="hero-slide-image"
+              loading={index === 0 ? 'eager' : 'lazy'}
             />
             <div className="hero-content fade-in">
               <h2 className="gradient-text" style={{ 

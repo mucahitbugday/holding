@@ -211,6 +211,7 @@ body.admin-panel {
   min-height: calc(100vh - 70px);
   overflow: hidden;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  margin-top: 0;
 }
 
 .hero-slider {
@@ -1182,7 +1183,7 @@ section .container {
   .hero {
     height: calc(100vh - 70px);
     min-height: calc(100vh - 70px);
-    margin-top: 70px;
+    margin-top: 0;
     width: 100%;
   }
 
@@ -1193,11 +1194,13 @@ section .container {
   .hero-content h2 {
     font-size: 1.5rem;
     margin-bottom: 0.75rem;
+    line-height: 1.3;
   }
 
   .hero-content p {
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
+    line-height: 1.5;
   }
 
   section {
@@ -1211,6 +1214,11 @@ section .container {
     padding: 0 15px;
     min-height: calc(100vh - 2rem);
     overflow: visible;
+  }
+
+  /* Disable fixed background on mobile for better performance */
+  section[style*="background-image"] {
+    background-attachment: scroll !important;
   }
 
   .section-header {
@@ -1307,10 +1315,31 @@ section .container {
     width: 40px;
     height: 40px;
     font-size: 1.5rem;
+    touch-action: manipulation;
   }
 
   .hero-dots {
     bottom: 1rem;
+  }
+
+  /* Mobile performance optimizations */
+  .hero-slide {
+    will-change: opacity;
+  }
+
+  .hero-slide:not(.active) {
+    pointer-events: none;
+  }
+
+  /* Reduce animations on mobile for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide {
+      transition: none;
+    }
+    
+    .fade-in {
+      animation: none;
+    }
   }
 }
 

@@ -198,10 +198,10 @@ export default function ContentManagement() {
   // Tüm menü linklerini topla (ana menü ve alt menüler)
   const getAllMenuLinks = (): Array<{ label: string; href: string; menuName: string; isChild?: boolean }> => {
     const links: Array<{ label: string; href: string; menuName: string; isChild?: boolean }> = [];
-    
+
     menus.forEach((menu) => {
       if (!menu.isActive) return;
-      
+
       menu.items?.forEach((item: any) => {
         // Ana menü öğesi - sadece href varsa, boş değilse ve media dosyası değilse
         if (item.href && item.href.trim() && !item.href.startsWith('#') && item.href !== '/' && !isMediaFile(item.href)) {
@@ -212,7 +212,7 @@ export default function ContentManagement() {
             isChild: false
           });
         }
-        
+
         // Alt menü öğeleri
         if (item.children && Array.isArray(item.children)) {
           item.children.forEach((child: any) => {
@@ -228,7 +228,7 @@ export default function ContentManagement() {
         }
       });
     });
-    
+
     return links;
   };
 
@@ -260,14 +260,14 @@ export default function ContentManagement() {
 
   const usedSlugs = getUsedSlugs();
   const allLinks = getAllMenuLinks();
-  
+
   // Kullanılmamış linkleri filtrele
   const availableLinks = allLinks.filter(link => {
     const slug = hrefToSlug(link.href);
     return !usedSlugs.has(slug);
   });
 
-  const filteredLinks = availableLinks.filter(link => 
+  const filteredLinks = availableLinks.filter(link =>
     link.label.toLowerCase().includes(linkSearchTerm.toLowerCase()) ||
     link.href.toLowerCase().includes(linkSearchTerm.toLowerCase())
   );
@@ -318,7 +318,7 @@ export default function ContentManagement() {
           type: section.type,
           order: idx
         };
-        
+
         if (section.type === 'text') {
           cleaned.content = section.content || '';
         } else if (section.type === 'card') {
@@ -331,7 +331,7 @@ export default function ContentManagement() {
             cleaned.contentIds = [];
           }
         }
-        
+
         return cleaned;
       });
 
@@ -350,9 +350,9 @@ export default function ContentManagement() {
         // Content field'ını her zaman gönder (sections varsa bile boş string olarak)
         content: formData.sections && formData.sections.length > 0 ? '' : (formData.content || ''),
       };
-      
+
       console.log('Submitting data:', JSON.stringify(submitData, null, 2));
-      
+
       let response;
       if (editingContent) {
         response = await apiClient.updateContent(editingContent._id, submitData);
@@ -361,11 +361,11 @@ export default function ContentManagement() {
         response = await apiClient.createContent(submitData);
         console.log('Create response:', response);
       }
-      
+
       if (!response.success) {
         throw new Error(response.error || 'Kayıt başarısız oldu');
       }
-      
+
       setShowModal(false);
       setEditingContent(null);
       setEditingSectionIndex(null);
@@ -424,7 +424,7 @@ export default function ContentManagement() {
     try {
       console.log('handleDelete called with id:', id);
       console.log('Swal available:', typeof Swal !== 'undefined');
-      
+
       const result = await Swal.fire({
         title: 'Emin misiniz?',
         text: 'Bu içeriği silmek istediğinize emin misiniz?',
@@ -446,7 +446,7 @@ export default function ContentManagement() {
       console.log('Deleting content...');
       await apiClient.deleteContent(id);
       await loadContents();
-      
+
       await Swal.fire({
         icon: 'success',
         title: 'Silindi!',
@@ -522,9 +522,9 @@ export default function ContentManagement() {
         [{ 'size': ['small', false, 'large', 'huge'] }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'color': [] }, { 'background': [] }],
-        [{ 'script': 'sub'}, { 'script': 'super' }],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'script': 'sub' }, { 'script': 'super' }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
         [{ 'align': [] }, { 'direction': 'rtl' }],
         ['link', 'image', 'video'],
         ['blockquote', 'code-block'],
@@ -553,10 +553,10 @@ export default function ContentManagement() {
 
   return (
     <div style={{ padding: '0' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '24px',
         paddingBottom: '16px',
         borderBottom: '1px solid #e5e7eb'
@@ -594,13 +594,13 @@ export default function ContentManagement() {
                   placeholder="Menüden link seçin"
                   error={!formData.slug}
                   errorMessage="Slug gereklidir"
-                  style={{ 
+                  style={{
                     flex: 1,
                     background: '#f9fafb',
                     cursor: 'not-allowed',
                     color: formData.slug ? '#1f2937' : '#9ca3af'
                   }}
-                  readOnly
+
                 />
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                   <Button
@@ -825,8 +825,8 @@ export default function ContentManagement() {
                     {section.type === 'text' ? (
                       <div style={{ padding: '16px' }}>
                         {editingSectionIndex === index ? (
-                          <div style={{ 
-                            border: '1px solid #e5e7eb', 
+                          <div style={{
+                            border: '1px solid #e5e7eb',
                             borderRadius: '6px',
                             background: '#ffffff',
                             overflow: 'hidden'
@@ -902,8 +902,8 @@ export default function ContentManagement() {
                               minHeight: '60px',
                               border: '1px dashed #d1d5db'
                             }}
-                            dangerouslySetInnerHTML={{ 
-                              __html: section.content || '<p style="color: #9ca3af; margin: 0;">İçerik eklemek için tıklayın...</p>' 
+                            dangerouslySetInnerHTML={{
+                              __html: section.content || '<p style="color: #9ca3af; margin: 0;">İçerik eklemek için tıklayın...</p>'
                             }}
                           />
                         )}
@@ -1275,33 +1275,33 @@ export default function ContentManagement() {
                           <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
                         )}
                       </div>
-                    {(content.featuredImage || content.metadata?.image) && (
-                      <img
-                        src={content.featuredImage || content.metadata?.image}
-                        alt={content.title}
-                        style={{
-                          width: '100px',
-                          height: '75px',
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                          flexShrink: 0
-                        }}
-                      />
-                    )}
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
-                        {content.title}
-                      </h3>
-                      {content.description && (
-                        <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
-                          {content.description}
-                        </p>
+                      {(content.featuredImage || content.metadata?.image) && (
+                        <img
+                          src={content.featuredImage || content.metadata?.image}
+                          alt={content.title}
+                          style={{
+                            width: '100px',
+                            height: '75px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            flexShrink: 0
+                          }}
+                        />
                       )}
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>
-                        Slug: {content.slug}
-                      </p>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
+                          {content.title}
+                        </h3>
+                        {content.description && (
+                          <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
+                            {content.description}
+                          </p>
+                        )}
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>
+                          Slug: {content.slug}
+                        </p>
+                      </div>
                     </div>
-                  </div>
                   );
                 })}
             </div>
@@ -1322,10 +1322,10 @@ export default function ContentManagement() {
               Henüz görsel yüklenmemiş. Medya Yönetimi sayfasından görsel yükleyebilirsiniz.
             </div>
           ) : (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
-              gap: '16px' 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gap: '16px'
             }}>
               {mediaFiles.map((file) => (
                 <div
@@ -1380,10 +1380,10 @@ export default function ContentManagement() {
       </Modal>
 
       {contents.length === 0 ? (
-        <div style={{ 
-          background: '#ffffff', 
-          padding: '48px', 
-          borderRadius: '8px', 
+        <div style={{
+          background: '#ffffff',
+          padding: '48px',
+          borderRadius: '8px',
           textAlign: 'center',
           border: '1px solid #e5e7eb'
         }}>
@@ -1400,22 +1400,22 @@ export default function ContentManagement() {
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
           {contents.map((content) => (
-            <div key={content._id} style={{ 
-              background: '#ffffff', 
-              padding: '20px', 
-              borderRadius: '8px', 
+            <div key={content._id} style={{
+              background: '#ffffff',
+              padding: '20px',
+              borderRadius: '8px',
               border: '1px solid #e5e7eb',
               boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               transition: 'all 0.15s'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#d1d5db';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e5e7eb';
-              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-            }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+              }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: expandedContents.has(content._id) ? '16px' : '0' }}>
                 <div style={{ flex: 1 }}>
@@ -1425,9 +1425,9 @@ export default function ContentManagement() {
                     <span>Durum: <strong style={{ color: content.isActive ? '#10b981' : '#ef4444' }}>{content.isActive ? 'Aktif' : 'Pasif'}</strong></span>
                     {content.createdAt && (
                       <span>
-                        Oluşturulma: <strong>{new Date(content.createdAt).toLocaleDateString('tr-TR', { 
-                          year: 'numeric', 
-                          month: 'short', 
+                        Oluşturulma: <strong>{new Date(content.createdAt).toLocaleDateString('tr-TR', {
+                          year: 'numeric',
+                          month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit'
@@ -1436,9 +1436,9 @@ export default function ContentManagement() {
                     )}
                     {content.updatedAt && (
                       <span>
-                        Güncelleme: <strong>{new Date(content.updatedAt).toLocaleDateString('tr-TR', { 
-                          year: 'numeric', 
-                          month: 'short', 
+                        Güncelleme: <strong>{new Date(content.updatedAt).toLocaleDateString('tr-TR', {
+                          year: 'numeric',
+                          month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit'
@@ -1471,7 +1471,7 @@ export default function ContentManagement() {
                       e.currentTarget.style.background = '#f3f4f6';
                     }}
                   >
-                    <span style={{ 
+                    <span style={{
                       transform: expandedContents.has(content._id) ? 'rotate(180deg)' : 'rotate(0deg)',
                       transition: 'transform 0.2s',
                       display: 'inline-block'
@@ -1496,9 +1496,9 @@ export default function ContentManagement() {
                   </Button>
                 </div>
               </div>
-              
+
               {expandedContents.has(content._id) && (
-                <div style={{ 
+                <div style={{
                   marginTop: '16px',
                   paddingTop: '16px',
                   borderTop: '1px solid #e5e7eb',
@@ -1518,9 +1518,9 @@ export default function ContentManagement() {
                   `}</style>
                   {content.description && (
                     <div style={{ marginBottom: '16px' }}>
-                      <p style={{ 
-                        color: '#6b7280', 
-                        fontSize: '14px', 
+                      <p style={{
+                        color: '#6b7280',
+                        fontSize: '14px',
                         lineHeight: '1.6',
                         margin: 0
                       }}>
@@ -1530,9 +1530,9 @@ export default function ContentManagement() {
                   )}
                   {(content.featuredImage || content.metadata?.image) && (
                     <div style={{ marginBottom: '16px' }}>
-                      <p style={{ 
-                        color: '#1f2937', 
-                        fontSize: '14px', 
+                      <p style={{
+                        color: '#1f2937',
+                        fontSize: '14px',
                         fontWeight: '500',
                         marginBottom: '8px'
                       }}>
@@ -1554,33 +1554,33 @@ export default function ContentManagement() {
                       />
                     </div>
                   )}
-                  <div style={{ 
-                    background: '#ffffff', 
-                    padding: '24px', 
-                    borderRadius: '6px', 
+                  <div style={{
+                    background: '#ffffff',
+                    padding: '24px',
+                    borderRadius: '6px',
                     border: '1px solid #e5e7eb',
                     minHeight: '100px'
                   }}>
-                    <p style={{ 
-                      color: '#1f2937', 
-                      fontSize: '14px', 
+                    <p style={{
+                      color: '#1f2937',
+                      fontSize: '14px',
                       fontWeight: '500',
                       marginBottom: '12px'
                     }}>
                       İçerik Önizlemesi:
                     </p>
-                    <div 
+                    <div
                       className="content-preview"
-                      style={{ 
-                        color: '#374151', 
-                        fontSize: '15px', 
+                      style={{
+                        color: '#374151',
+                        fontSize: '15px',
                         lineHeight: '1.8',
                         wordBreak: 'break-word'
                       }}
-                      dangerouslySetInnerHTML={{ 
-                        __html: content.content.length > 500 
-                          ? content.content.substring(0, 500) + '<p style="color: #9ca3af; margin-top: 16px; font-style: italic;">... (devamı için düzenleyin)</p>' 
-                          : content.content 
+                      dangerouslySetInnerHTML={{
+                        __html: content.content.length > 500
+                          ? content.content.substring(0, 500) + '<p style="color: #9ca3af; margin-top: 16px; font-style: italic;">... (devamı için düzenleyin)</p>'
+                          : content.content
                       }}
                     />
                     <style>{`
