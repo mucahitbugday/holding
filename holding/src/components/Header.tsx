@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { logger } from '@/lib/logger';
 
 interface MenuItem {
@@ -213,13 +214,14 @@ export default function Header() {
           <div className="logo">
             {siteLogo ? (
                 <Link href="/" aria-label={`${siteName} ana sayfa`}>
-                  <img 
+                  <Image 
                     src={siteLogo} 
                     alt={siteName} 
                     width={120} 
                     height={40} 
                     style={{ height: '40px', width: 'auto' }} 
-                    loading="eager"
+                    priority
+                    quality={90}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       const parent = target.parentElement;

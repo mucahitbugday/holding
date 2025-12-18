@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { logger } from '@/lib/logger';
 
 interface HRPolicyLink {
@@ -69,13 +70,15 @@ export default function HRPolicy() {
           </div>
           <div className="hr-image">
             {image ? (
-              <img 
+              <Image 
                 src={image} 
                 alt={`${title} - ${subtitle}`} 
                 width={800}
                 height={600}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 loading="lazy"
+                quality={85}
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             ) : (
               <div className="placeholder-image" aria-hidden="true">
