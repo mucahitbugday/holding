@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
-    const isAdmin = getAuthUser(request); // Admin kontrolü
+    const authUser = getAuthUser(request); // Admin kontrolü
+    const isAdmin = authUser && authUser.role === 'admin';
 
     const query: any = {};
     
@@ -90,10 +91,10 @@ export async function GET(request: NextRequest) {
     const menus = await Menu.find(query).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, menus });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get menus error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

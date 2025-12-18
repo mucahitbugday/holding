@@ -22,10 +22,17 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, content });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get content error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz içerik ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -49,7 +56,6 @@ export async function PUT(
     const { id } = await params;
 
     const data = await request.json();
-    console.log('Updating content with data:', JSON.stringify(data, null, 2));
     
     // Sections'ı temizle
     if (data.sections && Array.isArray(data.sections)) {
@@ -90,11 +96,6 @@ export async function PUT(
     // Content field'ını her zaman string olarak ayarla (undefined/null olamaz)
     data.content = data.content || '';
     
-    console.log('Cleaned sections:', JSON.stringify(data.sections, null, 2));
-    console.log('Final content value:', data.content);
-    console.log('Content type:', typeof data.content);
-    console.log('Data to update:', JSON.stringify({ ...data, sections: data.sections?.length || 0 }, null, 2));
-    
     try {
       const content = await Content.findByIdAndUpdate(
         id,
@@ -109,10 +110,15 @@ export async function PUT(
         );
       }
 
-      console.log('Content updated successfully:', content._id);
       return NextResponse.json({ success: true, content });
     } catch (updateError: any) {
       console.error('Mongoose update error:', updateError);
+      if (updateError.code === 11000) {
+        return NextResponse.json(
+          { success: false, error: 'Bu slug zaten kullanılıyor' },
+          { status: 400 }
+        );
+      }
       throw updateError;
     }
   } catch (error: any) {
@@ -151,10 +157,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, message: 'İçerik silindi' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete content error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz içerik ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

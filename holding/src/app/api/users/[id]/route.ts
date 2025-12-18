@@ -33,10 +33,17 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, user: foundUser });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get user error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz kullanıcı ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -71,11 +78,19 @@ export async function PUT(
     }
 
     // Kendi hesabını silmeyi engelle
-    if (id === authUser.id) {
+    const currentUserId = authUser.userId;
+    if (id === currentUserId) {
       // Kendi hesabında role değişikliği yapılamaz
       if (role && role !== user.role) {
         return NextResponse.json(
           { error: 'Kendi hesabınızın yetkisini değiştiremezsiniz' },
+          { status: 400 }
+        );
+      }
+      // Kendi hesabını pasif yapamaz
+      if (isActive !== undefined && !isActive) {
+        return NextResponse.json(
+          { error: 'Kendi hesabınızı pasif yapamazsınız' },
           { status: 400 }
         );
       }
@@ -95,8 +110,8 @@ export async function PUT(
 
     // Diğer alanları güncelle
     if (name) user.name = name;
-    if (role && id !== authUser.id) user.role = role; // Kendi hesabında role değiştirilemez
-    if (isActive !== undefined && id !== authUser.id) user.isActive = isActive; // Kendi hesabını pasif yapamaz
+    if (role && id !== currentUserId) user.role = role; // Kendi hesabında role değiştirilemez
+    if (isActive !== undefined && id !== currentUserId) user.isActive = isActive; // Kendi hesabını pasif yapamaz
 
     // Şifre güncelleme
     if (password && password.length > 0) {
@@ -112,10 +127,8 @@ export async function PUT(
     await user.save();
 
     // Şifreyi response'dan çıkar
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    delete userResponse.resetPasswordToken;
-    delete userResponse.resetPasswordExpires;
+    const userObj = user.toObject();
+    const { password: _, resetPasswordToken: __, resetPasswordExpires: ___, ...userResponse } = userObj;
 
     return NextResponse.json({ success: true, user: userResponse });
   } catch (error: any) {
@@ -151,7 +164,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Kendi hesabını silmeyi engelle
-    if (id === authUser.id) {
+    if (id === authUser.userId) {
       return NextResponse.json(
         { error: 'Kendi hesabınızı silemezsiniz' },
         { status: 400 }
@@ -167,10 +180,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, message: 'Kullanıcı silindi' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete user error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz kullanıcı ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

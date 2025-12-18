@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
       .lean();
 
     return NextResponse.json({ success: true, users });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get users error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -96,10 +96,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Şifreyi response'dan çıkar
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    delete userResponse.resetPasswordToken;
-    delete userResponse.resetPasswordExpires;
+    const userObj = user.toObject();
+    const { password: _, resetPasswordToken: __, resetPasswordExpires: ___, ...userResponse } = userObj;
 
     return NextResponse.json({ success: true, user: userResponse }, { status: 201 });
   } catch (error: any) {

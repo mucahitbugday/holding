@@ -108,10 +108,10 @@ export async function GET(request: NextRequest) {
     const contents = await Content.find(query).sort({ order: 1, createdAt: -1 });
 
     return NextResponse.json({ success: true, contents });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get contents error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -131,7 +131,6 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
-    console.log('Creating content with data:', JSON.stringify(data, null, 2));
     
     // Sections'ı temizle
     if (data.sections && Array.isArray(data.sections)) {
@@ -172,14 +171,8 @@ export async function POST(request: NextRequest) {
     // Content field'ını her zaman string olarak ayarla (undefined/null olamaz)
     data.content = data.content || '';
     
-    console.log('Cleaned sections:', JSON.stringify(data.sections, null, 2));
-    console.log('Final content value:', data.content);
-    console.log('Content type:', typeof data.content);
-    console.log('Data to create:', JSON.stringify({ ...data, sections: data.sections?.length || 0 }, null, 2));
-    
     try {
       const content = await Content.create(data);
-      console.log('Content created successfully:', content._id);
       return NextResponse.json({ success: true, content }, { status: 201 });
     } catch (createError: any) {
       console.error('Mongoose create error:', createError);

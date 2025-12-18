@@ -22,10 +22,17 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, menu });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get menu error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz menü ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -65,10 +72,16 @@ export async function PUT(
     }
 
     return NextResponse.json({ success: true, menu });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Update menu error:', error);
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'Bu menü adı zaten kullanılıyor' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
@@ -101,10 +114,17 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, message: 'Menü silindi' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete menu error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz menü ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

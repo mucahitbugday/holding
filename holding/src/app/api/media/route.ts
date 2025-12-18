@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
     const mediaFiles = await Media.find(query).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, files: mediaFiles });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get media error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }

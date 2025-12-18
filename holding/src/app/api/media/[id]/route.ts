@@ -48,8 +48,15 @@ export async function DELETE(
     return NextResponse.json({ success: true, message: 'Dosya silindi' });
   } catch (error: any) {
     console.error('Delete media error:', error);
+    // Invalid ObjectId kontrolü
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Geçersiz dosya ID' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: error.message || 'Sunucu hatası' },
       { status: 500 }
     );
   }
