@@ -1,4 +1,18 @@
-const API_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// API URL'ini dinamik olarak belirle
+function getApiUrl(): string {
+  // Client-side'da window.location.origin kullan
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  // Server-side'da environment variable veya fallback kullan
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://holding.ogrencim.info/';
+}
 
 export class ApiClient {
   private token: string | null = null;
@@ -36,6 +50,7 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    const API_URL = getApiUrl();
     const response = await fetch(`${API_URL}/api${endpoint}`, {
       ...options,
       headers,
@@ -199,7 +214,7 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const API_URL = getApiUrl();
     const response = await fetch(`${API_URL}/api/media`, {
       method: 'POST',
       headers,
