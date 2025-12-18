@@ -140,10 +140,11 @@ export class ApiClient {
   }
 
   // Content
-  async getContents(type?: string, slug?: string) {
+  async getContents(type?: string, slug?: string, categoryId?: string) {
     const params = new URLSearchParams();
     if (type) params.append('type', type);
     if (slug) params.append('slug', slug);
+    if (categoryId) params.append('categoryId', categoryId);
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.request(`/content${query}`);
   }
@@ -261,6 +262,38 @@ export class ApiClient {
 
   async deleteUser(id: string) {
     return this.request(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Category
+  async getCategories(isActive?: boolean) {
+    const params = new URLSearchParams();
+    if (isActive !== undefined) params.append('isActive', String(isActive));
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.request(`/category${query}`);
+  }
+
+  async getCategory(id: string) {
+    return this.request(`/category/${id}`);
+  }
+
+  async createCategory(data: { name: string; slug?: string; description?: string; isActive?: boolean; order?: number }) {
+    return this.request('/category', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(id: string, data: { name?: string; slug?: string; description?: string; isActive?: boolean; order?: number }) {
+    return this.request(`/category/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: string) {
+    return this.request(`/category/${id}`, {
       method: 'DELETE',
     });
   }

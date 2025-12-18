@@ -57,6 +57,34 @@ export async function PUT(
 
     const data = await request.json();
     
+    // Slug yoksa title'dan otomatik oluştur (sadece yeni slug yoksa)
+    if (!data.slug && data.title) {
+      data.slug = data.title
+        .toLowerCase()
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
+      // Eğer slug hala boşsa veya sadece tire ise, timestamp ekle
+      if (!data.slug || data.slug === '-') {
+        data.slug = `content-${Date.now()}`;
+      } else {
+        // Unique slug oluştur (mevcut içeriğin slug'ını hariç tut)
+        let baseSlug = data.slug;
+        let counter = 1;
+        const existingContent = await Content.findById(id);
+        while (await Content.findOne({ slug: data.slug, _id: { $ne: id } })) {
+          data.slug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+      }
+    }
+    
     // Sections'ı temizle
     if (data.sections && Array.isArray(data.sections)) {
       data.sections = data.sections.map((section: any, index: number) => {

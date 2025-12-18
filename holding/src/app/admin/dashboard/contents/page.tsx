@@ -30,6 +30,7 @@ interface Content {
   content: string;
   sections?: ContentSection[];
   type: 'page';
+  categoryId?: string;
   isActive: boolean;
   order?: number;
   featuredImage?: string;
@@ -42,13 +43,25 @@ interface Content {
   };
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+  order?: number;
+}
+
 
 export default function ContentManagement() {
   const [contents, setContents] = useState<Content[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingContent, setEditingContent] = useState<Content | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+  const [cardModalCategoryFilter, setCardModalCategoryFilter] = useState<string>('all');
   const [formData, setFormData] = useState({
     slug: '',
     title: '',
@@ -56,6 +69,7 @@ export default function ContentManagement() {
     content: '',
     sections: [] as ContentSection[],
     type: 'page' as Content['type'],
+    categoryId: '',
     isActive: true,
     order: 0,
     featuredImage: '',
@@ -173,7 +187,17 @@ export default function ContentManagement() {
     loadContents();
     loadMedia();
     loadMenus();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await apiClient.getCategories(true);
+      setCategories(response.categories || []);
+    } catch (error) {
+      console.error('Kategoriler yüklenemedi:', error);
+    }
+  };
 
   const loadMenus = async () => {
     try {
@@ -340,6 +364,7 @@ export default function ContentManagement() {
         title: formData.title,
         description: formData.description || '',
         type: formData.type,
+        categoryId: formData.categoryId || undefined,
         isActive: formData.isActive,
         order: formData.order,
         featuredImage: formData.featuredImage || '',
@@ -377,6 +402,7 @@ export default function ContentManagement() {
         content: '',
         sections: [],
         type: 'page',
+        categoryId: '',
         isActive: true,
         order: 0,
         featuredImage: '',
@@ -413,6 +439,7 @@ export default function ContentManagement() {
       content: content.content,
       sections: content.sections || [],
       type: content.type,
+      categoryId: content.categoryId || '',
       isActive: content.isActive,
       order: content.order || 0,
       featuredImage: content.featuredImage || content.metadata?.image || '',
@@ -486,6 +513,7 @@ export default function ContentManagement() {
       content: '',
       sections: [],
       type: 'page',
+      categoryId: '',
       isActive: true,
       order: 0,
       featuredImage: '',
@@ -506,6 +534,7 @@ export default function ContentManagement() {
       content: '',
       sections: [],
       type: 'page',
+      categoryId: '',
       isActive: true,
       order: 0,
       featuredImage: '',
@@ -559,12 +588,26 @@ export default function ContentManagement() {
         alignItems: 'center',
         marginBottom: '24px',
         paddingBottom: '16px',
-        borderBottom: '1px solid #e5e7eb'
+        borderBottom: '1px solid #e5e7eb',
+        flexWrap: 'wrap',
+        gap: '16px'
       }}>
         <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>İçerik Yönetimi</h1>
-        <Button onClick={openNewContentModal} variant="primary" size="md">
-          + Yeni İçerik
-        </Button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Select
+            value={selectedCategoryFilter}
+            onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+            options={[
+              { value: 'all', label: 'Tüm Kategoriler' },
+              { value: 'none', label: 'Kategorisiz' },
+              ...categories.map(cat => ({ value: cat._id, label: cat.name }))
+            ]}
+            style={{ minWidth: '180px' }}
+          />
+          <Button onClick={openNewContentModal} variant="primary" size="md">
+            + Yeni İçerik
+          </Button>
+        </div>
       </div>
 
       <Modal
@@ -588,19 +631,14 @@ export default function ContentManagement() {
             <div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                 <Input
-                  label="Slug"
+                  label="Slug (Opsiyonel - Kart içerikleri için otomatik oluşturulur)"
                   value={formData.slug}
-                  required
-                  placeholder="Menüden link seçin"
-                  error={!formData.slug}
-                  errorMessage="Slug gereklidir"
+                  placeholder="Menüden link seçin veya boş bırakın"
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   style={{
                     flex: 1,
-                    background: '#f9fafb',
-                    cursor: 'not-allowed',
-                    color: formData.slug ? '#1f2937' : '#9ca3af'
                   }}
-
+                  helperText="Sayfa içerikleri için menüden link seçin, kart içerikleri için boş bırakabilirsiniz"
                 />
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                   <Button
@@ -631,14 +669,27 @@ export default function ContentManagement() {
             </div>
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <Input
-              label="Başlık"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-              placeholder="İçerik başlığı"
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div>
+              <Input
+                label="Başlık"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+                placeholder="İçerik başlığı"
+              />
+            </div>
+            <div>
+              <Select
+                label="Kategori"
+                value={formData.categoryId || ''}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                options={[
+                  { value: '', label: 'Kategori Seçiniz' },
+                  ...categories.map(cat => ({ value: cat._id, label: cat.name }))
+                ]}
+              />
+            </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -1157,6 +1208,7 @@ export default function ContentManagement() {
           setShowCardSelectModal(false);
           setTempSectionIndex(null);
           setSelectedCardIds(new Set());
+          setCardModalCategoryFilter('all');
         }}
         title="Kart İçerikleri Seç"
         size="large"
@@ -1220,16 +1272,38 @@ export default function ContentManagement() {
           </div>
         }
       >
+        <div style={{ marginBottom: '16px' }}>
+          <Select
+            label="Kategoriye Göre Filtrele"
+            value={cardModalCategoryFilter}
+            onChange={(e) => setCardModalCategoryFilter(e.target.value)}
+            options={[
+              { value: 'all', label: 'Tüm Kategoriler' },
+              { value: 'none', label: 'Kategorisiz' },
+              ...categories.map(cat => ({ value: cat._id, label: cat.name }))
+            ]}
+          />
+        </div>
         <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-          {contents.filter(c => c._id !== editingContent?._id).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280', fontSize: '14px' }}>
-              Kart olarak eklenebilecek başka içerik bulunmuyor.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {contents
-                .filter(c => c._id !== editingContent?._id && c.isActive)
-                .map((content) => {
+          {(() => {
+            const availableContents = contents.filter(c => {
+              if (c._id === editingContent?._id) return false;
+              if (!c.isActive) return false;
+              if (cardModalCategoryFilter === 'all') return true;
+              if (cardModalCategoryFilter === 'none') return !c.categoryId;
+              return c.categoryId === cardModalCategoryFilter;
+            });
+
+            return availableContents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280', fontSize: '14px' }}>
+                {cardModalCategoryFilter !== 'all' 
+                  ? 'Bu kategoriye ait içerik bulunamadı.' 
+                  : 'Kart olarak eklenebilecek başka içerik bulunmuyor.'}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {availableContents.map((content) => {
+                  const category = categories.find(cat => cat._id === content.categoryId);
                   const isSelected = selectedCardIds.has(content._id);
                   return (
                     <div
@@ -1297,15 +1371,23 @@ export default function ContentManagement() {
                             {content.description}
                           </p>
                         )}
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>
-                          Slug: {content.slug}
-                        </p>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '4px', flexWrap: 'wrap' }}>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af' }}>
+                            Slug: {content.slug}
+                          </p>
+                          {category && (
+                            <p style={{ margin: 0, fontSize: '12px', color: '#6366f1', fontWeight: '500' }}>
+                              📁 {category.name}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
-            </div>
-          )}
+              </div>
+            );
+          })()}
         </div>
       </Modal>
 
@@ -1379,7 +1461,15 @@ export default function ContentManagement() {
         </div>
       </Modal>
 
-      {contents.length === 0 ? (
+      {(() => {
+        // Kategori filtresine göre içerikleri filtrele
+        const filteredContents = contents.filter((content) => {
+          if (selectedCategoryFilter === 'all') return true;
+          if (selectedCategoryFilter === 'none') return !content.categoryId;
+          return content.categoryId === selectedCategoryFilter;
+        });
+
+        return filteredContents.length === 0 ? (
         <div style={{
           background: '#ffffff',
           padding: '48px',
@@ -1399,7 +1489,9 @@ export default function ContentManagement() {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
-          {contents.map((content) => (
+          {filteredContents.map((content) => {
+            const category = categories.find(cat => cat._id === content.categoryId);
+            return (
             <div key={content._id} style={{
               background: '#ffffff',
               padding: '20px',
@@ -1422,6 +1514,9 @@ export default function ContentManagement() {
                   <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>{content.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px' }}>
                     <span>Slug: <strong>{content.slug}</strong></span>
+                    {category && (
+                      <span>Kategori: <strong style={{ color: '#6366f1' }}>{category.name}</strong></span>
+                    )}
                     <span>Durum: <strong style={{ color: content.isActive ? '#10b981' : '#ef4444' }}>{content.isActive ? 'Aktif' : 'Pasif'}</strong></span>
                     {content.createdAt && (
                       <span>
@@ -1651,9 +1746,11 @@ export default function ContentManagement() {
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
         </div>
-      )}
+      );
+      })()}
     </div>
   );
 }

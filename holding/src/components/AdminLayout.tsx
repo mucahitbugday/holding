@@ -52,6 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: '◼' },
     { href: '/admin/dashboard/menus', label: 'Menü Yönetimi', icon: '☰' },
+    { href: '/admin/dashboard/categories', label: 'Kategori Yönetimi', icon: '📁' },
     { href: '/admin/dashboard/contents', label: 'İçerik Yönetimi', icon: '📄' },
     { href: '/admin/dashboard/homepage', label: 'Anasayfa Ayarları', icon: '⌂' },
     { href: '/admin/dashboard/users', label: 'Kullanıcı Yönetimi', icon: '👤' },

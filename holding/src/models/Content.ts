@@ -15,6 +15,7 @@ export interface IContent extends Document {
   content?: string; // Eski format için (backward compatibility)
   sections?: IContentSection[]; // Yeni section-based format
   type: 'page';
+  categoryId?: string; // Kategori referansı
   metadata?: {
     image?: string;
     keywords?: string[];
@@ -63,6 +64,11 @@ const ContentSchema: Schema = new Schema(
       enum: ['page'],
       default: 'page',
       required: true,
+    },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      required: false,
     },
     metadata: {
       type: Schema.Types.Mixed,

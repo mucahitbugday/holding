@@ -94,10 +94,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const slug = searchParams.get('slug');
+    const categoryId = searchParams.get('categoryId');
 
     const query: any = {};
     if (type) query.type = type;
     if (slug) query.slug = slug;
+    if (categoryId) query.categoryId = categoryId;
     
     // Public API için sadece aktif içerikleri göster
     const isPublic = !getAuthUser(request);
@@ -131,6 +133,33 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
+    
+    // Slug yoksa title'dan otomatik oluştur
+    if (!data.slug && data.title) {
+      data.slug = data.title
+        .toLowerCase()
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
+      // Eğer slug hala boşsa veya sadece tire ise, timestamp ekle
+      if (!data.slug || data.slug === '-') {
+        data.slug = `content-${Date.now()}`;
+      } else {
+        // Unique slug oluştur (eğer varsa sonuna sayı ekle)
+        let baseSlug = data.slug;
+        let counter = 1;
+        while (await Content.findOne({ slug: data.slug })) {
+          data.slug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+      }
+    }
     
     // Sections'ı temizle
     if (data.sections && Array.isArray(data.sections)) {

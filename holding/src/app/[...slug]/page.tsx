@@ -5,21 +5,75 @@ import Footer from '@/components/Footer';
 import connectDB from '@/lib/mongodb';
 import Content from '@/models/Content';
 import Settings from '@/models/Settings';
+import Category from '@/models/Category';
 import { Metadata } from 'next';
 import StructuredData from '@/components/StructuredData';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }
 
-async function getContentBySlug(slug: string) {
+async function getContentBySlug(slug: string[]) {
   try {
     await connectDB();
-    const content = await Content.findOne({
-      slug: slug,
+    
+    // Slug array'inden kategori ve içerik slug'ını çıkar
+    let actualSlug: string = '';
+    let categorySlug: string | null = null;
+    
+    if (slug.length === 0) {
+      return null;
+    } else if (slug.length === 2) {
+      // kategori/slug formatı
+      categorySlug = slug[0];
+      actualSlug = slug[1];
+    } else if (slug.length === 1) {
+      // Sadece slug - önce içerik olarak ara, bulamazsan kategori olarak kontrol et
+      actualSlug = slug[0];
+    } else if (slug.length > 2) {
+      // Birden fazla segment varsa, son ikisini al
+      categorySlug = slug[slug.length - 2];
+      actualSlug = slug[slug.length - 1];
+    }
+    
+    // actualSlug atanmamışsa null döndür
+    if (!actualSlug || actualSlug === '') {
+      return null;
+    }
+    
+    // Önce kategori slug'ına göre kategoriyi bul
+    let category: any = null;
+    if (categorySlug) {
+      category = await Category.findOne({ slug: categorySlug, isActive: true }).lean();
+      if (category) {
+        category = JSON.parse(JSON.stringify(category));
+      }
+    }
+    
+    // İçeriği bul
+    const query: any = {
+      slug: actualSlug,
       isActive: true
-    });
-    return content;
+    };
+    
+    // Eğer kategori varsa, kategori ID'sine göre filtrele (esnek olması için yorum satırı)
+    // if (category) {
+    //   query.categoryId = category._id;
+    // }
+    
+    let content = await Content.findOne(query).lean();
+    
+    // Eğer içerik bulunamadıysa ve kategori slug'ı yoksa, kategori olarak kontrol et
+    if (!content && !categorySlug && slug.length === 1) {
+      const categoryCheck = await Category.findOne({ slug: actualSlug, isActive: true }).lean();
+      if (categoryCheck) {
+        // Bu bir kategori sayfası, ama şu an kategori sayfası göstermiyoruz
+        // İçerik bulunamadığı için null döndür
+        return null;
+      }
+    }
+    
+    return content ? JSON.parse(JSON.stringify(content)) : null;
   } catch (error) {
     console.error('Error fetching content:', error);
     return null;
@@ -29,8 +83,8 @@ async function getContentBySlug(slug: string) {
 async function getSettings() {
   try {
     await connectDB();
-    const settings = await Settings.findOne();
-    return settings;
+    const settings = await Settings.findOne().lean();
+    return settings ? JSON.parse(JSON.stringify(settings)) : null;
   } catch (error) {
     console.error('Error fetching settings:', error);
     return null;
@@ -38,8 +92,17 @@ async function getSettings() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const content = await getContentBySlug(slug);
+  const paramsResolved = await params;
+  const slugArray = paramsResolved.slug || [];
+  
+  if (!slugArray || slugArray.length === 0) {
+    return {
+      title: 'Sayfa Bulunamadı',
+    };
+  }
+  
+  const slug = slugArray.join('/');
+  const content = await getContentBySlug(slugArray);
   const settings = await getSettings();
 
   if (!content) {
@@ -101,18 +164,42 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function DynamicPage({ params }: PageProps) {
-  const { slug } = await params;
-  const content = await getContentBySlug(slug);
-  const settings = await getSettings();
+  try {
+    const paramsResolved = await params;
+    const slugArray = paramsResolved.slug || [];
+    
+    // Boş array veya undefined kontrolü
+    if (!slugArray || slugArray.length === 0) {
+      notFound();
+    }
+    
+    const slug = slugArray.join('/');
+    const content = await getContentBySlug(slugArray);
+    const settings = await getSettings();
 
-  if (!content) {
-    notFound();
-  }
+    if (!content) {
+      notFound();
+    }
 
   const featuredImage = (content as any).featuredImage || content.metadata?.image;
   
+  // Mevcut sayfanın kategori bilgisini al
+  let currentCategory: any = null;
+  if ((content as any).categoryId) {
+    try {
+      await connectDB();
+      currentCategory = await Category.findById((content as any).categoryId).lean();
+      if (currentCategory) {
+        currentCategory = JSON.parse(JSON.stringify(currentCategory));
+      }
+    } catch (error) {
+      console.error('Error loading category:', error);
+    }
+  }
+  
   // Kart içeriklerini yükle
   const cardContents: { [key: string]: any } = {};
+  const cardCategories: { [key: string]: any } = {};
   if ((content as any).sections && Array.isArray((content as any).sections)) {
     const cardSectionIds: string[] = [];
     (content as any).sections.forEach((s: any) => {
@@ -131,19 +218,40 @@ export default async function DynamicPage({ params }: PageProps) {
         const cards = await Content.find({ 
           _id: { $in: cardSectionIds },
           isActive: true 
-        });
+        }).lean();
+        
+        // Kartların kategori ID'lerini topla
+        const categoryIds = new Set<string>();
         cards.forEach((card: any) => {
-          cardContents[card._id.toString()] = card;
+          const cardObj = JSON.parse(JSON.stringify(card));
+          cardContents[cardObj._id.toString()] = cardObj;
+          if (cardObj.categoryId) {
+            categoryIds.add(cardObj.categoryId.toString());
+          }
         });
+        
+        // Kategorileri yükle
+        if (categoryIds.size > 0) {
+          const categories = await Category.find({ 
+            _id: { $in: Array.from(categoryIds) } 
+          }).lean();
+          categories.forEach((cat: any) => {
+            cardCategories[cat._id.toString()] = JSON.parse(JSON.stringify(cat));
+          });
+        }
       } catch (error) {
         console.error('Error loading card contents:', error);
       }
     }
   }
 
+  // Mongoose document'lerini plain object'e çevir
+  const plainSettings = settings ? JSON.parse(JSON.stringify(settings)) : null;
+  const plainContent = content ? JSON.parse(JSON.stringify(content)) : null;
+
   return (
     <>
-      <StructuredData type="article" data={settings} content={content} slug={slug} id="article" />
+      <StructuredData type="article" data={plainSettings} content={plainContent} slug={slug} id="article" />
       <Header />
       <main style={{ minHeight: '60vh', padding: '0' }}>
         {featuredImage ? (
@@ -287,10 +395,24 @@ export default async function DynamicPage({ params }: PageProps) {
                               const cardImage = cardContent.featuredImage || cardContent.metadata?.image;
                               const cardSlug = cardContent.slug;
                               
+                              // Kategori bazlı URL oluştur
+                              let cardUrl = `/${cardSlug}`;
+                              if (cardContent.categoryId) {
+                                const cardCategory = cardCategories[cardContent.categoryId.toString()];
+                                if (cardCategory && cardCategory.slug) {
+                                  // Eğer mevcut sayfa da aynı kategoriye aitse, kategori slug'ını ekle
+                                  if (currentCategory && currentCategory._id.toString() === cardCategory._id.toString()) {
+                                    cardUrl = `/${currentCategory.slug}/${cardSlug}`;
+                                  } else if (cardCategory.slug) {
+                                    cardUrl = `/${cardCategory.slug}/${cardSlug}`;
+                                  }
+                                }
+                              }
+                              
                               return (
                                 <a
                                   key={cardIndex}
-                                  href={`/${cardSlug}`}
+                                  href={cardUrl}
                                   className={`content-card ${cardImage ? 'has-image' : 'no-image'}`}
                                   style={{
                                     textDecoration: 'none',
@@ -568,4 +690,8 @@ export default async function DynamicPage({ params }: PageProps) {
       <Footer />
     </>
   );
+  } catch (error: any) {
+    console.error('DynamicPage error:', error);
+    notFound();
+  }
 }
