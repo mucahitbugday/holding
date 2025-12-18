@@ -49,6 +49,13 @@ interface Settings {
     linkedin?: string;
     youtube?: string;
   };
+  
+  // Google Analytics
+  googleAnalytics?: {
+    measurementId?: string;
+    apiKey?: string;
+    propertyId?: string;
+  };
 }
 
 export default function SettingsPage() {
@@ -84,6 +91,11 @@ export default function SettingsPage() {
       instagram: '',
       linkedin: '',
       youtube: '',
+    },
+    googleAnalytics: {
+      measurementId: '',
+      apiKey: '',
+      propertyId: '',
     },
   });
 
@@ -146,6 +158,11 @@ export default function SettingsPage() {
             instagram: '',
             linkedin: '',
             youtube: '',
+          },
+          googleAnalytics: response.settings.googleAnalytics || {
+            measurementId: '',
+            apiKey: '',
+            propertyId: '',
           },
         });
       }
@@ -269,6 +286,13 @@ export default function SettingsPage() {
     setSettings({
       ...settings,
       socialMedia: { ...settings.socialMedia!, [field]: value }
+    });
+  };
+
+  const updateGoogleAnalyticsField = (field: string, value: string) => {
+    setSettings({
+      ...settings,
+      googleAnalytics: { ...settings.googleAnalytics!, [field]: value }
     });
   };
 
@@ -831,6 +855,85 @@ export default function SettingsPage() {
                   background: '#ffffff'
                 }}
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Google Analytics */}
+        <div style={{ 
+          background: '#f9fafb', 
+          padding: '20px 24px',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600' }}>
+            Google Analytics
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                Measurement ID (G-XXXXXXXXXX)
+              </label>
+              <input
+                type="text"
+                value={settings.googleAnalytics?.measurementId || ''}
+                onChange={(e) => updateGoogleAnalyticsField('measurementId', e.target.value)}
+                placeholder="G-XXXXXXXXXX"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  background: '#ffffff'
+                }}
+              />
+              <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
+                Google Analytics 4 Measurement ID
+              </p>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                Property ID
+              </label>
+              <input
+                type="text"
+                value={settings.googleAnalytics?.propertyId || ''}
+                onChange={(e) => updateGoogleAnalyticsField('propertyId', e.target.value)}
+                placeholder="123456789"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  background: '#ffffff'
+                }}
+              />
+              <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
+                Google Analytics Property ID
+              </p>
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                API Key (Opsiyonel)
+              </label>
+              <input
+                type="password"
+                value={settings.googleAnalytics?.apiKey || ''}
+                onChange={(e) => updateGoogleAnalyticsField('apiKey', e.target.value)}
+                placeholder="API Key (Google Analytics API için)"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  background: '#ffffff'
+                }}
+              />
+              <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
+                Google Analytics Reporting API key (ziyaret sayısını görmek için)
+              </p>
             </div>
           </div>
         </div>

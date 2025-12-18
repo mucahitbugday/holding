@@ -41,6 +41,13 @@ export interface ISettings extends Document {
     youtube?: string;
   };
   
+  // Google Analytics
+  googleAnalytics?: {
+    measurementId?: string;
+    apiKey?: string;
+    propertyId?: string;
+  };
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -162,6 +169,22 @@ const SettingsSchema: Schema = new Schema(
         default: '',
       },
       youtube: {
+        type: String,
+        default: '',
+      },
+    },
+    
+    // Google Analytics
+    googleAnalytics: {
+      measurementId: {
+        type: String,
+        default: '',
+      },
+      apiKey: {
+        type: String,
+        default: '',
+      },
+      propertyId: {
         type: String,
         default: '',
       },

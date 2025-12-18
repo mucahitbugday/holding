@@ -297,6 +297,12 @@ export class ApiClient {
       method: 'DELETE',
     });
   }
+
+  async getVisits() {
+    return this.request('/visits', {
+      method: 'GET',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

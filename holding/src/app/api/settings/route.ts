@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 // PUT - Ayarları güncelle
 export async function PUT(request: NextRequest) {
   try {
-    const user = getAuthUser(request);
+    const user = await getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Yetkisiz erişim' },

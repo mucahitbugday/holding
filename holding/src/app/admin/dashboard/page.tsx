@@ -12,6 +12,7 @@ export default function Dashboard() {
     contents: 0,
     activeContents: 0,
     totalUsers: 0,
+    totalVisits: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,9 +23,10 @@ export default function Dashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const [menusRes, contentsRes] = await Promise.all([
+      const [menusRes, contentsRes, visitsRes] = await Promise.all([
         apiClient.getMenus(),
         apiClient.getContents(),
+        apiClient.getVisits().catch(() => ({ totalVisits: 0 })),
       ]);
       
       const menus = menusRes.menus || [];
@@ -35,6 +37,7 @@ export default function Dashboard() {
         contents: contents.length,
         activeContents: contents.filter((c: any) => c.isActive).length,
         totalUsers: 0, // API'den gelecek
+        totalVisits: visitsRes.totalVisits || 0,
       });
     } catch (error) {
       console.error('İstatistikler yüklenemedi:', error);
@@ -89,6 +92,10 @@ export default function Dashboard() {
         <div style={cardStyle}>
           <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.totalUsers}</div>
           <div style={{ fontSize: '13px', color: '#6b7280' }}>Toplam Kullanıcı</div>
+        </div>
+        <div style={cardStyle}>
+          <div style={{ fontSize: '28px', fontWeight: '600', marginBottom: '4px', color: '#1f2937' }}>{stats.totalVisits.toLocaleString('tr-TR')}</div>
+          <div style={{ fontSize: '13px', color: '#6b7280' }}>Toplam Ziyaret</div>
         </div>
       </div>
       
