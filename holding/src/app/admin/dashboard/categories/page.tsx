@@ -16,12 +16,15 @@ interface Category {
   description?: string;
   isActive: boolean;
   order?: number;
+  autoAddContent?: boolean;
+  autoAddLimit?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
 
 export default function CategoryManagement() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [contentCounts, setContentCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -34,6 +37,8 @@ export default function CategoryManagement() {
     description: '',
     isActive: true,
     order: 0,
+    autoAddContent: false,
+    autoAddLimit: 5,
   });
 
   useEffect(() => {
@@ -44,7 +49,20 @@ export default function CategoryManagement() {
     try {
       setLoading(true);
       const response = await apiClient.getCategories();
-      setCategories(response.categories || []);
+      const categoriesList = response.categories || [];
+      setCategories(categoriesList);
+      
+      // Her kategori için içerik sayısını al
+      const counts: Record<string, number> = {};
+      for (const category of categoriesList) {
+        try {
+          const contentsResponse = await apiClient.getContents(undefined, undefined, category._id);
+          counts[category._id] = contentsResponse.contents?.length || 0;
+        } catch (error) {
+          counts[category._id] = 0;
+        }
+      }
+      setContentCounts(counts);
     } catch (error) {
       console.error('Kategoriler yüklenemedi:', error);
       Swal.fire({
@@ -101,6 +119,8 @@ export default function CategoryManagement() {
         description: '',
         isActive: true,
         order: 0,
+        autoAddContent: false,
+        autoAddLimit: 5,
       });
       await loadCategories();
       await Swal.fire({
@@ -133,6 +153,8 @@ export default function CategoryManagement() {
       description: category.description || '',
       isActive: category.isActive,
       order: category.order || 0,
+      autoAddContent: category.autoAddContent || false,
+      autoAddLimit: category.autoAddLimit || 5,
     });
     setShowModal(true);
   };
@@ -185,6 +207,8 @@ export default function CategoryManagement() {
       description: '',
       isActive: true,
       order: 0,
+      autoAddContent: false,
+      autoAddLimit: 5,
     });
     setShowModal(true);
   };
@@ -198,6 +222,8 @@ export default function CategoryManagement() {
       description: '',
       isActive: true,
       order: 0,
+      autoAddContent: false,
+      autoAddLimit: 5,
     });
   };
 
@@ -330,6 +356,72 @@ export default function CategoryManagement() {
               placeholder="0"
             />
           </div>
+
+          <div style={{
+            padding: '16px',
+            background: '#f9fafb',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <input
+                type="checkbox"
+                id="autoAddContent"
+                checked={formData.autoAddContent}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  autoAddContent: e.target.checked
+                })}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer'
+                }}
+              />
+              <label
+                htmlFor="autoAddContent"
+                style={{
+                  fontWeight: '500',
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  flex: 1
+                }}
+              >
+                Otomatik İçerik Ekleme
+              </label>
+            </div>
+            <p style={{
+              margin: '0 0 12px 30px',
+              fontSize: '12px',
+              color: '#6b7280',
+              lineHeight: '1.5'
+            }}>
+              Bu kategoriye içerik eklendiğinde, otomatik olarak bu kategorinin kartlarına eklenir. 
+              Örneğin "Haberler" kategorisine yeni bir haber eklendiğinde, otomatik olarak haberler sayfasındaki kartlara eklenir.
+            </p>
+            {formData.autoAddContent && (
+              <div style={{ marginLeft: '30px' }}>
+                <Select
+                  label="Otomatik Ekleme Limiti"
+                  value={formData.autoAddLimit?.toString() || '5'}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    autoAddLimit: parseInt(e.target.value) || 5
+                  })}
+                  options={[
+                    { value: '3', label: 'Son 3 Kart' },
+                    { value: '5', label: 'Son 5 Kart' },
+                    { value: '10', label: 'Son 10 Kart' },
+                    { value: '15', label: 'Son 15 Kart' },
+                    { value: '20', label: 'Son 20 Kart' },
+                  ]}
+                  helperText="Yeni içerik eklendiğinde, bu kategorinin son kaç kartına otomatik ekleneceğini belirler"
+                />
+              </div>
+            )}
+          </div>
         </form>
       </Modal>
 
@@ -380,12 +472,27 @@ export default function CategoryManagement() {
                   <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>
                     {category.name}
                   </h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', color: '#6b7280', fontSize: '13px', marginBottom: '8px', alignItems: 'center' }}>
                     <span>Slug: <strong>{category.slug}</strong></span>
                     <span>Durum: <strong style={{ color: category.isActive ? '#10b981' : '#ef4444' }}>
                       {category.isActive ? 'Aktif' : 'Pasif'}
                     </strong></span>
                     <span>Sıra: <strong>{category.order || 0}</strong></span>
+                    <span style={{ 
+                      background: '#e0e7ff', 
+                      color: '#6366f1', 
+                      padding: '2px 8px', 
+                      borderRadius: '12px', 
+                      fontWeight: '500',
+                      fontSize: '12px'
+                    }}>
+                      📄 {contentCounts[category._id] || 0} İçerik
+                    </span>
+                    {category.autoAddContent && (
+                      <span style={{ color: '#6366f1', fontWeight: '500' }}>
+                        ⚡ Otomatik Ekleme: <strong>Son {category.autoAddLimit || 5} Kart</strong>
+                      </span>
+                    )}
                     {category.createdAt && (
                       <span>
                         Oluşturulma: <strong>{new Date(category.createdAt).toLocaleDateString('tr-TR', {
@@ -410,13 +517,35 @@ export default function CategoryManagement() {
                   >
                     Düzenle
                   </Button>
-                  <Button
+                  <button
                     onClick={() => handleDelete(category._id)}
-                    variant="danger"
-                    size="sm"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      fontSize: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s',
+                      width: '32px',
+                      height: '32px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#fee2e2';
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    title="Kategoriyi Sil"
                   >
-                    Sil
-                  </Button>
+                    🗑️
+                  </button>
                 </div>
               </div>
             </div>

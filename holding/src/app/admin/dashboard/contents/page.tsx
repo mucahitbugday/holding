@@ -64,17 +64,6 @@ export default function ContentManagement() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [cardModalCategoryFilter, setCardModalCategoryFilter] = useState<string>('all');
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [categoryFormData, setCategoryFormData] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    isActive: true,
-    order: 0,
-    autoAddContent: false,
-    autoAddLimit: 5,
-  });
-  const [submittingCategory, setSubmittingCategory] = useState(false);
   const [formData, setFormData] = useState({
     slug: '',
     title: '',
@@ -225,54 +214,6 @@ export default function ContentManagement() {
       .replace(/^-+|-+$/g, '');
   };
 
-  const handleCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmittingCategory(true);
-    try {
-      const slug = categoryFormData.slug.trim() || createSlug(categoryFormData.name);
-      const submitData = {
-        ...categoryFormData,
-        slug,
-      };
-
-      const response = await apiClient.createCategory(submitData);
-
-      if (!response.success) {
-        throw new Error(response.error || 'Kategori oluşturulamadı');
-      }
-
-      setShowCategoryModal(false);
-      setCategoryFormData({
-        name: '',
-        slug: '',
-        description: '',
-        isActive: true,
-        order: 0,
-        autoAddContent: false,
-        autoAddLimit: 5,
-      });
-      await loadCategories();
-      await Swal.fire({
-        icon: 'success',
-        title: 'Başarılı!',
-        text: 'Kategori başarıyla oluşturuldu.',
-        timer: 2000,
-        showConfirmButton: false,
-        toast: true,
-        position: 'top-end',
-      });
-    } catch (error: any) {
-      console.error('Category submit error:', error);
-      await Swal.fire({
-        icon: 'error',
-        title: 'Hata!',
-        text: error.message || 'Bir hata oluştu',
-        confirmButtonColor: '#1f2937',
-      });
-    } finally {
-      setSubmittingCategory(false);
-    }
-  };
 
   const loadMenus = async () => {
     try {
@@ -790,7 +731,8 @@ export default function ContentManagement() {
                   transition: 'all 0.15s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  justifyContent: 'space-between'
                 }}
                 onMouseEnter={(e) => {
                   if (selectedCategoryFilter !== 'none') {
@@ -805,73 +747,83 @@ export default function ContentManagement() {
                   }
                 }}
               >
-                <span>📋</span>
-                <span>Kategorisiz</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>📋</span>
+                  <span>Kategorisiz</span>
+                </div>
+                <span style={{
+                  background: '#e0e7ff',
+                  color: '#6366f1',
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  minWidth: '24px',
+                  textAlign: 'center'
+                }}>
+                  {contents.filter(c => !c.categoryId).length}
+                </span>
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  onClick={() => setSelectedCategoryFilter(category._id)}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: selectedCategoryFilter === category._id ? '#f3f4f6' : 'transparent',
-                    color: selectedCategoryFilter === category._id ? '#1f2937' : '#6b7280',
-                    fontWeight: selectedCategoryFilter === category._id ? '600' : '500',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    justifyContent: 'space-between'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedCategoryFilter !== category._id) {
-                      e.currentTarget.style.background = '#f9fafb';
-                      e.currentTarget.style.color = '#1f2937';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedCategoryFilter !== category._id) {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = '#6b7280';
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>📁</span>
-                    <span>{category.name}</span>
-                  </div>
-                  {!category.isActive && (
-                    <span style={{ fontSize: '10px', color: '#9ca3af' }}>●</span>
-                  )}
-                </button>
-              ))}
+              {categories.map((category) => {
+                const categoryContentCount = contents.filter(c => c.categoryId === category._id).length;
+                return (
+                  <button
+                    key={category._id}
+                    onClick={() => setSelectedCategoryFilter(category._id)}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: selectedCategoryFilter === category._id ? '#f3f4f6' : 'transparent',
+                      color: selectedCategoryFilter === category._id ? '#1f2937' : '#6b7280',
+                      fontWeight: selectedCategoryFilter === category._id ? '600' : '500',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: 'space-between'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedCategoryFilter !== category._id) {
+                        e.currentTarget.style.background = '#f9fafb';
+                        e.currentTarget.style.color = '#1f2937';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedCategoryFilter !== category._id) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#6b7280';
+                      }
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+                      <span>📁</span>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                      <span style={{
+                        background: '#e0e7ff',
+                        color: '#6366f1',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        minWidth: '24px',
+                        textAlign: 'center'
+                      }}>
+                        {categoryContentCount}
+                      </span>
+                      {!category.isActive && (
+                        <span style={{ fontSize: '10px', color: '#9ca3af' }}>●</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-          <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '16px' }}>
-            <Button
-              onClick={() => {
-                setCategoryFormData({
-                  name: '',
-                  slug: '',
-                  description: '',
-                  isActive: true,
-                  order: 0,
-                  autoAddContent: false,
-                  autoAddLimit: 5,
-                });
-                setShowCategoryModal(true);
-              }}
-              variant="primary"
-              size="sm"
-              style={{ width: '100%' }}
-            >
-              + Kategori Ekle
-            </Button>
           </div>
         </aside>
 
@@ -2306,181 +2258,6 @@ export default function ContentManagement() {
         </div>
       </div>
 
-      {/* Kategori Ekleme Modal */}
-      <Modal
-        isOpen={showCategoryModal}
-        onClose={() => {
-          setShowCategoryModal(false);
-          setCategoryFormData({
-            name: '',
-            slug: '',
-            description: '',
-            isActive: true,
-            order: 0,
-            autoAddContent: false,
-            autoAddLimit: 5,
-          });
-        }}
-        title="Yeni Kategori Ekle"
-        size="medium"
-        footer={
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <Button
-              type="button"
-              onClick={() => {
-                setShowCategoryModal(false);
-                setCategoryFormData({
-                  name: '',
-                  slug: '',
-                  description: '',
-                  isActive: true,
-                  order: 0,
-                  autoAddContent: false,
-                  autoAddLimit: 5,
-                });
-              }}
-              variant="outline"
-              size="md"
-              disabled={submittingCategory}
-            >
-              İptal
-            </Button>
-            <Button
-              type="submit"
-              form="category-form"
-              variant="primary"
-              size="md"
-              isLoading={submittingCategory}
-            >
-              Oluştur
-            </Button>
-          </div>
-        }
-      >
-        <form id="category-form" onSubmit={handleCategorySubmit}>
-          <div style={{ marginBottom: '20px' }}>
-            <Input
-              label="Kategori Adı"
-              value={categoryFormData.name}
-              onChange={(e) => {
-                const name = e.target.value;
-                setCategoryFormData({
-                  ...categoryFormData,
-                  name,
-                  slug: categoryFormData.slug || createSlug(name),
-                });
-              }}
-              required
-              placeholder="Örn: Haberler, Blog"
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <Input
-              label="Slug"
-              value={categoryFormData.slug}
-              onChange={(e) => setCategoryFormData({ ...categoryFormData, slug: createSlug(e.target.value) })}
-              required
-              placeholder="Otomatik oluşturulur"
-              helperText="URL'de kullanılacak benzersiz tanımlayıcı"
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <Input
-              label="Açıklama"
-              value={categoryFormData.description}
-              onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
-              placeholder="Kategori hakkında kısa açıklama (opsiyonel)"
-            />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <Select
-              label="Durum"
-              value={categoryFormData.isActive ? 'active' : 'inactive'}
-              onChange={(e) => setCategoryFormData({ ...categoryFormData, isActive: e.target.value === 'active' })}
-              options={[
-                { value: 'active', label: 'Aktif' },
-                { value: 'inactive', label: 'Pasif' },
-              ]}
-            />
-            <Input
-              label="Sıra"
-              type="number"
-              value={categoryFormData.order}
-              onChange={(e) => setCategoryFormData({ ...categoryFormData, order: parseInt(e.target.value) || 0 })}
-              placeholder="0"
-            />
-          </div>
-
-          <div style={{
-            padding: '16px',
-            background: '#f9fafb',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb',
-            marginBottom: '20px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <input
-                type="checkbox"
-                id="autoAddContent"
-                checked={categoryFormData.autoAddContent}
-                onChange={(e) => setCategoryFormData({
-                  ...categoryFormData,
-                  autoAddContent: e.target.checked
-                })}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  cursor: 'pointer'
-                }}
-              />
-              <label
-                htmlFor="autoAddContent"
-                style={{
-                  fontWeight: '500',
-                  color: '#1f2937',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  flex: 1
-                }}
-              >
-                Otomatik İçerik Ekleme
-              </label>
-            </div>
-            <p style={{
-              margin: '0 0 12px 30px',
-              fontSize: '12px',
-              color: '#6b7280',
-              lineHeight: '1.5'
-            }}>
-              Bu kategoriye içerik eklendiğinde, otomatik olarak bu kategorinin kartlarına eklenir. 
-              Örneğin "Haberler" kategorisine yeni bir haber eklendiğinde, otomatik olarak haberler sayfasındaki kartlara eklenir.
-            </p>
-            {categoryFormData.autoAddContent && (
-              <div style={{ marginLeft: '30px' }}>
-                <Select
-                  label="Otomatik Ekleme Limiti"
-                  value={categoryFormData.autoAddLimit?.toString() || '5'}
-                  onChange={(e) => setCategoryFormData({
-                    ...categoryFormData,
-                    autoAddLimit: parseInt(e.target.value) || 5
-                  })}
-                  options={[
-                    { value: '3', label: 'Son 3 Kart' },
-                    { value: '5', label: 'Son 5 Kart' },
-                    { value: '10', label: 'Son 10 Kart' },
-                    { value: '15', label: 'Son 15 Kart' },
-                    { value: '20', label: 'Son 20 Kart' },
-                  ]}
-                  helperText="Yeni içerik eklendiğinde, bu kategorinin son kaç kartına otomatik ekleneceğini belirler"
-                />
-              </div>
-            )}
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }
