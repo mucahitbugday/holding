@@ -11,6 +11,7 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import SmoothScroll from '@/components/SmoothScroll';
 import StructuredData from '@/components/StructuredData';
+import { logger } from '@/lib/logger';
 
 interface HomePageSection {
   type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
@@ -37,7 +38,7 @@ export default function Home() {
         setSettings(data.settings);
       }
     } catch (error) {
-      console.error('Ayarlar yüklenemedi:', error);
+      logger.error('Ayarlar yüklenemedi:', error);
     }
   };
 
@@ -63,7 +64,7 @@ export default function Home() {
         ]);
       }
     } catch (error) {
-      console.error('Anasayfa ayarları yüklenemedi:', error);
+      logger.error('Anasayfa ayarları yüklenemedi:', error);
       // Varsayılan sectionlar
       setSections([
         { type: 'hero', order: 0, isActive: true, data: {} },
@@ -102,8 +103,8 @@ export default function Home() {
       <>
         <SmoothScroll />
         <Header />
-        <main>
-          <div style={{ padding: '4rem', textAlign: 'center' }}>Yükleniyor...</div>
+        <main id="main-content" role="main" aria-label="Ana içerik">
+          <div style={{ padding: '4rem', textAlign: 'center' }} aria-live="polite" aria-busy="true">Yükleniyor...</div>
         </main>
         <Footer />
       </>
@@ -115,8 +116,23 @@ export default function Home() {
       <StructuredData type="organization" data={settings} id="org" />
       <StructuredData type="website" data={settings} id="website" />
       <SmoothScroll />
+      <a href="#main-content" className="skip-link" style={{
+        position: 'absolute',
+        left: '-9999px',
+        zIndex: 999,
+        padding: '1em',
+        backgroundColor: '#000',
+        color: '#fff',
+        textDecoration: 'none'
+      }} onFocus={(e) => {
+        e.currentTarget.style.left = '0';
+      }} onBlur={(e) => {
+        e.currentTarget.style.left = '-9999px';
+      }}>
+        Ana içeriğe geç
+      </a>
       <Header />
-      <main>
+      <main id="main-content" role="main" aria-label="Ana içerik">
         {sections.map((section) => renderSection(section))}
       </main>
       <Footer />

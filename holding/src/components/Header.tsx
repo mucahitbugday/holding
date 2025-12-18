@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { logger } from '@/lib/logger';
 
 interface MenuItem {
   label: string;
@@ -40,7 +41,7 @@ export default function Header() {
         setSettings(data.settings);
       }
     } catch (error) {
-      console.error('Ayarlar yüklenemedi:', error);
+      logger.error('Ayarlar yüklenemedi:', error);
     }
   };
 
@@ -58,7 +59,7 @@ export default function Header() {
         }
       }
     } catch (error) {
-      console.error('Menü yüklenemedi:', error);
+      logger.error('Menü yüklenemedi:', error);
     } finally {
       setLoading(false);
     }
@@ -110,10 +111,12 @@ export default function Header() {
       <li
         key={index}
         className={hasChildren ? `has-submenu ${activeSubmenu === itemId ? 'active' : ''}` : ''}
+        role="none"
       >
         {isExternalLink && !isMediaFile ? (
           <Link
             href={item.href}
+            role="menuitem"
             onClick={(e) => {
               if (hasChildren && window.innerWidth <= 968) {
                 e.preventDefault();
@@ -122,6 +125,8 @@ export default function Header() {
                 handleLinkClick();
               }
             }}
+            aria-haspopup={hasChildren}
+            aria-expanded={hasChildren && activeSubmenu === itemId}
           >
             {item.label}
           </Link>
@@ -130,6 +135,7 @@ export default function Header() {
             href={item.href}
             target={isMediaFile ? "_blank" : undefined}
             rel={isMediaFile ? "noopener noreferrer" : undefined}
+            role="menuitem"
             onClick={(e) => {
               if (hasChildren && window.innerWidth <= 968) {
                 e.preventDefault();
@@ -138,12 +144,14 @@ export default function Header() {
                 handleLinkClick();
               }
             }}
+            aria-haspopup={hasChildren}
+            aria-expanded={hasChildren && activeSubmenu === itemId}
           >
             {item.label}
           </a>
         )}
         {hasChildren && (
-          <ul className="submenu">
+          <ul className="submenu" role="menu" aria-label={`${item.label} alt menüsü`}>
             {item.children
               ?.sort((a, b) => a.order - b.order)
               .map((child, childIndex) => {
@@ -153,9 +161,9 @@ export default function Header() {
                   (child.href && (child.href.includes('/uploads/') || 
                    child.href.match(/\.(jpg|jpeg|png|gif|pdf)$/i)));
                 return (
-                  <li key={childIndex}>
+                  <li key={childIndex} role="none">
                     {isChildExternalLink && !isChildMediaFile ? (
-                      <Link href={child.href} onClick={handleLinkClick}>
+                      <Link href={child.href} onClick={handleLinkClick} role="menuitem">
                         {child.label}
                       </Link>
                     ) : (
@@ -164,6 +172,7 @@ export default function Header() {
                         target={isChildMediaFile ? "_blank" : undefined}
                         rel={isChildMediaFile ? "noopener noreferrer" : undefined}
                         onClick={handleLinkClick}
+                        role="menuitem"
                       >
                         {child.label}
                       </a>
@@ -186,15 +195,9 @@ export default function Header() {
         <div className="container">
           <div className="header-content">
             <div className="logo">
-              {siteLogo ? (
-                <Link href="/">
-                  <img src={siteLogo} alt={siteName} style={{ height: '40px', width: 'auto' }} />
-                </Link>
-              ) : (
-                <Link href="/">
-                  <h1>{siteName}</h1>
-                </Link>
-              )}
+              <Link href="/" aria-label={`${siteName} ana sayfa`}>
+                <h1>{siteName}</h1>
+              </Link>
             </div>
             <div>Yükleniyor...</div>
           </div>
@@ -209,17 +212,36 @@ export default function Header() {
         <div className="header-content">
           <div className="logo">
             {siteLogo ? (
-              <Link href="/">
-                <img src={siteLogo} alt={siteName} style={{ height: '40px', width: 'auto' }} />
-              </Link>
+                <Link href="/" aria-label={`${siteName} ana sayfa`}>
+                  <img 
+                    src={siteLogo} 
+                    alt={siteName} 
+                    width={120} 
+                    height={40} 
+                    style={{ height: '40px', width: 'auto' }} 
+                    loading="eager"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      const parent = target.parentElement;
+                      if (parent) {
+                        target.style.display = 'none';
+                        if (!parent.querySelector('h1')) {
+                          const h1 = document.createElement('h1');
+                          h1.textContent = siteName;
+                          parent.appendChild(h1);
+                        }
+                      }
+                    }}
+                  />
+                </Link>
             ) : (
-              <Link href="/">
+              <Link href="/" aria-label={`${siteName} ana sayfa`}>
                 <h1>{siteName}</h1>
               </Link>
             )}
           </div>
-          <nav className="nav">
-            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
+          <nav className="nav" id="main-navigation" aria-label="Ana navigasyon">
+            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`} role="menubar">
               {menuItems.length > 0 ? (
                 menuItems.map((item, index) => renderMenuItem(item, index))
               ) : (
@@ -244,11 +266,14 @@ export default function Header() {
           <button
             className={`mobile-menu-toggle ${isMenuOpen ? 'active' : ''}`}
             onClick={toggleMenu}
-            aria-label="Menu"
+            aria-label={isMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={isMenuOpen}
+            aria-controls="main-navigation"
+            type="button"
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
           </button>
         </div>
       </div>

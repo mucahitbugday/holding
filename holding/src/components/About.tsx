@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
+import { logger } from '@/lib/logger';
 
 interface Content {
   _id: string;
@@ -58,7 +59,7 @@ export default function About({ data: propData }: { data?: AboutData }) {
         setContents(data.contents);
       }
     } catch (error) {
-      console.error('İçerik yüklenemedi:', error);
+      logger.error('İçerik yüklenemedi:', error);
     } finally {
       setLoading(false);
     }
@@ -115,8 +116,8 @@ export default function About({ data: propData }: { data?: AboutData }) {
           {displayContents.map((item, index) => (
             <ScrollReveal key={index} delay={index * 100} direction="up">
               <div className="about-card hover-lift">
-                <div className="icon">
-                  <i className={item.icon}></i>
+                <div className="icon" aria-hidden="true">
+                  <i className={item.icon} aria-hidden="true"></i>
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>

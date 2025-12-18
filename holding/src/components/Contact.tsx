@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface Settings {
   companyName?: string;
@@ -36,7 +37,7 @@ export default function Contact() {
         }
       }
     } catch (error) {
-      console.error('Contact section verileri yüklenemedi:', error);
+      logger.error('Contact section verileri yüklenemedi:', error);
     }
   };
 
@@ -48,7 +49,7 @@ export default function Contact() {
         setSettings(data.settings);
       }
     } catch (error) {
-      console.error('Ayarlar yüklenemedi:', error);
+      logger.error('Ayarlar yüklenemedi:', error);
     }
   };
 
@@ -92,7 +93,8 @@ export default function Contact() {
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="Harita"
+          title="Şirket konumu haritası"
+          aria-label="Şirket konumu Google Haritalar üzerinde"
         ></iframe>
       </div>
       <div className="container">
@@ -101,8 +103,9 @@ export default function Contact() {
           target="_blank"
           rel="noopener noreferrer"
           className="map-button"
+          aria-label="Şirket konumunu Google Haritalar'da aç"
         >
-          <span>🗺️</span> Google Haritalar&apos;da Aç
+          <span aria-hidden="true">🗺️</span> Google Haritalar&apos;da Aç
         </a>
         <div className="contact-content">
           <div className="contact-info">
@@ -129,10 +132,20 @@ export default function Contact() {
           </div>
           <div className="contact-form">
             <h3>E-Bültene Kayıt Ol</h3>
-            <form id="newsletterForm" onSubmit={handleSubmit}>
-              <input type="email" placeholder="E-posta adresiniz" required />
+            <form id="newsletterForm" onSubmit={handleSubmit} aria-label="E-bülten kayıt formu">
+              <label htmlFor="newsletter-email" className="sr-only">
+                E-posta adresiniz
+              </label>
+              <input 
+                id="newsletter-email"
+                type="email" 
+                placeholder="E-posta adresiniz" 
+                required 
+                aria-required="true"
+                aria-label="E-posta adresiniz"
+              />
               <button type="submit" className="btn btn-primary">
-                Gönder
+                E-bültene Kayıt Ol
               </button>
             </form>
           </div>

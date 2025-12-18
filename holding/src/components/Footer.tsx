@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface MenuItem {
   _id?: string;
@@ -45,7 +46,7 @@ export default function Footer() {
         setSettings(data.settings);
       }
     } catch (error) {
-      console.error('Ayarlar yüklenemedi:', error);
+      logger.error('Ayarlar yüklenemedi:', error);
     }
   };
 
@@ -63,7 +64,7 @@ export default function Footer() {
         }
       }
     } catch (error) {
-      console.error('Footer menü yüklenemedi:', error);
+      logger.error('Footer menü yüklenemedi:', error);
     } finally {
       setLoading(false);
     }
@@ -83,21 +84,21 @@ export default function Footer() {
             <h3>{siteName}</h3>
             <p>{siteDescription}</p>
             {settings?.socialMedia && (
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }} role="list" aria-label="Sosyal medya bağlantıları">
                 {settings.socialMedia.facebook && (
-                  <a href={settings.socialMedia.facebook} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }}>📘</a>
+                  <a href={settings.socialMedia.facebook} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }} aria-label="Facebook sayfamızı ziyaret edin" role="listitem">📘</a>
                 )}
                 {settings.socialMedia.twitter && (
-                  <a href={settings.socialMedia.twitter} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }}>🐦</a>
+                  <a href={settings.socialMedia.twitter} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }} aria-label="Twitter sayfamızı ziyaret edin" role="listitem">🐦</a>
                 )}
                 {settings.socialMedia.instagram && (
-                  <a href={settings.socialMedia.instagram} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }}>📷</a>
+                  <a href={settings.socialMedia.instagram} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }} aria-label="Instagram sayfamızı ziyaret edin" role="listitem">📷</a>
                 )}
                 {settings.socialMedia.linkedin && (
-                  <a href={settings.socialMedia.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }}>💼</a>
+                  <a href={settings.socialMedia.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }} aria-label="LinkedIn sayfamızı ziyaret edin" role="listitem">💼</a>
                 )}
                 {settings.socialMedia.youtube && (
-                  <a href={settings.socialMedia.youtube} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }}>📺</a>
+                  <a href={settings.socialMedia.youtube} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontSize: '20px' }} aria-label="YouTube kanalımızı ziyaret edin" role="listitem">📺</a>
                 )}
               </div>
             )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface HRPolicyLink {
   text: string;
@@ -44,7 +45,7 @@ export default function HRPolicy() {
         }
       }
     } catch (error) {
-      console.error('HR Policy verileri yüklenemedi:', error);
+      logger.error('HR Policy verileri yüklenemedi:', error);
     }
   };
 
@@ -68,10 +69,17 @@ export default function HRPolicy() {
           </div>
           <div className="hr-image">
             {image ? (
-              <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img 
+                src={image} 
+                alt={`${title} - ${subtitle}`} 
+                width={800}
+                height={600}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                loading="lazy"
+              />
             ) : (
-              <div className="placeholder-image">
-                <i className="fas fa-users"></i>
+              <div className="placeholder-image" aria-hidden="true">
+                <i className="fas fa-users" aria-hidden="true"></i>
               </div>
             )}
           </div>

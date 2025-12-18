@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: 'standalone',
   
+  // Performance optimizations
+  swcMinify: true,
+  poweredByHeader: false,
+  
+  // Experimental optimizations
+  experimental: {
+    optimizePackageImports: ['@/components'],
+  },
+  
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -18,6 +27,9 @@ const nextConfig: NextConfig = {
 
   // Compression
   compress: true,
+  
+  // Production optimizations
+  productionBrowserSourceMaps: false,
 
   // Headers for SEO and security
   async headers() {
@@ -49,6 +61,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
         ],
       },

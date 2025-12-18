@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface HeroSlide {
   title: string;
@@ -37,7 +38,7 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
         }
       }
     } catch (error) {
-      console.error('Hero verileri yüklenemedi:', error);
+      logger.error('Hero verileri yüklenemedi:', error);
       // Varsayılan slides
       setSlides([
         {
@@ -99,8 +100,8 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
   }
 
   return (
-    <section className="hero">
-      <div className="hero-slider">
+    <section className="hero" aria-label="Ana slider">
+      <div className="hero-slider" role="region" aria-label="Hero slider">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -111,6 +112,9 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
                 : { backgroundImage: 'none' }
             }
             data-no-image={!imagesLoaded[index] ? 'true' : undefined}
+            role="tabpanel"
+            aria-hidden={index !== currentSlide}
+            aria-labelledby={`slide-tab-${index}`}
           >
             <div className="hero-content fade-in">
               <h2 className="gradient-text" style={{ 
@@ -120,29 +124,63 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
                 backgroundClip: 'text'
               }}>{slide.title}</h2>
               <p>{slide.description}</p>
-              <a href={slide.link} className="btn btn-primary hover-lift">
+              <a href={slide.link} className="btn btn-primary hover-lift" aria-label={`${slide.linkText} - ${slide.title}`}>
                 {slide.linkText}
               </a>
             </div>
           </div>
         ))}
       </div>
-      <div className="hero-nav">
-        <button className="hero-prev" onClick={prevSlide} aria-label="Önceki slide">
-          ‹
+      <div className="hero-nav" aria-label="Slider kontrolleri">
+        <button 
+          className="hero-prev" 
+          onClick={prevSlide} 
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              prevSlide();
+            }
+          }}
+          aria-label="Önceki slide"
+          type="button"
+        >
+          <span aria-hidden="true">‹</span>
         </button>
-        <button className="hero-next" onClick={nextSlide} aria-label="Sonraki slide">
-          ›
+        <button 
+          className="hero-next" 
+          onClick={nextSlide} 
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              nextSlide();
+            }
+          }}
+          aria-label="Sonraki slide"
+          type="button"
+        >
+          <span aria-hidden="true">›</span>
         </button>
       </div>
-      <div className="hero-dots">
+      <div className="hero-dots" role="tablist" aria-label="Slide navigasyonu">
         {slides.map((_, index) => (
-          <span
+          <button
             key={index}
+            type="button"
+            id={`slide-tab-${index}`}
             className={`dot ${index === currentSlide ? 'active' : ''}`}
             onClick={() => goToSlide(index)}
-            aria-label={`Slide ${index + 1}`}
-          ></span>
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                goToSlide(index);
+              }
+            }}
+            aria-label={`Slide ${index + 1}'e git`}
+            aria-current={index === currentSlide ? 'true' : 'false'}
+            role="tab"
+            aria-selected={index === currentSlide}
+            tabIndex={index === currentSlide ? 0 : -1}
+          ></button>
         ))}
       </div>
     </section>

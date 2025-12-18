@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
+import { logger } from '@/lib/logger';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
     const siteName = settings?.siteName || 'Holding Şirketi';
     const siteDescription = settings?.siteDescription || settings?.metaDescription || 'Dünya standartlarında hizmet anlayışı ile sektörde öncü konumdayız. Entegre tesis yönetimi, güvenlik, temizlik ve teknoloji çözümleri sunuyoruz.';
     const keywords = settings?.metaKeywords?.join(', ') || 'tesis yönetimi, güvenlik hizmetleri, temizlik hizmetleri, teknoloji çözümleri, holding şirketi';
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-    const logo = settings?.siteLogo || `${siteUrl}/images/logo.png`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const logo = settings?.siteLogo;
 
     return {
       metadataBase: new URL(siteUrl),
@@ -37,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
         address: false,
         telephone: false,
       },
-      openGraph: {
+      openGraph: logo ? {
         type: 'website',
         locale: 'tr_TR',
         url: siteUrl,
@@ -52,12 +53,19 @@ export async function generateMetadata(): Promise<Metadata> {
             alt: siteName,
           },
         ],
+      } : {
+        type: 'website',
+        locale: 'tr_TR',
+        url: siteUrl,
+        siteName: siteName,
+        title: siteName,
+        description: siteDescription,
       },
       twitter: {
         card: 'summary_large_image',
         title: siteName,
         description: siteDescription,
-        images: [logo],
+        ...(logo && { images: [logo] }),
         creator: settings?.socialMedia?.twitter ? `@${settings.socialMedia.twitter.replace('https://twitter.com/', '').replace('@', '')}` : undefined,
       },
       robots: {
@@ -81,12 +89,35 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   } catch (error) {
-    console.error('Metadata generation error:', error);
+    logger.error('Metadata generation error:', error);
     // Fallback metadata
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const fallbackDescription = 'Dünya standartlarında hizmet anlayışı ile sektörde öncü konumdayız. Entegre tesis yönetimi, güvenlik, temizlik ve teknoloji çözümleri sunuyoruz.';
     return {
+      metadataBase: new URL(siteUrl),
       title: 'Holding Şirketi',
-      description: 'Dünya standartlarında hizmet anlayışı ile sektörde öncü konumdayız.',
-      keywords: ['holding', 'şirket', 'hizmet'],
+      description: fallbackDescription,
+      keywords: ['holding', 'şirket', 'hizmet', 'tesis yönetimi', 'güvenlik hizmetleri'],
+      openGraph: {
+        type: 'website',
+        locale: 'tr_TR',
+        url: siteUrl,
+        siteName: 'Holding Şirketi',
+        title: 'Holding Şirketi',
+        description: fallbackDescription,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Holding Şirketi',
+        description: fallbackDescription,
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+      alternates: {
+        canonical: siteUrl,
+      },
     };
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
+import { logger } from '@/lib/logger';
 
 interface ServiceItem {
   icon: string;
@@ -40,7 +41,7 @@ export default function Services() {
         }
       }
     } catch (error) {
-      console.error('Hizmetler yüklenemedi:', error);
+      logger.error('Hizmetler yüklenemedi:', error);
     } finally {
       setLoading(false);
     }
@@ -78,8 +79,8 @@ export default function Services() {
           {displayServices.map((service, index) => (
             <ScrollReveal key={index} delay={index * 100} direction="up">
               <div className="service-card hover-lift">
-                <div className="service-icon">
-                  <i className={service.icon}></i>
+                <div className="service-icon" aria-hidden="true">
+                  <i className={service.icon} aria-hidden="true"></i>
                 </div>
                 <h3>{service.title}</h3>
                 <p>{service.description}</p>
