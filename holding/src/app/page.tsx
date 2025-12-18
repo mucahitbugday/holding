@@ -11,6 +11,7 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import SmoothScroll from '@/components/SmoothScroll';
 import StructuredData from '@/components/StructuredData';
+import PageLoader from '@/components/PageLoader';
 import { logger } from '@/lib/logger';
 
 interface HomePageSection {
@@ -99,16 +100,7 @@ export default function Home() {
   };
 
   if (loading) {
-    return (
-      <>
-        <SmoothScroll />
-        <Header />
-        <main id="main-content" role="main" aria-label="Ana içerik">
-          <div style={{ padding: '4rem', textAlign: 'center' }} aria-live="polite" aria-busy="true">Yükleniyor...</div>
-        </main>
-        <Footer />
-      </>
-    );
+    return <PageLoader />;
   }
 
   return (
