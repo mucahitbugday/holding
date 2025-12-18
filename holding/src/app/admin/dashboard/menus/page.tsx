@@ -463,9 +463,9 @@ export default function MenuManagement() {
         <div style={{
           background: 'white',
           padding: '1.5rem',
-          borderRadius: '12px',
+          borderRadius: '8px',
           marginBottom: '1.5rem',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          border: '1px solid #e5e7eb'
         }}>
           <div style={{ 
             display: 'grid', 
@@ -553,8 +553,8 @@ export default function MenuManagement() {
             <div key={menu._id} style={{
               background: 'white',
               padding: '1.5rem',
-              borderRadius: '12px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
             }}>
               <div style={{ 
                 display: 'flex', 

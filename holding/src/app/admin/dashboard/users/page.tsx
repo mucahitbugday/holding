@@ -352,12 +352,6 @@ export default function UserManagement() {
                       transition: 'background 0.15s',
                       verticalAlign: 'middle'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#f9fafb';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#ffffff';
-                    }}
                   >
                     <td style={{ 
                       padding: '14px 16px', 
@@ -460,12 +454,6 @@ export default function UserManagement() {
                             width: '36px',
                             height: '36px',
                             flexShrink: 0
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#b91c1c';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#dc2626';
                           }}
                         >
                           <i className="fas fa-trash"></i>

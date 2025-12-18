@@ -455,17 +455,7 @@ export default function CategoryManagement() {
               padding: '20px',
               borderRadius: '8px',
               border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-              transition: 'all 0.15s'
             }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db';
-                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-              }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <div style={{ flex: 1 }}>
@@ -486,20 +476,11 @@ export default function CategoryManagement() {
                       fontWeight: '500',
                       fontSize: '12px'
                     }}>
-                      📄 {contentCounts[category._id] || 0} İçerik
+                      {contentCounts[category._id] || 0} İçerik
                     </span>
                     {category.autoAddContent && (
                       <span style={{ color: '#6366f1', fontWeight: '500' }}>
-                        ⚡ Otomatik Ekleme: <strong>Son {category.autoAddLimit || 5} Kart</strong>
-                      </span>
-                    )}
-                    {category.createdAt && (
-                      <span>
-                        Oluşturulma: <strong>{new Date(category.createdAt).toLocaleDateString('tr-TR', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}</strong>
+                        Otomatik Ekleme: Son {category.autoAddLimit || 5} Kart
                       </span>
                     )}
                   </div>
@@ -517,35 +498,13 @@ export default function CategoryManagement() {
                   >
                     Düzenle
                   </Button>
-                  <button
+                  <Button
                     onClick={() => handleDelete(category._id)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      padding: '6px 8px',
-                      borderRadius: '6px',
-                      fontSize: '18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.15s',
-                      width: '32px',
-                      height: '32px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#fee2e2';
-                      e.currentTarget.style.transform = 'scale(1.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                    title="Kategoriyi Sil"
+                    variant="danger"
+                    size="sm"
                   >
-                    🗑️
-                  </button>
+                    Sil
+                  </Button>
                 </div>
               </div>
             </div>

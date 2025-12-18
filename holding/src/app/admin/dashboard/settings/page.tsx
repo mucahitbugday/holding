@@ -301,7 +301,7 @@ export default function SettingsPage() {
         paddingBottom: '16px',
         borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Ayarlar</h1>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0 }}>Ayarlar</h1>
         <Button onClick={handleSave} variant="primary" size="md" isLoading={saving}>
           Kaydet
         </Button>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
           padding: '20px 24px',
           borderBottom: '1px solid #e5e7eb'
         }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600' }}>
             Genel Ayarlar
           </h2>
           <div style={{ display: 'grid', gap: '20px' }}>
@@ -347,8 +347,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -368,7 +366,7 @@ export default function SettingsPage() {
           padding: '20px 24px',
           borderBottom: '1px solid #e5e7eb'
         }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600' }}>
             Şirket Bilgileri
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -457,8 +455,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
           </div>
@@ -492,8 +488,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -516,8 +510,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -596,7 +588,7 @@ export default function SettingsPage() {
           padding: '20px 24px',
           borderBottom: '1px solid #e5e7eb'
         }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600' }}>
             SMTP Ayarları (E-posta)
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -618,8 +610,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -640,8 +630,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -662,8 +650,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -684,8 +670,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -706,8 +690,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -728,8 +710,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -748,7 +728,7 @@ export default function SettingsPage() {
           padding: '20px 24px',
           borderBottom: '1px solid #e5e7eb'
         }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '20px', color: '#1f2937', fontWeight: '600' }}>
             Sosyal Medya
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -770,8 +750,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -792,8 +770,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -814,8 +790,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -836,8 +810,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
             <div>
@@ -858,8 +830,6 @@ export default function SettingsPage() {
                   transition: 'border-color 0.15s',
                   background: '#ffffff'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
               />
             </div>
           </div>

@@ -678,9 +678,9 @@ export default function ContentManagement() {
           overflowY: 'auto',
           flexShrink: 0
         }}>
-          <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-              📁 Kategoriler
+              Kategoriler
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
@@ -713,8 +713,7 @@ export default function ContentManagement() {
                   }
                 }}
               >
-                <span>📄</span>
-                <span>Tümü</span>
+                Tümü
               </button>
               <button
                 onClick={() => setSelectedCategoryFilter('none')}
@@ -728,28 +727,14 @@ export default function ContentManagement() {
                   fontSize: '14px',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 0.15s',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                   justifyContent: 'space-between'
                 }}
-                onMouseEnter={(e) => {
-                  if (selectedCategoryFilter !== 'none') {
-                    e.currentTarget.style.background = '#f9fafb';
-                    e.currentTarget.style.color = '#1f2937';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedCategoryFilter !== 'none') {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#6b7280';
-                  }
-                }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>📋</span>
-                  <span>Kategorisiz</span>
+                  Kategorisiz
                 </div>
                 <span style={{
                   background: '#e0e7ff',
@@ -759,7 +744,7 @@ export default function ContentManagement() {
                   fontSize: '12px',
                   fontWeight: '500'
                 }}>
-                  📄 {contents.filter(c => !c.categoryId).length}
+                  {contents.filter(c => !c.categoryId).length}
                 </span>
               </button>
               {categories.map((category) => {
@@ -778,27 +763,13 @@ export default function ContentManagement() {
                       fontSize: '14px',
                       cursor: 'pointer',
                       textAlign: 'left',
-                      transition: 'all 0.15s',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                       justifyContent: 'space-between'
                     }}
-                    onMouseEnter={(e) => {
-                      if (selectedCategoryFilter !== category._id) {
-                        e.currentTarget.style.background = '#f9fafb';
-                        e.currentTarget.style.color = '#1f2937';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedCategoryFilter !== category._id) {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#6b7280';
-                      }
-                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-                      <span>📁</span>
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.name}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
@@ -810,7 +781,7 @@ export default function ContentManagement() {
                         fontSize: '12px',
                         fontWeight: '500'
                       }}>
-                        📄 {categoryContentCount}
+                        {categoryContentCount}
                       </span>
                       {!category.isActive && (
                         <span style={{ fontSize: '10px', color: '#9ca3af' }}>●</span>
@@ -923,8 +894,7 @@ export default function ContentManagement() {
                     alignSelf: 'flex-start'
                   }}
                 >
-                  <span>🔗</span>
-                  <span>Link Seç</span>
+                  Link Seç
                 </Button>
               </div>
             </div>
@@ -993,7 +963,7 @@ export default function ContentManagement() {
                   size="md"
                   style={{ whiteSpace: 'nowrap' }}
                 >
-                  🖼️ Görsel Seç
+                  Görsel Seç
                 </Button>
               </div>
             </div>
@@ -1027,7 +997,7 @@ export default function ContentManagement() {
                   variant="primary"
                   size="sm"
                 >
-                  📝 İçerik Ekle
+                  İçerik Ekle
                 </Button>
                 <Button
                   type="button"
@@ -1035,7 +1005,7 @@ export default function ContentManagement() {
                   variant="primary"
                   size="sm"
                 >
-                  🎴 Kart Ekle
+                  Kart Ekle
                 </Button>
               </div>
             </div>
@@ -1082,7 +1052,7 @@ export default function ContentManagement() {
                           padding: '4px 8px',
                           borderRadius: '4px'
                         }}>
-                          {section.type === 'text' ? '📝 Metin' : '🎴 Kart'}
+                          {section.type === 'text' ? 'Metin' : 'Kart'}
                         </span>
                         {section.type === 'card' && (
                           <span style={{ fontSize: '13px', color: '#6b7280' }}>
@@ -1142,7 +1112,7 @@ export default function ContentManagement() {
                             color: '#ef4444'
                           }}
                         >
-                          🗑️ Sil
+                          Sil
                         </button>
                       </div>
                     </div>
@@ -1456,18 +1426,6 @@ export default function ContentManagement() {
                       position: 'relative',
                       overflow: 'hidden'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#313131';
-                      e.currentTarget.style.background = '#f9fafb';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.background = '#ffffff';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
                   >
                     {/* Görsel */}
                     {link.imageUrl ? (
@@ -1508,15 +1466,15 @@ export default function ContentManagement() {
                           width: '48px',
                           height: '48px',
                           borderRadius: '50%',
-                          background: '#ffffff',
+                          background: '#f3f4f6',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '24px',
-                          color: '#9ca3af',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          fontSize: '14px',
+                          color: '#6b7280',
+                          fontWeight: '500'
                         }}>
-                          🔗
+                          Link
                         </div>
                       </div>
                     )}
@@ -1877,7 +1835,7 @@ export default function ContentManagement() {
                           </p>
                           {category && (
                             <p style={{ margin: 0, fontSize: '12px', color: '#6366f1', fontWeight: '500' }}>
-                              📁 {category.name}
+                              {category.name}
                             </p>
                           )}
                         </div>
@@ -1923,14 +1881,6 @@ export default function ContentManagement() {
                     overflow: 'hidden',
                     transition: 'all 0.15s',
                     background: '#ffffff'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#9ca3af';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <img
@@ -1997,17 +1947,7 @@ export default function ContentManagement() {
               padding: '20px',
               borderRadius: '8px',
               border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-              transition: 'all 0.15s'
             }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db';
-                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-              }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: expandedContents.has(content._id) ? '16px' : '0' }}>
                 <div style={{ flex: 1 }}>

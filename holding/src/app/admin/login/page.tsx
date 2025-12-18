@@ -30,21 +30,21 @@ export default function AdminLogin() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #313131 0%, #414141 100%)' }}>
-      <div style={{ background: 'white', padding: '2rem', borderRadius: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', width: '100%', maxWidth: '400px' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '1.5rem', textAlign: 'center', color: '#313131' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
+      <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', border: '1px solid #e5e7eb', width: '100%', maxWidth: '400px' }}>
+        <h1 style={{ fontSize: '24px', marginBottom: '1.5rem', textAlign: 'center', color: '#1f2937', fontWeight: '600' }}>
           Admin Girişi
         </h1>
         
         {error && (
-          <div style={{ background: '#fee', color: '#c33', padding: '1rem', borderRadius: '5px', marginBottom: '1rem' }}>
+          <div style={{ background: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '6px', marginBottom: '1rem', fontSize: '14px' }}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1f2937' }}>
               Email
             </label>
             <input
@@ -52,12 +52,12 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '5px', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1f2937' }}>
               Şifre
             </label>
             <input
@@ -65,7 +65,7 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '5px', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -74,13 +74,13 @@ export default function AdminLogin() {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '0.75rem',
-              background: '#313131',
+              padding: '10px 12px',
+              background: '#1f2937',
               color: 'white',
               border: 'none',
-              borderRadius: '5px',
-              fontSize: '1rem',
-              fontWeight: '600',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.6 : 1,
             }}
@@ -90,7 +90,7 @@ export default function AdminLogin() {
         </form>
 
         <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          <Link href="/admin/forgot-password" style={{ color: '#313131', textDecoration: 'none' }}>
+          <Link href="/admin/forgot-password" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
             Şifremi Unuttum
           </Link>
         </div>

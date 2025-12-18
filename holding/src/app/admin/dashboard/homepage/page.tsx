@@ -8,19 +8,6 @@ import Input from '@/components/ui/Input';
 import Checkbox from '@/components/ui/Checkbox';
 import Swal from 'sweetalert2';
 
-// Fade-in animation için style
-const fadeInStyle = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
 
 interface HeroSlide {
   _id?: string;
@@ -370,7 +357,6 @@ export default function HomePageSettings() {
 
   return (
     <div style={{ padding: '0' }}>
-      <style>{fadeInStyle}</style>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -379,7 +365,7 @@ export default function HomePageSettings() {
         paddingBottom: '16px',
         borderBottom: '1px solid #e5e7eb'
       }}>
-        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0, letterSpacing: '-0.5px' }}>Anasayfa Ayarları</h1>
+        <h1 style={{ fontSize: '24px', color: '#1f2937', fontWeight: '600', margin: 0 }}>Anasayfa Ayarları</h1>
         <Button onClick={handleSave} variant="primary" size="md" isLoading={submitting}>
           Kaydet
         </Button>
@@ -448,16 +434,6 @@ export default function HomePageSettings() {
                     transition: 'background 0.2s'
                   }}
                   onClick={() => toggleSection(index)}
-                  onMouseEnter={(e) => {
-                    if (!isExpanded) {
-                      e.currentTarget.style.background = '#f9fafb';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isExpanded) {
-                      e.currentTarget.style.background = '#ffffff';
-                    }
-                  }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', flex: 1 }}>
                     <button
@@ -517,14 +493,6 @@ export default function HomePageSettings() {
                         height: '32px',
                         opacity: index === 0 ? 0.5 : 1
                       }}
-                      onMouseEnter={(e) => {
-                        if (index !== 0) {
-                          e.currentTarget.style.background = '#e5e7eb';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#f3f4f6';
-                      }}
                     >
                       <i className="fas fa-arrow-up" style={{ fontSize: '12px' }}></i>
                     </button>
@@ -548,14 +516,6 @@ export default function HomePageSettings() {
                         height: '32px',
                         opacity: index === sections.length - 1 ? 0.5 : 1
                       }}
-                      onMouseEnter={(e) => {
-                        if (index !== sections.length - 1) {
-                          e.currentTarget.style.background = '#e5e7eb';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#f3f4f6';
-                      }}
                     >
                       <i className="fas fa-arrow-down" style={{ fontSize: '12px' }}></i>
                     </button>
@@ -577,12 +537,6 @@ export default function HomePageSettings() {
                         minWidth: '32px',
                         height: '32px'
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#b91c1c';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#dc2626';
-                      }}
                     >
                       <i className="fas fa-trash" style={{ fontSize: '12px' }}></i>
                     </button>
@@ -591,10 +545,9 @@ export default function HomePageSettings() {
 
                 {/* Content - Sadece açıkken görünür */}
                 {isExpanded && (
-                  <div style={{ 
+                  <div                   style={{ 
                     padding: '20px',
                     borderTop: '1px solid #e5e7eb',
-                    animation: 'fadeIn 0.2s ease-in'
                   }}>
 
                     {/* Component Editors */}

@@ -230,7 +230,7 @@ export default function MediaManagement() {
               e.currentTarget.style.background = '#313131';
             }}
           >
-            📁 Dosya Seç
+            Dosya Seç
           </label>
           <p style={{ color: '#6b7280', marginTop: '12px', fontSize: '13px' }}>
             {selectedFiles.length > 0 
@@ -274,16 +274,6 @@ export default function MediaManagement() {
               padding: '12px', 
               borderRadius: '8px', 
               border: '1px solid #e5e7eb',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-              transition: 'all 0.15s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#d1d5db';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e5e7eb';
-              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
             }}
             >
               {file.type === 'image' ? (
@@ -312,8 +302,7 @@ export default function MediaManagement() {
                   marginBottom: '0.75rem',
                   border: '2px solid #e2e8f0'
                 }}>
-                  <span style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📄</span>
-                  <span style={{ fontSize: '0.75rem', color: '#666' }}>PDF</span>
+                  <span style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#9ca3af' }}>PDF</span>
                 </div>
               ) : (
                 <div style={{
@@ -324,10 +313,11 @@ export default function MediaManagement() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '3rem',
-                  marginBottom: '0.75rem'
+                  fontSize: '2rem',
+                  marginBottom: '0.75rem',
+                  color: '#9ca3af'
                 }}>
-                  📁
+                  Dosya
                 </div>
               )}
               <div style={{ marginBottom: '8px' }}>
@@ -348,7 +338,7 @@ export default function MediaManagement() {
                   {formatFileSize(file.size)}
                 </p>
                 <p style={{ fontSize: '11px', color: '#9ca3af' }}>
-                  {file.type === 'image' ? '🖼 Resim' : file.type === 'pdf' ? '📄 PDF' : '📁 Dosya'}
+                  {file.type === 'image' ? 'Resim' : file.type === 'pdf' ? 'PDF' : 'Dosya'}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
