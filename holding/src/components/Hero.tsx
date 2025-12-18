@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { logger } from '@/lib/logger';
 
 interface HeroSlide {
@@ -15,7 +16,6 @@ interface HeroSlide {
 export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
   const [slides, setSlides] = useState<HeroSlide[]>(propSlides || []);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [imagesLoaded, setImagesLoaded] = useState<boolean[]>([]);
 
   useEffect(() => {
     // Eğer prop'tan slides gelmediyse API'den çek
@@ -53,35 +53,14 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
     }
   };
 
-  useEffect(() => {
-    // Preload images
-    const loadImages = async () => {
-      const loaded: boolean[] = [];
-      for (const slide of slides) {
-        const img = new Image();
-        await new Promise((resolve) => {
-          img.onload = () => {
-            loaded.push(true);
-            resolve(true);
-          };
-          img.onerror = () => {
-            loaded.push(false);
-            resolve(false);
-          };
-          img.src = slide.image;
-        });
-      }
-      setImagesLoaded(loaded);
-    };
-    loadImages();
-  }, []);
 
   useEffect(() => {
+    if (slides.length === 0) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -106,16 +85,24 @@ export default function Hero({ slides: propSlides }: { slides?: HeroSlide[] }) {
           <div
             key={index}
             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-            style={
-              imagesLoaded[index]
-                ? { backgroundImage: `url(${slide.image})` }
-                : { backgroundImage: 'none' }
-            }
-            data-no-image={!imagesLoaded[index] ? 'true' : undefined}
             role="tabpanel"
             aria-hidden={index !== currentSlide}
             aria-labelledby={`slide-tab-${index}`}
           >
+            <Image
+              src={slide.image}
+              alt={slide.title}
+              fill
+              priority={index === 0}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
+              quality={85}
+              sizes="100vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+              className="hero-slide-image"
+            />
             <div className="hero-content fade-in">
               <h2 className="gradient-text" style={{ 
                 background: 'linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.9) 100%)',

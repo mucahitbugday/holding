@@ -230,9 +230,15 @@ body.admin-panel {
   justify-content: center;
   opacity: 0;
   transition: opacity 1s;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+}
+
+.hero-slide-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
 .hero-slide.active {
@@ -252,12 +258,9 @@ body.admin-panel {
   transition: opacity 0.3s ease;
 }
 
-.hero-slide[data-no-image="true"]::before {
+.hero-slide:has(.hero-slide-image[data-state="error"])::before,
+.hero-slide:not(:has(.hero-slide-image))::before {
   opacity: 1;
-}
-
-.hero-slide[style*="background-image"]:not([data-no-image="true"])::before {
-  opacity: 0;
 }
 
 .hero-slide .hero-content {

@@ -23,7 +23,7 @@ export default function StructuredData({ type, data, content, slug, id }: Struct
         '@type': 'Organization',
         name: data.companyName || data.siteName || 'Holding Şirketi',
         url: siteUrl,
-        logo: data.siteLogo ? `${siteUrl}${data.siteLogo}` : `${siteUrl}/images/logo.png`,
+        ...(data.siteLogo && { logo: `${siteUrl}${data.siteLogo}` }),
         description: data.siteDescription || data.metaDescription || '',
         address: {
           '@type': 'PostalAddress',
@@ -70,10 +70,12 @@ export default function StructuredData({ type, data, content, slug, id }: Struct
         publisher: {
           '@type': 'Organization',
           name: data?.companyName || 'Holding Şirketi',
-          logo: {
-            '@type': 'ImageObject',
-            url: data?.siteLogo ? `${siteUrl}${data.siteLogo}` : `${siteUrl}/images/logo.png`,
-          },
+          ...(data?.siteLogo && {
+            logo: {
+              '@type': 'ImageObject',
+              url: `${siteUrl}${data.siteLogo}`,
+            },
+          }),
         },
         mainEntityOfPage: {
           '@type': 'WebPage',
