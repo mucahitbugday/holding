@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
@@ -13,6 +14,17 @@ import SmoothScroll from '@/components/SmoothScroll';
 import StructuredData from '@/components/StructuredData';
 import PageLoader from '@/components/PageLoader';
 import { logger } from '@/lib/logger';
+
+// Dynamic imports for non-critical components
+const DynamicNews = dynamic(() => import('@/components/News'), {
+  loading: () => <div style={{ minHeight: '400px' }} aria-busy="true" aria-label="Haberler yükleniyor" />,
+  ssr: true,
+});
+
+const DynamicContact = dynamic(() => import('@/components/Contact'), {
+  loading: () => <div style={{ minHeight: '400px' }} aria-busy="true" aria-label="İletişim yükleniyor" />,
+  ssr: true,
+});
 
 interface HomePageSection {
   type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
@@ -91,9 +103,9 @@ export default function Home() {
       case 'hrpolicy':
         return <HRPolicy key="hrpolicy" />;
       case 'news':
-        return <News key="news" />;
+        return <DynamicNews key="news" />;
       case 'contact':
-        return <Contact key="contact" />;
+        return <DynamicContact key="contact" />;
       default:
         return null;
     }

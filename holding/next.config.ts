@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   // Experimental optimizations
   experimental: {
     optimizePackageImports: ['@/components'],
+    optimizeCss: true,
   },
   
   // Image optimization

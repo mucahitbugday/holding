@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import connectDB from '@/lib/mongodb';
@@ -156,16 +157,15 @@ export default async function DynamicPage({ params }: PageProps) {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <img
+            <Image
               src={featuredImage}
               alt={content.title}
+              fill
+              priority
+              quality={85}
+              sizes="100vw"
               style={{
-                width: '100%',
-                height: '100%',
                 objectFit: 'cover',
-                position: 'absolute',
-                top: 0,
-                left: 0,
                 filter: 'brightness(0.4)'
               }}
             />
