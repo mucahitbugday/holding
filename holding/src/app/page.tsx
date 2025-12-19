@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import SmoothScroll from '@/components/SmoothScroll';
 import StructuredData from '@/components/StructuredData';
 import PageLoader from '@/components/PageLoader';
+import ComponentRenderer from '@/components/ComponentRenderer';
 import { logger } from '@/lib/logger';
 
 // Dynamic imports for non-critical components
@@ -37,6 +38,7 @@ export default function Home() {
   const [sections, setSections] = useState<HomePageSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<any>(null);
+  const [components, setComponents] = useState<{ [key: string]: any }>({});
 
   useEffect(() => {
     loadHomePageSettings();
@@ -92,6 +94,49 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    // Component'leri yükle
+    const loadComponents = async () => {
+      const componentIds = sections
+        .filter(s => s.type === 'component' && s.data?.componentId && s.data.componentId.trim() !== '')
+        .map(s => s.data.componentId);
+      
+      if (componentIds.length > 0) {
+        try {
+          const componentPromises = componentIds.map(async (id) => {
+            try {
+              const response = await fetch(`/api/component/${id}`);
+              const data = await response.json();
+              if (data.success && data.component) {
+                return { id, component: data.component };
+              }
+            } catch (err) {
+              console.error(`Component ${id} yüklenemedi:`, err);
+            }
+            return null;
+          });
+          
+          const loadedComponents = await Promise.all(componentPromises);
+          const componentMap: { [key: string]: any } = {};
+          loadedComponents.forEach(item => {
+            if (item) {
+              componentMap[item.id] = item.component;
+            }
+          });
+          setComponents(componentMap);
+        } catch (error) {
+          console.error('Componentler yüklenemedi:', error);
+        }
+      } else {
+        setComponents({});
+      }
+    };
+    
+    if (sections.length > 0) {
+      loadComponents();
+    }
+  }, [sections]);
+
   const renderSection = (section: HomePageSection) => {
     switch (section.type) {
       case 'hero':
@@ -106,6 +151,21 @@ export default function Home() {
         return <DynamicNews key="news" />;
       case 'contact':
         return <DynamicContact key="contact" />;
+      case 'component':
+        const componentId = section.data?.componentId;
+        if (componentId && components[componentId]) {
+          const component = components[componentId];
+          return (
+            <ComponentRenderer
+              key={`component-${componentId}-${component._id}`}
+              html={component.html || ''}
+              css={component.css || ''}
+              js={component.js || ''}
+              componentId={component._id}
+            />
+          );
+        }
+        return null;
       default:
         return null;
     }

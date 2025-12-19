@@ -44,7 +44,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = getAuthUser(request);
+    const user = await getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Yetkisiz erişim' },
@@ -104,6 +104,8 @@ export async function PUT(
           } else {
             cleaned.contentIds = [];
           }
+        } else if (section.type === 'component') {
+          cleaned.componentId = section.componentId || '';
         }
         
         return cleaned;
@@ -164,7 +166,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = getAuthUser(request);
+    const user = await getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Yetkisiz erişim' },

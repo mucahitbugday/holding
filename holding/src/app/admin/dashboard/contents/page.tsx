@@ -15,11 +15,12 @@ import 'react-quill-new/dist/quill.snow.css';
 const ReactQuill = dynamic(() => import('react-quill-new').then(mod => ({ default: mod.default })), { ssr: false }) as any;
 
 interface ContentSection {
-  type: 'text' | 'card';
+  type: 'text' | 'card' | 'component';
   order: number;
   content?: string;
   contentId?: string; // Backward compatibility
   contentIds?: string[]; // Birden fazla kart için
+  componentId?: string; // Component ID
 }
 
 interface Content {
@@ -107,6 +108,18 @@ export default function ContentManagement() {
     });
     setTempSectionIndex(formData.sections.length);
     setShowCardSelectModal(true);
+  };
+
+  const addComponentSection = () => {
+    const newSection: ContentSection = {
+      type: 'component',
+      order: formData.sections.length,
+      componentId: ''
+    };
+    setFormData({
+      ...formData,
+      sections: [...formData.sections, newSection]
+    });
   };
 
   const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
@@ -372,6 +385,8 @@ export default function ContentManagement() {
           } else {
             cleaned.contentIds = [];
           }
+        } else if (section.type === 'component') {
+          cleaned.componentId = section.componentId || '';
         }
 
         return cleaned;
@@ -1007,6 +1022,14 @@ export default function ContentManagement() {
                 >
                   Kart Ekle
                 </Button>
+                <Button
+                  type="button"
+                  onClick={addComponentSection}
+                  variant="primary"
+                  size="sm"
+                >
+                  Component Ekle
+                </Button>
               </div>
             </div>
 
@@ -1047,12 +1070,12 @@ export default function ContentManagement() {
                         <span style={{
                           fontSize: '12px',
                           fontWeight: '600',
-                          color: section.type === 'text' ? '#1f2937' : '#6366f1',
-                          background: section.type === 'text' ? '#e5e7eb' : '#e0e7ff',
+                          color: section.type === 'text' ? '#1f2937' : section.type === 'card' ? '#6366f1' : '#10b981',
+                          background: section.type === 'text' ? '#e5e7eb' : section.type === 'card' ? '#e0e7ff' : '#d1fae5',
                           padding: '4px 8px',
                           borderRadius: '4px'
                         }}>
-                          {section.type === 'text' ? 'Metin' : 'Kart'}
+                          {section.type === 'text' ? 'Metin' : section.type === 'card' ? 'Kart' : 'Component'}
                         </span>
                         {section.type === 'card' && (
                           <span style={{ fontSize: '13px', color: '#6b7280' }}>
@@ -1061,6 +1084,11 @@ export default function ContentManagement() {
                               if (cardIds.length === 0) return 'Kart seçilmedi';
                               return `${cardIds.length} kart seçildi`;
                             })()}
+                          </span>
+                        )}
+                        {section.type === 'component' && (
+                          <span style={{ fontSize: '13px', color: '#6b7280' }}>
+                            {section.componentId ? 'Component seçildi' : 'Component seçilmedi'}
                           </span>
                         )}
                       </div>
@@ -1208,7 +1236,7 @@ export default function ContentManagement() {
                           />
                         )}
                       </div>
-                    ) : (
+                    ) : section.type === 'card' ? (
                       <div style={{ padding: '16px' }}>
                         {(() => {
                           const cardIds = section.contentIds || (section.contentId ? [section.contentId] : []);
@@ -1357,7 +1385,23 @@ export default function ContentManagement() {
                           );
                         })()}
                       </div>
-                    )}
+                    ) : section.type === 'component' ? (
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+                            Component Seçin
+                          </label>
+                          <ComponentSelector
+                            value={section.componentId || ''}
+                            onChange={(componentId) => {
+                              const updatedSections = [...formData.sections];
+                              updatedSections[index].componentId = componentId;
+                              setFormData({ ...formData, sections: updatedSections });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -2195,5 +2239,54 @@ export default function ContentManagement() {
       </div>
 
     </div>
+  );
+}
+
+// Component Selector Component
+function ComponentSelector({ value, onChange }: { value: string; onChange: (componentId: string) => void }) {
+  const [components, setComponents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadComponents();
+  }, []);
+
+  const loadComponents = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.getComponents(undefined, true);
+      setComponents(response.components || []);
+    } catch (error) {
+      console.error('Componentler yüklenemedi:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '8px 12px',
+        border: '1px solid #e5e7eb',
+        borderRadius: '6px',
+        fontSize: '14px',
+        background: '#ffffff',
+        color: '#1f2937',
+      }}
+    >
+      <option value="">Component Seçiniz</option>
+      {loading ? (
+        <option disabled>Yükleniyor...</option>
+      ) : (
+        components.map((comp) => (
+          <option key={comp._id} value={comp._id}>
+            {comp.name} ({comp.type})
+          </option>
+        ))
+      )}
+    </select>
   );
 }

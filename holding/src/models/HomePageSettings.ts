@@ -17,7 +17,7 @@ export interface IAboutItem {
 }
 
 export interface IHomePageSection {
-  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
+  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact' | 'component';
   order: number;
   isActive: boolean;
   data: {
@@ -27,6 +27,8 @@ export interface IHomePageSection {
     title?: string;
     description?: string;
     items?: IAboutItem[];
+    // Component data
+    componentId?: string;
     // Diğer componentler için genel data
     [key: string]: any;
   };
@@ -57,7 +59,10 @@ const AboutItemSchema: Schema = new Schema({
 const HomePageSectionSchema: Schema = new Schema({
   type: {
     type: String,
-    enum: ['hero', 'about', 'services', 'hrpolicy', 'news', 'contact'],
+    enum: {
+      values: ['hero', 'about', 'services', 'hrpolicy', 'news', 'contact', 'component'],
+      message: '`{VALUE}` is not a valid enum value for path `{PATH}`'
+    },
     required: true,
   },
   order: { type: Number, required: true, default: 0 },
@@ -66,6 +71,8 @@ const HomePageSectionSchema: Schema = new Schema({
     type: Schema.Types.Mixed,
     default: {},
   },
+}, {
+  _id: false
 });
 
 const HomePageSettingsSchema: Schema = new Schema(
@@ -77,8 +84,20 @@ const HomePageSettingsSchema: Schema = new Schema(
   }
 );
 
-const HomePageSettings: Model<IHomePageSettings> =
-  mongoose.models.HomePageSettings ||
-  mongoose.model<IHomePageSettings>('HomePageSettings', HomePageSettingsSchema);
+// Model cache'ini tamamen temizle - her seferinde yeni schema ile oluştur
+const getHomePageSettingsModel = (): Model<IHomePageSettings> => {
+  // Model cache'ini temizle
+  if (mongoose.models.HomePageSettings) {
+    delete mongoose.models.HomePageSettings;
+  }
+  if (mongoose.connection?.models?.HomePageSettings) {
+    delete mongoose.connection.models.HomePageSettings;
+  }
+  
+  // Yeni schema ile model oluştur
+  return mongoose.model<IHomePageSettings>('HomePageSettings', HomePageSettingsSchema);
+};
+
+const HomePageSettings = getHomePageSettingsModel();
 
 export default HomePageSettings;

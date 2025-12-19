@@ -303,6 +303,62 @@ export class ApiClient {
       method: 'GET',
     });
   }
+
+  // Components
+  async getComponents(type?: string, isActive?: boolean, categoryId?: string) {
+    const params = new URLSearchParams();
+    if (type) params.append('type', type);
+    if (isActive !== undefined) params.append('isActive', String(isActive));
+    if (categoryId) params.append('categoryId', categoryId);
+    const query = params.toString();
+    return this.request(`/component${query ? `?${query}` : ''}`, {
+      method: 'GET',
+    });
+  }
+
+  async getComponent(id: string) {
+    return this.request(`/component/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async createComponent(data: {
+    name: string;
+    slug: string;
+    type: string;
+    description?: string;
+    html: string;
+    css?: string;
+    js?: string;
+    isActive?: boolean;
+    order?: number;
+    categoryId?: string;
+    settings?: any;
+  }) {
+    return this.request('/component', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateComponent(id: string, data: any) {
+    return this.request(`/component/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteComponent(id: string) {
+    return this.request(`/component/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getComponentBySlug(slug: string) {
+    return this.request(`/component/slug/${slug}`, {
+      method: 'GET',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

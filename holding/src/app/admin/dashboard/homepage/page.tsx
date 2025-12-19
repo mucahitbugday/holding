@@ -54,7 +54,7 @@ interface HRPolicyLink {
 
 interface HomePageSection {
   _id?: string;
-  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
+  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact' | 'component';
   order: number;
   isActive: boolean;
   data: {
@@ -81,6 +81,8 @@ interface HomePageSection {
     // Contact
     contactTitle?: string;
     contactDescription?: string;
+    // Component
+    componentId?: string;
     [key: string]: any;
   };
 }
@@ -184,6 +186,10 @@ const getDefaultData = (type: HomePageSection['type']) => {
       return {
         contactTitle: 'İletişim',
         contactDescription: 'Bizimle iletişime geçmek için aşağıdaki bilgileri kullanabilirsiniz.',
+      };
+    case 'component':
+      return {
+        componentId: '',
       };
     default:
       return {};
@@ -382,14 +388,14 @@ export default function HomePageSettings() {
       }}>
         <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: '600' }}>Yeni Component Ekle</h3>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {(['hero', 'about', 'services', 'hrpolicy', 'news', 'contact'] as const).map((type) => (
+          {(['hero', 'about', 'services', 'hrpolicy', 'news', 'contact', 'component'] as const).map((type) => (
             <Button
               key={type}
               onClick={() => addSection(type)}
               variant="secondary"
               size="sm"
             >
-              + {type === 'hrpolicy' ? 'HR Policy' : type.charAt(0).toUpperCase() + type.slice(1)}
+              + {type === 'hrpolicy' ? 'HR Policy' : type === 'component' ? 'Custom Component' : type.charAt(0).toUpperCase() + type.slice(1)}
             </Button>
           ))}
         </div>
@@ -593,6 +599,14 @@ export default function HomePageSettings() {
 
                     {section.type === 'contact' && (
                       <ContactSectionEditor
+                        section={section}
+                        index={index}
+                        updateSection={updateSection}
+                      />
+                    )}
+
+                    {section.type === 'component' && (
+                      <ComponentSectionEditor
                         section={section}
                         index={index}
                         updateSection={updateSection}
@@ -1314,6 +1328,78 @@ function ContactSectionEditor({ section, index, updateSection }: {
       <p style={{ color: '#6b7280', fontSize: '13px', marginTop: '12px', padding: '12px', background: '#f9fafb', borderRadius: '6px' }}>
         İletişim bilgileri Settings sayfasından yönetilmektedir. Bu bölüm sadece başlık ve açıklama içindir.
       </p>
+    </div>
+  );
+}
+
+// Component Section Editor
+function ComponentSectionEditor({ section, index, updateSection }: {
+  section: HomePageSection;
+  index: number;
+  updateSection: (index: number, field: string, value: any) => void;
+}) {
+  const [components, setComponents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadComponents();
+  }, []);
+
+  const loadComponents = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.getComponents(undefined, true);
+      setComponents(response.components || []);
+    } catch (error) {
+      console.error('Componentler yüklenemedi:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
+          Component Seçin
+        </label>
+        {loading ? (
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Yükleniyor...</p>
+        ) : (
+          <select
+            value={section.data.componentId || ''}
+            onChange={(e) => updateSection(index, 'data.componentId', e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              background: '#ffffff',
+              color: '#1f2937',
+            }}
+          >
+            <option value="">Component Seçiniz</option>
+            {components.map((comp) => (
+              <option key={comp._id} value={comp._id}>
+                {comp.name} ({comp.type})
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {section.data.componentId && (
+        <div style={{ 
+          marginTop: '16px', 
+          padding: '12px', 
+          background: '#f9fafb', 
+          borderRadius: '6px',
+          fontSize: '13px',
+          color: '#6b7280'
+        }}>
+          Seçili component: {components.find(c => c._id === section.data.componentId)?.name || 'Yükleniyor...'}
+        </div>
+      )}
     </div>
   );
 }

@@ -120,6 +120,10 @@ export default function Dashboard() {
           <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Medya Yönetimi</h2>
           <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px', margin: 0 }}>Resim ve PDF dosyalarını yükleyin.</p>
         </Link>
+        <Link href="/admin/dashboard/components" style={linkCardStyle}>
+          <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Component Yönetimi</h2>
+          <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px', margin: 0 }}>Custom HTML/CSS/JS ile componentler oluşturun.</p>
+        </Link>
         <Link href="/admin/dashboard/settings" style={linkCardStyle}>
           <h2 style={{ fontSize: '16px', marginBottom: '8px', fontWeight: '600', color: '#1f2937' }}>Ayarlar</h2>
           <p style={{ color: '#6b7280', lineHeight: '1.5', fontSize: '13px', margin: 0 }}>Site ayarlarını yönetin.</p>

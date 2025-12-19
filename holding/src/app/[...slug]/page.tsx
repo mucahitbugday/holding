@@ -6,8 +6,10 @@ import connectDB from '@/lib/mongodb';
 import Content from '@/models/Content';
 import Settings from '@/models/Settings';
 import Category from '@/models/Category';
+import Component from '@/models/Component';
 import { Metadata } from 'next';
 import StructuredData from '@/components/StructuredData';
+import ComponentRenderer from '@/components/ComponentRenderer';
 
 interface PageProps {
   params: Promise<{ slug: string[] }>;
@@ -197,11 +199,13 @@ export default async function DynamicPage({ params }: PageProps) {
     }
   }
   
-  // Kart içeriklerini yükle
+  // Kart içeriklerini ve component'leri yükle
   const cardContents: { [key: string]: any } = {};
   const cardCategories: { [key: string]: any } = {};
+  const componentMap: { [key: string]: any } = {};
   if ((content as any).sections && Array.isArray((content as any).sections)) {
     const cardSectionIds: string[] = [];
+    const componentIds: string[] = [];
     (content as any).sections.forEach((s: any) => {
       if (s.type === 'card') {
         if (s.contentIds && Array.isArray(s.contentIds)) {
@@ -209,6 +213,8 @@ export default async function DynamicPage({ params }: PageProps) {
         } else if (s.contentId) {
           cardSectionIds.push(s.contentId);
         }
+      } else if (s.type === 'component' && s.componentId) {
+        componentIds.push(s.componentId);
       }
     });
     
@@ -241,6 +247,23 @@ export default async function DynamicPage({ params }: PageProps) {
         }
       } catch (error) {
         console.error('Error loading card contents:', error);
+      }
+    }
+    
+    // Component'leri yükle
+    if (componentIds.length > 0) {
+      try {
+        await connectDB();
+        const components = await Component.find({ 
+          _id: { $in: componentIds },
+          isActive: true 
+        }).lean();
+        
+        components.forEach((comp: any) => {
+          componentMap[comp._id.toString()] = JSON.parse(JSON.stringify(comp));
+        });
+      } catch (error) {
+        console.error('Error loading components:', error);
       }
     }
   }
@@ -529,6 +552,21 @@ export default async function DynamicPage({ params }: PageProps) {
                                 </a>
                               );
                             })}
+                          </div>
+                        );
+                      } else if (section.type === 'component') {
+                        const component = componentMap[section.componentId];
+                        if (!component) {
+                          return null;
+                        }
+                        return (
+                          <div key={index}>
+                            <ComponentRenderer
+                              html={component.html}
+                              css={component.css}
+                              js={component.js}
+                              componentId={component._id}
+                            />
                           </div>
                         );
                       }

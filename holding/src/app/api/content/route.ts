@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
 // POST - Yeni içerik oluştur
 export async function POST(request: NextRequest) {
   try {
-    const user = getAuthUser(request);
+    const user = await getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Yetkisiz erişim' },
@@ -168,6 +168,10 @@ export async function POST(request: NextRequest) {
           type: section.type,
           order: index
         };
+        
+        if (section.type === 'component') {
+          cleaned.componentId = section.componentId || '';
+        }
         
         if (section.type === 'text') {
           cleaned.content = section.content || '';

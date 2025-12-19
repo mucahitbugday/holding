@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 // PUT - Anasayfa ayarlarını güncelle
 export async function PUT(request: NextRequest) {
   try {
-    const user = getAuthUser(request);
+    const user = await getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Yetkisiz erişim' },
@@ -169,6 +169,7 @@ export async function PUT(request: NextRequest) {
     let settings = await HomePageSettings.findOne();
 
     if (settings) {
+      // Mevcut kaydı güncelle
       settings.sections = data.sections || settings.sections;
       await settings.save();
     } else {
@@ -180,8 +181,30 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true, settings });
   } catch (error: any) {
     console.error('Update homepage settings error:', error);
+    
+    // Validation hatası ise detaylı mesaj döndür
+    if (error.name === 'ValidationError') {
+      const validationErrors: string[] = [];
+      if (error.errors) {
+        Object.keys(error.errors).forEach((key) => {
+          validationErrors.push(`${key}: ${error.errors[key].message}`);
+        });
+      }
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Validation hatası',
+          details: validationErrors.length > 0 ? validationErrors : [error.message]
+        },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { 
+        success: false,
+        error: error.message || 'Sunucu hatası' 
+      },
       { status: 500 }
     );
   }

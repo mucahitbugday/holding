@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IContentSection {
-  type: 'text' | 'card';
+  type: 'text' | 'card' | 'component';
   order: number;
   content?: string; // Text type için HTML content
   contentId?: string; // Card type için tek içerik ID (backward compatibility)
   contentIds?: string[]; // Card type için birden fazla içerik ID
+  componentId?: string; // Component type için component ID
 }
 
 export interface IContent extends Document {
@@ -48,7 +49,10 @@ const ContentSchema: Schema = new Schema(
     sections: [{
       type: {
         type: String,
-        enum: ['text', 'card'],
+        enum: {
+          values: ['text', 'card', 'component'],
+          message: '`{VALUE}` is not a valid enum value for path `{PATH}`'
+        },
         required: true,
       },
       order: {
@@ -58,6 +62,7 @@ const ContentSchema: Schema = new Schema(
       content: String, // Text type için HTML content
       contentId: String, // Card type için tek içerik ID (backward compatibility)
       contentIds: [String], // Card type için birden fazla içerik ID
+      componentId: String, // Component type için component ID
     }],
     type: {
       type: String,
@@ -88,11 +93,20 @@ const ContentSchema: Schema = new Schema(
   }
 );
 
-// Model cache'ini temizle ve yeniden oluştur
-if (mongoose.models.Content) {
-  delete mongoose.models.Content;
-}
+// Model cache'ini tamamen temizle
+const getContentModel = (): Model<IContent> => {
+  // Model cache'ini temizle
+  if (mongoose.models.Content) {
+    delete mongoose.models.Content;
+  }
+  if (mongoose.connection?.models?.Content) {
+    delete mongoose.connection.models.Content;
+  }
+  
+  // Yeni schema ile model oluştur
+  return mongoose.model<IContent>('Content', ContentSchema);
+};
 
-const Content: Model<IContent> = mongoose.model<IContent>('Content', ContentSchema);
+const Content = getContentModel();
 
 export default Content;
