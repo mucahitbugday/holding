@@ -46,11 +46,8 @@ const CategorySchema: Schema = new Schema(
   }
 );
 
-// Model cache'ini temizle ve yeniden oluştur
-if (mongoose.models.Category) {
-  delete mongoose.models.Category;
-}
-
-const Category: Model<ICategory> = mongoose.model<ICategory>('Category', CategorySchema);
+const Category: Model<ICategory> =
+  (mongoose.models.Category as Model<ICategory>) ||
+  mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;

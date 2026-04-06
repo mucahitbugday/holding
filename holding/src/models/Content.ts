@@ -93,20 +93,8 @@ const ContentSchema: Schema = new Schema(
   }
 );
 
-// Model cache'ini tamamen temizle
-const getContentModel = (): Model<IContent> => {
-  // Model cache'ini temizle
-  if (mongoose.models.Content) {
-    delete mongoose.models.Content;
-  }
-  if (mongoose.connection?.models?.Content) {
-    delete mongoose.connection.models.Content;
-  }
-  
-  // Yeni schema ile model oluştur
-  return mongoose.model<IContent>('Content', ContentSchema);
-};
-
-const Content = getContentModel();
+const Content: Model<IContent> =
+  (mongoose.models.Content as Model<IContent>) ||
+  mongoose.model<IContent>('Content', ContentSchema);
 
 export default Content;

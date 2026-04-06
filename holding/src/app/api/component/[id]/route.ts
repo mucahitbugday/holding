@@ -6,12 +6,13 @@ import { getAuthUser } from '@/lib/auth';
 // GET - Tek component getir
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await params;
 
-    const component = await Component.findById(params.id).populate(
+    const component = await Component.findById(id).populate(
       'categoryId',
       'name slug'
     );
@@ -45,7 +46,7 @@ export async function GET(
 // PUT - Component güncelle
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser(request);
@@ -57,11 +58,12 @@ export async function PUT(
     }
 
     await connectDB();
+  const { id } = await params;
 
     const data = await request.json();
 
     // Mevcut component'i kontrol et
-    const currentComponent = await Component.findById(params.id);
+  const currentComponent = await Component.findById(id);
     if (!currentComponent) {
       return NextResponse.json(
         {
@@ -76,7 +78,7 @@ export async function PUT(
     if (data.slug && data.slug !== currentComponent.slug) {
       const existingComponent = await Component.findOne({
         slug: data.slug,
-        _id: { $ne: params.id },
+        _id: { $ne: id },
       });
       if (existingComponent) {
         return NextResponse.json(
@@ -90,7 +92,7 @@ export async function PUT(
     }
 
     const component = await Component.findByIdAndUpdate(
-      params.id,
+      id,
       data,
       { new: true, runValidators: true }
     ).populate('categoryId', 'name slug');
@@ -124,7 +126,7 @@ export async function PUT(
 // DELETE - Component sil
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser(request);
@@ -136,8 +138,9 @@ export async function DELETE(
     }
 
     await connectDB();
+  const { id } = await params;
 
-    const component = await Component.findByIdAndDelete(params.id);
+  const component = await Component.findByIdAndDelete(id);
 
     if (!component) {
       return NextResponse.json(

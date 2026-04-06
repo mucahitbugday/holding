@@ -84,20 +84,8 @@ const HomePageSettingsSchema: Schema = new Schema(
   }
 );
 
-// Model cache'ini tamamen temizle - her seferinde yeni schema ile oluştur
-const getHomePageSettingsModel = (): Model<IHomePageSettings> => {
-  // Model cache'ini temizle
-  if (mongoose.models.HomePageSettings) {
-    delete mongoose.models.HomePageSettings;
-  }
-  if (mongoose.connection?.models?.HomePageSettings) {
-    delete mongoose.connection.models.HomePageSettings;
-  }
-  
-  // Yeni schema ile model oluştur
-  return mongoose.model<IHomePageSettings>('HomePageSettings', HomePageSettingsSchema);
-};
-
-const HomePageSettings = getHomePageSettingsModel();
+const HomePageSettings: Model<IHomePageSettings> =
+  (mongoose.models.HomePageSettings as Model<IHomePageSettings>) ||
+  mongoose.model<IHomePageSettings>('HomePageSettings', HomePageSettingsSchema);
 
 export default HomePageSettings;

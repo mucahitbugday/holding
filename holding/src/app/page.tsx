@@ -28,7 +28,7 @@ const DynamicContact = dynamic(() => import('@/components/Contact'), {
 });
 
 interface HomePageSection {
-  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact';
+  type: 'hero' | 'about' | 'services' | 'hrpolicy' | 'news' | 'contact' | 'component';
   order: number;
   isActive: boolean;
   data: any;

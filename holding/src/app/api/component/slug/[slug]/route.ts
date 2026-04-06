@@ -5,13 +5,14 @@ import Component from '@/models/Component';
 // GET - Slug'a göre component getir (public)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     await connectDB();
+    const { slug } = await params;
 
     const component = await Component.findOne({ 
-      slug: params.slug,
+      slug,
       isActive: true 
     }).populate('categoryId', 'name slug');
 
